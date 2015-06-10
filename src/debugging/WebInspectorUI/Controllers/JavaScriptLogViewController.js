@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.JavaScriptLogViewController = class JavaScriptLogViewController extends WebInspector.Object
-{
-    constructor(element, scrollElement, textPrompt, delegate, historySettingIdentifier)
-    {
-        super();
+WebInspector.JavaScriptLogViewController = (function (_WebInspector$Object) {
+    function JavaScriptLogViewController(element, scrollElement, textPrompt, delegate, historySettingIdentifier) {
+        _classCallCheck(this, JavaScriptLogViewController);
+
+        _get(Object.getPrototypeOf(JavaScriptLogViewController.prototype), "constructor", this).call(this);
 
         console.assert(textPrompt instanceof WebInspector.ConsolePrompt);
         console.assert(historySettingIdentifier);
@@ -64,234 +72,229 @@ WebInspector.JavaScriptLogViewController = class JavaScriptLogViewController ext
         this.startNewSession();
     }
 
-    // Public
+    _inherits(JavaScriptLogViewController, _WebInspector$Object);
 
-    get prompt()
-    {
-        return this._prompt;
-    }
+    _createClass(JavaScriptLogViewController, [{
+        key: "clear",
+        value: function clear() {
+            this._cleared = true;
 
-    get currentConsoleGroup()
-    {
-        return this._currentConsoleGroup;
-    }
+            this.startNewSession(true);
 
-    clear()
-    {
-        this._cleared = true;
+            this.prompt.focus();
 
-        this.startNewSession(true);
-
-        this.prompt.focus();
-
-        if (this.delegate && typeof this.delegate.didClearMessages === "function")
-            this.delegate.didClearMessages();
-    }
-
-    startNewSession(clearPreviousSessions)
-    {
-        if (this._sessions.length && clearPreviousSessions) {
-            for (var i = 0; i < this._sessions.length; ++i)
-                this._element.removeChild(this._sessions[i].element);
-
-            this._sessions = [];
-            this._currentConsoleGroup = null;
+            if (this.delegate && typeof this.delegate.didClearMessages === "function") this.delegate.didClearMessages();
         }
+    }, {
+        key: "startNewSession",
+        value: function startNewSession(clearPreviousSessions) {
+            if (this._sessions.length && clearPreviousSessions) {
+                for (var i = 0; i < this._sessions.length; ++i) this._element.removeChild(this._sessions[i].element);
 
-        var lastSession = this._sessions.lastValue;
-        // Reuse the last session if it has no messages.
-        if (lastSession && !lastSession.hasMessages()) {
-            // Make sure the session is visible.
-            lastSession.element.scrollIntoView();
-            return;
-        }
+                this._sessions = [];
+                this._currentConsoleGroup = null;
+            }
 
-        var consoleSession = new WebInspector.ConsoleSession;
-
-        this._previousMessageView = null;
-        this._repeatCountWasInterrupted = false;
-
-        this._sessions.push(consoleSession);
-        this._currentConsoleGroup = consoleSession;
-
-        this._element.appendChild(consoleSession.element);
-
-        // Make sure the new session is visible.
-        consoleSession.element.scrollIntoView();
-    }
-
-    appendImmediateExecutionWithResult(text, result)
-    {
-        console.assert(result instanceof WebInspector.RemoteObject);
-
-        var commandMessageView = new WebInspector.ConsoleCommandView(text);
-        this._appendConsoleMessageView(commandMessageView, true);
-
-        function saveResultCallback(savedResultIndex)
-        {
-            var commandResultMessage = new WebInspector.ConsoleCommandResultMessage(result, false, savedResultIndex);
-            var commandResultMessageView = new WebInspector.ConsoleMessageView(commandResultMessage);
-            this._appendConsoleMessageView(commandResultMessageView, true);
-        }
-
-        WebInspector.runtimeManager.saveResult(result, saveResultCallback.bind(this));
-    }
-
-    appendConsoleMessage(consoleMessage)
-    {
-        var consoleMessageView = new WebInspector.ConsoleMessageView(consoleMessage);
-        this._appendConsoleMessageView(consoleMessageView);
-        return consoleMessageView;
-    }
-
-    updatePreviousMessageRepeatCount(count)
-    {
-        console.assert(this._previousMessageView);
-        if (!this._previousMessageView)
-            return;
-
-        var previousIgnoredCount = this._previousMessageView[WebInspector.JavaScriptLogViewController.IgnoredRepeatCount] || 0;
-        var previousVisibleCount = this._previousMessageView.repeatCount;
-
-        if (!this._repeatCountWasInterrupted) {
-            this._previousMessageView.repeatCount = count - previousIgnoredCount;
-            return;
-        }
-
-        var consoleMessage = this._previousMessageView.message;
-        var duplicatedConsoleMessageView = new WebInspector.ConsoleMessageView(consoleMessage);
-        duplicatedConsoleMessageView[WebInspector.JavaScriptLogViewController.IgnoredRepeatCount] = previousIgnoredCount + previousVisibleCount;
-        duplicatedConsoleMessageView.repeatCount = 1;
-        this._appendConsoleMessageView(duplicatedConsoleMessageView);
-    }
-
-    isScrolledToBottom()
-    {
-        // Lie about being scrolled to the bottom if we have a pending request to scroll to the bottom soon.
-        return this._scrollToBottomTimeout || this._scrollElement.isScrolledToBottom();
-    }
-
-    scrollToBottom()
-    {
-        if (this._scrollToBottomTimeout)
-            return;
-
-        function delayedWork()
-        {
-            this._scrollToBottomTimeout = null;
-            this._scrollElement.scrollTop = this._scrollElement.scrollHeight;
-        }
-
-        // Don't scroll immediately so we are not causing excessive layouts when there
-        // are many messages being added at once.
-        this._scrollToBottomTimeout = setTimeout(delayedWork.bind(this), 0);
-    }
-
-    // Protected
-
-    consolePromptHistoryDidChange(prompt)
-    {
-        this._promptHistorySetting.value = this.prompt.history;
-    }
-
-    consolePromptShouldCommitText(prompt, text, cursorIsAtLastPosition, handler)
-    {
-        // Always commit the text if we are not at the last position.
-        if (!cursorIsAtLastPosition) {
-            handler(true);
-            return;
-        }
-
-        // COMPATIBILITY (iOS 6): RuntimeAgent.parse did not exist in iOS 6. Always commit.
-        if (!RuntimeAgent.parse) {
-            handler(true);
-            return;
-        }
-
-        function parseFinished(error, result, message, range)
-        {
-            handler(result !== RuntimeAgent.SyntaxErrorType.Recoverable);
-        }
-
-        RuntimeAgent.parse(text, parseFinished.bind(this));
-    }
-
-    consolePromptTextCommitted(prompt, text)
-    {
-        console.assert(text);
-
-        var commandMessageView = new WebInspector.ConsoleCommandView(text);
-        this._appendConsoleMessageView(commandMessageView, true);
-
-        function printResult(result, wasThrown, savedResultIndex)
-        {
-            if (!result || this._cleared)
+            var lastSession = this._sessions.lastValue;
+            // Reuse the last session if it has no messages.
+            if (lastSession && !lastSession.hasMessages()) {
+                // Make sure the session is visible.
+                lastSession.element.scrollIntoView();
                 return;
+            }
 
-            var commandResultMessage = new WebInspector.ConsoleCommandResultMessage(result, wasThrown, savedResultIndex);
-            var commandResultMessageView = new WebInspector.ConsoleMessageView(commandResultMessage);
-            this._appendConsoleMessageView(commandResultMessageView, true);
+            var consoleSession = new WebInspector.ConsoleSession();
+
+            this._previousMessageView = null;
+            this._repeatCountWasInterrupted = false;
+
+            this._sessions.push(consoleSession);
+            this._currentConsoleGroup = consoleSession;
+
+            this._element.appendChild(consoleSession.element);
+
+            // Make sure the new session is visible.
+            consoleSession.element.scrollIntoView();
         }
+    }, {
+        key: "appendImmediateExecutionWithResult",
+        value: function appendImmediateExecutionWithResult(text, result) {
+            console.assert(result instanceof WebInspector.RemoteObject);
 
-        text += "\n//# sourceURL=__WebInspectorConsole__\n";
+            var commandMessageView = new WebInspector.ConsoleCommandView(text);
+            this._appendConsoleMessageView(commandMessageView, true);
 
-        WebInspector.runtimeManager.evaluateInInspectedWindow(text, "console", true, false, false, true, true, printResult.bind(this));
-    }
+            function saveResultCallback(savedResultIndex) {
+                var commandResultMessage = new WebInspector.ConsoleCommandResultMessage(result, false, savedResultIndex);
+                var commandResultMessageView = new WebInspector.ConsoleMessageView(commandResultMessage);
+                this._appendConsoleMessageView(commandResultMessageView, true);
+            }
 
-    // Private
-
-    _handleClearShortcut()
-    {
-        this.clear();
-    }
-
-    _handleFindShortcut()
-    {
-        this.delegate.focusSearchBar();
-    }
-
-    _handleFindNextShortcut()
-    {
-        this.delegate.highlightNextSearchMatch();
-    }
-
-    _handleFindPreviousShortcut()
-    {
-        this.delegate.highlightPreviousSearchMatch();
-    }
-
-    _appendConsoleMessageView(messageView, repeatCountWasInterrupted)
-    {
-        var wasScrolledToBottom = this.isScrolledToBottom();
-
-        this._cleared = false;
-        this._repeatCountWasInterrupted = repeatCountWasInterrupted || false;
-
-        if (!repeatCountWasInterrupted)
-            this._previousMessageView = messageView;
-
-        var type = messageView instanceof WebInspector.ConsoleCommandView ? null : messageView.message.type;
-        if (type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
-            var parentGroup = this._currentConsoleGroup.parentGroup;
-            if (parentGroup)
-                this._currentConsoleGroup = parentGroup;
-        } else {
-            if (type === WebInspector.ConsoleMessage.MessageType.StartGroup || type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
-                var group = new WebInspector.ConsoleGroup(this._currentConsoleGroup);
-                var groupElement = group.render(messageView);
-                this._currentConsoleGroup.append(groupElement);
-                this._currentConsoleGroup = group;
-            } else
-                this._currentConsoleGroup.addMessageView(messageView);
+            WebInspector.runtimeManager.saveResult(result, saveResultCallback.bind(this));
         }
+    }, {
+        key: "appendConsoleMessage",
+        value: function appendConsoleMessage(consoleMessage) {
+            var consoleMessageView = new WebInspector.ConsoleMessageView(consoleMessage);
+            this._appendConsoleMessageView(consoleMessageView);
+            return consoleMessageView;
+        }
+    }, {
+        key: "updatePreviousMessageRepeatCount",
+        value: function updatePreviousMessageRepeatCount(count) {
+            console.assert(this._previousMessageView);
+            if (!this._previousMessageView) return;
 
-        if (type === WebInspector.ConsoleMessage.MessageType.Result || wasScrolledToBottom)
-            this.scrollToBottom();
+            var previousIgnoredCount = this._previousMessageView[WebInspector.JavaScriptLogViewController.IgnoredRepeatCount] || 0;
+            var previousVisibleCount = this._previousMessageView.repeatCount;
 
-        if (this.delegate && typeof this.delegate.didAppendConsoleMessageView === "function")
-            this.delegate.didAppendConsoleMessageView(messageView);
-    }
-};
+            if (!this._repeatCountWasInterrupted) {
+                this._previousMessageView.repeatCount = count - previousIgnoredCount;
+                return;
+            }
+
+            var consoleMessage = this._previousMessageView.message;
+            var duplicatedConsoleMessageView = new WebInspector.ConsoleMessageView(consoleMessage);
+            duplicatedConsoleMessageView[WebInspector.JavaScriptLogViewController.IgnoredRepeatCount] = previousIgnoredCount + previousVisibleCount;
+            duplicatedConsoleMessageView.repeatCount = 1;
+            this._appendConsoleMessageView(duplicatedConsoleMessageView);
+        }
+    }, {
+        key: "isScrolledToBottom",
+        value: function isScrolledToBottom() {
+            // Lie about being scrolled to the bottom if we have a pending request to scroll to the bottom soon.
+            return this._scrollToBottomTimeout || this._scrollElement.isScrolledToBottom();
+        }
+    }, {
+        key: "scrollToBottom",
+        value: function scrollToBottom() {
+            if (this._scrollToBottomTimeout) return;
+
+            function delayedWork() {
+                this._scrollToBottomTimeout = null;
+                this._scrollElement.scrollTop = this._scrollElement.scrollHeight;
+            }
+
+            // Don't scroll immediately so we are not causing excessive layouts when there
+            // are many messages being added at once.
+            this._scrollToBottomTimeout = setTimeout(delayedWork.bind(this), 0);
+        }
+    }, {
+        key: "consolePromptHistoryDidChange",
+
+        // Protected
+
+        value: function consolePromptHistoryDidChange(prompt) {
+            this._promptHistorySetting.value = this.prompt.history;
+        }
+    }, {
+        key: "consolePromptShouldCommitText",
+        value: function consolePromptShouldCommitText(prompt, text, cursorIsAtLastPosition, handler) {
+            // Always commit the text if we are not at the last position.
+            if (!cursorIsAtLastPosition) {
+                handler(true);
+                return;
+            }
+
+            // COMPATIBILITY (iOS 6): RuntimeAgent.parse did not exist in iOS 6. Always commit.
+            if (!RuntimeAgent.parse) {
+                handler(true);
+                return;
+            }
+
+            function parseFinished(error, result, message, range) {
+                handler(result !== RuntimeAgent.SyntaxErrorType.Recoverable);
+            }
+
+            RuntimeAgent.parse(text, parseFinished.bind(this));
+        }
+    }, {
+        key: "consolePromptTextCommitted",
+        value: function consolePromptTextCommitted(prompt, text) {
+            console.assert(text);
+
+            var commandMessageView = new WebInspector.ConsoleCommandView(text);
+            this._appendConsoleMessageView(commandMessageView, true);
+
+            function printResult(result, wasThrown, savedResultIndex) {
+                if (!result || this._cleared) return;
+
+                var commandResultMessage = new WebInspector.ConsoleCommandResultMessage(result, wasThrown, savedResultIndex);
+                var commandResultMessageView = new WebInspector.ConsoleMessageView(commandResultMessage);
+                this._appendConsoleMessageView(commandResultMessageView, true);
+            }
+
+            text += "\n//# sourceURL=__WebInspectorConsole__\n";
+
+            WebInspector.runtimeManager.evaluateInInspectedWindow(text, "console", true, false, false, true, true, printResult.bind(this));
+        }
+    }, {
+        key: "_handleClearShortcut",
+
+        // Private
+
+        value: function _handleClearShortcut() {
+            this.clear();
+        }
+    }, {
+        key: "_handleFindShortcut",
+        value: function _handleFindShortcut() {
+            this.delegate.focusSearchBar();
+        }
+    }, {
+        key: "_handleFindNextShortcut",
+        value: function _handleFindNextShortcut() {
+            this.delegate.highlightNextSearchMatch();
+        }
+    }, {
+        key: "_handleFindPreviousShortcut",
+        value: function _handleFindPreviousShortcut() {
+            this.delegate.highlightPreviousSearchMatch();
+        }
+    }, {
+        key: "_appendConsoleMessageView",
+        value: function _appendConsoleMessageView(messageView, repeatCountWasInterrupted) {
+            var wasScrolledToBottom = this.isScrolledToBottom();
+
+            this._cleared = false;
+            this._repeatCountWasInterrupted = repeatCountWasInterrupted || false;
+
+            if (!repeatCountWasInterrupted) this._previousMessageView = messageView;
+
+            var type = messageView instanceof WebInspector.ConsoleCommandView ? null : messageView.message.type;
+            if (type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
+                var parentGroup = this._currentConsoleGroup.parentGroup;
+                if (parentGroup) this._currentConsoleGroup = parentGroup;
+            } else {
+                if (type === WebInspector.ConsoleMessage.MessageType.StartGroup || type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
+                    var group = new WebInspector.ConsoleGroup(this._currentConsoleGroup);
+                    var groupElement = group.render(messageView);
+                    this._currentConsoleGroup.append(groupElement);
+                    this._currentConsoleGroup = group;
+                } else this._currentConsoleGroup.addMessageView(messageView);
+            }
+
+            if (type === WebInspector.ConsoleMessage.MessageType.Result || wasScrolledToBottom) this.scrollToBottom();
+
+            if (this.delegate && typeof this.delegate.didAppendConsoleMessageView === "function") this.delegate.didAppendConsoleMessageView(messageView);
+        }
+    }, {
+        key: "prompt",
+
+        // Public
+
+        get: function () {
+            return this._prompt;
+        }
+    }, {
+        key: "currentConsoleGroup",
+        get: function () {
+            return this._currentConsoleGroup;
+        }
+    }]);
+
+    return JavaScriptLogViewController;
+})(WebInspector.Object);
 
 WebInspector.JavaScriptLogViewController.CachedPropertiesDuration = 30000;
 WebInspector.JavaScriptLogViewController.IgnoredRepeatCount = Symbol("ignored-repeat-count");

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2014 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DefaultDashboard = class DefaultDashboard extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.DefaultDashboard = (function (_WebInspector$Object) {
+    function DefaultDashboard() {
+        _classCallCheck(this, DefaultDashboard);
+
+        _get(Object.getPrototypeOf(DefaultDashboard.prototype), "constructor", this).call(this);
 
         this._waitingForFirstMainResourceToStartTrackingSize = true;
 
@@ -48,109 +56,109 @@ WebInspector.DefaultDashboard = class DefaultDashboard extends WebInspector.Obje
         this._issues = 0;
     }
 
-    // Public
+    _inherits(DefaultDashboard, _WebInspector$Object);
 
-    get resourcesCount()
-    {
-        return this._resourcesCount;
-    }
+    _createClass(DefaultDashboard, [{
+        key: "_dataDidChange",
 
-    set resourcesCount(value)
-    {
-        this._resourcesCount = value;
-        this._dataDidChange();
-    }
+        // Private
 
-    get logs()
-    {
-        return this._logs;
-    }
-
-    set logs(value)
-    {
-        this._logs = value;
-        this._dataDidChange();
-    }
-
-    get errors()
-    {
-        return this._errors;
-    }
-
-    set errors(value)
-    {
-        this._errors = value;
-        this._dataDidChange();
-    }
-
-    get issues()
-    {
-        return this._issues;
-    }
-
-    set issues(value)
-    {
-        this._issues = value;
-        this._dataDidChange();
-    }
-
-    // Private
-
-    _dataDidChange()
-    {
-        this.dispatchEventToListeners(WebInspector.DefaultDashboard.Event.DataDidChange);
-    }
-
-    _resourceWasAdded(event)
-    {
-        ++this.resourcesCount;
-    }
-
-    _frameWasAdded(event)
-    {
-        ++this.resourcesCount;
-    }
-
-    _resourceSizeDidChange(event)
-    {
-        this.resourcesSize += event.target.size - event.data.previousSize;
-    }
-
-    _consoleMessageAdded(event)
-    {
-        var message = event.data.message;
-        this._lastConsoleMessageType = message.level;
-        this._incrementConsoleMessageType(message.level, message.repeatCount);
-    }
-
-    _consoleMessageWasRepeated(event)
-    {
-        this._incrementConsoleMessageType(this._lastConsoleMessageType, 1);
-    }
-
-    _incrementConsoleMessageType(type, increment)
-    {
-        switch (type) {
-        case WebInspector.ConsoleMessage.MessageLevel.Log:
-            this.logs += increment;
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Warning:
-            this.issues += increment;
-            break;
-        case WebInspector.ConsoleMessage.MessageLevel.Error:
-            this.errors += increment;
-            break;
+        value: function _dataDidChange() {
+            this.dispatchEventToListeners(WebInspector.DefaultDashboard.Event.DataDidChange);
         }
-    }
+    }, {
+        key: "_resourceWasAdded",
+        value: function _resourceWasAdded(event) {
+            ++this.resourcesCount;
+        }
+    }, {
+        key: "_frameWasAdded",
+        value: function _frameWasAdded(event) {
+            ++this.resourcesCount;
+        }
+    }, {
+        key: "_resourceSizeDidChange",
+        value: function _resourceSizeDidChange(event) {
+            this.resourcesSize += event.target.size - event.data.previousSize;
+        }
+    }, {
+        key: "_consoleMessageAdded",
+        value: function _consoleMessageAdded(event) {
+            var message = event.data.message;
+            this._lastConsoleMessageType = message.level;
+            this._incrementConsoleMessageType(message.level, message.repeatCount);
+        }
+    }, {
+        key: "_consoleMessageWasRepeated",
+        value: function _consoleMessageWasRepeated(event) {
+            this._incrementConsoleMessageType(this._lastConsoleMessageType, 1);
+        }
+    }, {
+        key: "_incrementConsoleMessageType",
+        value: function _incrementConsoleMessageType(type, increment) {
+            switch (type) {
+                case WebInspector.ConsoleMessage.MessageLevel.Log:
+                    this.logs += increment;
+                    break;
+                case WebInspector.ConsoleMessage.MessageLevel.Warning:
+                    this.issues += increment;
+                    break;
+                case WebInspector.ConsoleMessage.MessageLevel.Error:
+                    this.errors += increment;
+                    break;
+            }
+        }
+    }, {
+        key: "_consoleWasCleared",
+        value: function _consoleWasCleared(event) {
+            this._logs = 0;
+            this._issues = 0;
+            this._errors = 0;
+            this._dataDidChange();
+        }
+    }, {
+        key: "resourcesCount",
 
-    _consoleWasCleared(event)
-    {
-        this._logs = 0;
-        this._issues = 0;
-        this._errors = 0;
-        this._dataDidChange();
-    }
-};
+        // Public
+
+        get: function () {
+            return this._resourcesCount;
+        },
+        set: function (value) {
+            this._resourcesCount = value;
+            this._dataDidChange();
+        }
+    }, {
+        key: "logs",
+        get: function () {
+            return this._logs;
+        },
+        set: function (value) {
+            this._logs = value;
+            this._dataDidChange();
+        }
+    }, {
+        key: "errors",
+        get: function () {
+            return this._errors;
+        },
+        set: function (value) {
+            this._errors = value;
+            this._dataDidChange();
+        }
+    }, {
+        key: "issues",
+        get: function () {
+            return this._issues;
+        },
+        set: function (value) {
+            this._issues = value;
+            this._dataDidChange();
+        }
+    }]);
+
+    return DefaultDashboard;
+})(WebInspector.Object);
 
 WebInspector.DefaultDashboard.Event = {
     DataDidChange: "default-dashboard-data-did-change"

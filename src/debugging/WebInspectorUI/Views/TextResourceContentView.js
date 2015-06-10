@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TextResourceContentView = function(resource)
-{
+WebInspector.TextResourceContentView = function (resource) {
     WebInspector.ResourceContentView.call(this, resource, WebInspector.TextResourceContentView.StyleClassName);
 
     resource.addEventListener(WebInspector.SourceCode.Event.ContentDidChange, this._sourceCodeContentDidChange, this);
@@ -57,62 +56,26 @@ WebInspector.TextResourceContentView = function(resource)
 
 WebInspector.TextResourceContentView.StyleClassName = "text";
 
-WebInspector.TextResourceContentView.prototype = {
+WebInspector.TextResourceContentView.prototype = Object.defineProperties({
     constructor: WebInspector.TextResourceContentView,
 
-    // Public
-
-    get navigationItems()
-    {
-        return [this._prettyPrintButtonNavigationItem, this._showTypesButtonNavigationItem];
-    },
-
-    get managesOwnIssues()
-    {
-        // SourceCodeTextEditor manages the issues, we don't need ResourceContentView doing it.
-        return true;
-    },
-
-    get textEditor()
-    {
-        return this._textEditor;
-    },
-
-    get supplementalRepresentedObjects()
-    {
-        var objects = WebInspector.probeManager.probeSets.filter(function(probeSet) {
-            return this._resource.url === probeSet.breakpoint.url;
-        }, this);
-
-        // If the SourceCodeTextEditor has an executionLineNumber, we can assume
-        // it is always the active call frame.
-        if (!isNaN(this._textEditor.executionLineNumber))
-            objects.push(WebInspector.debuggerManager.activeCallFrame);
-
-        return objects;
-    },
-
-    revealPosition: function(position, textRangeToSelect, forceUnformatted)
-    {
+    revealPosition: function revealPosition(position, textRangeToSelect, forceUnformatted) {
         this._textEditor.revealPosition(position, textRangeToSelect, forceUnformatted);
     },
 
-    shown: function()
-    {
+    shown: function shown() {
         WebInspector.ResourceContentView.prototype.shown.call(this);
 
         this._textEditor.shown();
     },
 
-    hidden: function()
-    {
+    hidden: function hidden() {
         WebInspector.ResourceContentView.prototype.hidden.call(this);
 
         this._textEditor.hidden();
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         WebInspector.ResourceContentView.prototype.closed.call(this);
 
         this.resource.removeEventListener(null, null, this);
@@ -122,144 +85,173 @@ WebInspector.TextResourceContentView.prototype = {
         this._textEditor.close();
     },
 
-    get supportsSave()
-    {
-        return true;
-    },
-
-    get saveData()
-    {
-        return {url: this.resource.url, content: this._textEditor.string};
-    },
-
-    get supportsSearch()
-    {
-        return true;
-    },
-
-    get numberOfSearchResults()
-    {
-        return this._textEditor.numberOfSearchResults;
-    },
-
-    get hasPerformedSearch()
-    {
-        return this._textEditor.currentSearchQuery !== null;
-    },
-
-    set automaticallyRevealFirstSearchResult(reveal)
-    {
-        this._textEditor.automaticallyRevealFirstSearchResult = reveal;
-    },
-
-    performSearch: function(query)
-    {
+    performSearch: function performSearch(query) {
         this._textEditor.performSearch(query);
     },
 
-    searchCleared: function()
-    {
+    searchCleared: function searchCleared() {
         this._textEditor.searchCleared();
     },
 
-    searchQueryWithSelection: function()
-    {
+    searchQueryWithSelection: function searchQueryWithSelection() {
         return this._textEditor.searchQueryWithSelection();
     },
 
-    revealPreviousSearchResult: function(changeFocus)
-    {
+    revealPreviousSearchResult: function revealPreviousSearchResult(changeFocus) {
         this._textEditor.revealPreviousSearchResult(changeFocus);
     },
 
-    revealNextSearchResult: function(changeFocus)
-    {
+    revealNextSearchResult: function revealNextSearchResult(changeFocus) {
         this._textEditor.revealNextSearchResult(changeFocus);
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         this._textEditor.updateLayout();
     },
 
     // Private
 
-    _contentWillPopulate: function(event)
-    {
-        if (this._textEditor.element.parentNode === this.element)
-            return;
+    _contentWillPopulate: function _contentWillPopulate(event) {
+        if (this._textEditor.element.parentNode === this.element) return;
 
         // Check the MIME-type for CSS since Resource.Type.Stylesheet also includes XSL, which we can't edit yet.
-        if (this.resource.type === WebInspector.Resource.Type.Stylesheet && this.resource.syntheticMIMEType === "text/css")
-            this._textEditor.readOnly = false;
+        if (this.resource.type === WebInspector.Resource.Type.Stylesheet && this.resource.syntheticMIMEType === "text/css") this._textEditor.readOnly = false;
 
         // Allow editing any local file since edits can be saved and reloaded right from the Inspector.
-        if (this.resource.urlComponents.scheme === "file")
-            this._textEditor.readOnly = false;
+        if (this.resource.urlComponents.scheme === "file") this._textEditor.readOnly = false;
 
         this.element.removeChildren();
         this.element.appendChild(this._textEditor.element);
     },
 
-    _contentDidPopulate: function(event)
-    {
+    _contentDidPopulate: function _contentDidPopulate(event) {
         this._prettyPrintButtonNavigationItem.enabled = this._textEditor.canBeFormatted();
         this._showTypesButtonNavigationItem.enabled = this._textEditor.canShowTypeAnnotations();
         this._showTypesButtonNavigationItem.activated = WebInspector.showJavaScriptTypeInformationSetting.value;
     },
 
-    _togglePrettyPrint: function(event)
-    {
+    _togglePrettyPrint: function _togglePrettyPrint(event) {
         var activated = !this._prettyPrintButtonNavigationItem.activated;
         this._textEditor.formatted = activated;
     },
 
-    _toggleTypeAnnotations: function(event)
-    {
+    _toggleTypeAnnotations: function _toggleTypeAnnotations(event) {
         this._textEditor.toggleTypeAnnotations();
     },
 
-    _showJavaScriptTypeInformationSettingChanged: function(event)
-    {
+    _showJavaScriptTypeInformationSettingChanged: function _showJavaScriptTypeInformationSettingChanged(event) {
         this._showTypesButtonNavigationItem.activated = WebInspector.showJavaScriptTypeInformationSetting.value;
     },
 
-    _textEditorFormattingDidChange: function(event)
-    {
+    _textEditorFormattingDidChange: function _textEditorFormattingDidChange(event) {
         this._prettyPrintButtonNavigationItem.activated = this._textEditor.formatted;
     },
 
-    _sourceCodeContentDidChange: function(event)
-    {
-        if (this._ignoreSourceCodeContentDidChangeEvent)
-            return;
+    _sourceCodeContentDidChange: function _sourceCodeContentDidChange(event) {
+        if (this._ignoreSourceCodeContentDidChangeEvent) return;
 
         this._textEditor.string = this.resource.currentRevision.content;
     },
 
-    _textEditorContentDidChange: function(event)
-    {
+    _textEditorContentDidChange: function _textEditorContentDidChange(event) {
         this._ignoreSourceCodeContentDidChangeEvent = true;
         WebInspector.branchManager.currentBranch.revisionForRepresentedObject(this.resource).content = this._textEditor.string;
         delete this._ignoreSourceCodeContentDidChangeEvent;
     },
 
-    _executionLineNumberDidChange: function(event)
-    {
+    _executionLineNumberDidChange: function _executionLineNumberDidChange(event) {
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SupplementalRepresentedObjectsDidChange);
     },
 
-    _numberOfSearchResultsDidChange: function(event)
-    {
+    _numberOfSearchResultsDidChange: function _numberOfSearchResultsDidChange(event) {
         this.dispatchEventToListeners(WebInspector.ContentView.Event.NumberOfSearchResultsDidChange);
     },
 
-    _probeSetsChanged: function(event)
-    {
+    _probeSetsChanged: function _probeSetsChanged(event) {
         var breakpoint = event.data.probeSet.breakpoint;
-        if (breakpoint.sourceCodeLocation.sourceCode === this.resource)
-            this.dispatchEventToListeners(WebInspector.ContentView.Event.SupplementalRepresentedObjectsDidChange);
+        if (breakpoint.sourceCodeLocation.sourceCode === this.resource) this.dispatchEventToListeners(WebInspector.ContentView.Event.SupplementalRepresentedObjectsDidChange);
     }
-};
+}, {
+    navigationItems: { // Public
+
+        get: function () {
+            return [this._prettyPrintButtonNavigationItem, this._showTypesButtonNavigationItem];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    managesOwnIssues: {
+        get: function () {
+            // SourceCodeTextEditor manages the issues, we don't need ResourceContentView doing it.
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    textEditor: {
+        get: function () {
+            return this._textEditor;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supplementalRepresentedObjects: {
+        get: function () {
+            var objects = WebInspector.probeManager.probeSets.filter(function (probeSet) {
+                return this._resource.url === probeSet.breakpoint.url;
+            }, this);
+
+            // If the SourceCodeTextEditor has an executionLineNumber, we can assume
+            // it is always the active call frame.
+            if (!isNaN(this._textEditor.executionLineNumber)) objects.push(WebInspector.debuggerManager.activeCallFrame);
+
+            return objects;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSave: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    saveData: {
+        get: function () {
+            return { url: this.resource.url, content: this._textEditor.string };
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSearch: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    numberOfSearchResults: {
+        get: function () {
+            return this._textEditor.numberOfSearchResults;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    hasPerformedSearch: {
+        get: function () {
+            return this._textEditor.currentSearchQuery !== null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    automaticallyRevealFirstSearchResult: {
+        set: function (reveal) {
+            this._textEditor.automaticallyRevealFirstSearchResult = reveal;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.TextResourceContentView.prototype.__proto__ = WebInspector.ResourceContentView.prototype;

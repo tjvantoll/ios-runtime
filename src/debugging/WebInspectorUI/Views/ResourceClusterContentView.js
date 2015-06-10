@@ -23,16 +23,14 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ResourceClusterContentView = function(resource)
-{
+WebInspector.ResourceClusterContentView = function (resource) {
     WebInspector.ClusterContentView.call(this, resource);
 
     this._resource = resource;
     this._resource.addEventListener(WebInspector.Resource.Event.TypeDidChange, this._resourceTypeDidChange, this);
     this._resource.addEventListener(WebInspector.Resource.Event.LoadingDidFinish, this._resourceLoadingDidFinish, this);
 
-    function createPathComponent(displayName, className, identifier)
-    {
+    function createPathComponent(displayName, className, identifier) {
         var pathComponent = new WebInspector.HierarchicalPathComponent(displayName, className, identifier, false, true);
         pathComponent.addEventListener(WebInspector.HierarchicalPathComponent.Event.SiblingWasSelected, this._pathComponentSelected, this);
         return pathComponent;
@@ -54,110 +52,39 @@ WebInspector.ResourceClusterContentView.ResponseIconStyleClassName = "response-i
 WebInspector.ResourceClusterContentView.RequestIdentifier = "request";
 WebInspector.ResourceClusterContentView.ResponseIdentifier = "response";
 
-WebInspector.ResourceClusterContentView.prototype = {
+WebInspector.ResourceClusterContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ResourceClusterContentView,
 
-    // Public
-
-    get resource()
-    {
-        return this._resource;
-    },
-
-    get responseContentView()
-    {
-        if (this._responseContentView)
-            return this._responseContentView;
-
-        switch (this._resource.type) {
-        case WebInspector.Resource.Type.Document:
-        case WebInspector.Resource.Type.Script:
-        case WebInspector.Resource.Type.Stylesheet:
-        case WebInspector.Resource.Type.XHR:
-            this._responseContentView = new WebInspector.TextResourceContentView(this._resource);
-            break;
-
-        case WebInspector.Resource.Type.Image:
-            this._responseContentView = new WebInspector.ImageResourceContentView(this._resource);
-            break;
-
-        case WebInspector.Resource.Type.Font:
-            this._responseContentView = new WebInspector.FontResourceContentView(this._resource);
-            break;
-
-        default:
-            this._responseContentView = new WebInspector.GenericResourceContentView(this._resource);
-            break;
-        }
-
-        return this._responseContentView;
-    },
-
-    get requestContentView()
-    {
-        if (!this._canShowRequestContentView())
-            return null;
-
-        if (this._requestContentView)
-            return this._requestContentView;
-
-        this._requestContentView = new WebInspector.TextContentView(this._resource.requestData || "", this._resource.requestDataContentType);
-
-        return this._requestContentView;
-    },
-
-    get selectionPathComponents()
-    {
-        var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView)
-            return [];
-
-        if (!this._canShowRequestContentView())
-            return currentContentView.selectionPathComponents;
-
-        // Append the current view's path components to the path component representing the current view.
-        var components = [this._pathComponentForContentView(currentContentView)];
-        return components.concat(currentContentView.selectionPathComponents);
-    },
-
-    shown: function()
-    {
+    shown: function shown() {
         WebInspector.ClusterContentView.prototype.shown.call(this);
 
-        if (this._shownInitialContent)
-            return;
+        if (this._shownInitialContent) return;
 
         this._showContentViewForIdentifier(this._currentContentViewSetting.value);
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         WebInspector.ClusterContentView.prototype.closed.call(this);
 
         this._shownInitialContent = false;
     },
 
-    saveToCookie: function(cookie)
-    {
+    saveToCookie: function saveToCookie(cookie) {
         cookie[WebInspector.ResourceClusterContentView.ContentViewIdentifierCookieKey] = this._currentContentViewSetting.value;
     },
 
-    restoreFromCookie: function(cookie)
-    {
+    restoreFromCookie: function restoreFromCookie(cookie) {
         var contentView = this._showContentViewForIdentifier(cookie[WebInspector.ResourceClusterContentView.ContentViewIdentifierCookieKey]);
-        if (typeof contentView.revealPosition === "function" && "lineNumber" in cookie && "columnNumber" in cookie)
-            contentView.revealPosition(new WebInspector.SourceCodePosition(cookie.lineNumber, cookie.columnNumber));
+        if (typeof contentView.revealPosition === "function" && "lineNumber" in cookie && "columnNumber" in cookie) contentView.revealPosition(new WebInspector.SourceCodePosition(cookie.lineNumber, cookie.columnNumber));
     },
 
-    showRequest: function()
-    {
+    showRequest: function showRequest() {
         this._shownInitialContent = true;
 
         return this._showContentViewForIdentifier(WebInspector.ResourceClusterContentView.RequestIdentifier);
     },
 
-    showResponse: function(positionToReveal, textRangeToSelect, forceUnformatted)
-    {
+    showResponse: function showResponse(positionToReveal, textRangeToSelect, forceUnformatted) {
         this._shownInitialContent = true;
 
         if (!this._resource.finished) {
@@ -167,67 +94,53 @@ WebInspector.ResourceClusterContentView.prototype = {
         }
 
         var responseContentView = this._showContentViewForIdentifier(WebInspector.ResourceClusterContentView.ResponseIdentifier);
-        if (typeof responseContentView.revealPosition === "function")
-            responseContentView.revealPosition(positionToReveal, textRangeToSelect, forceUnformatted);
+        if (typeof responseContentView.revealPosition === "function") responseContentView.revealPosition(positionToReveal, textRangeToSelect, forceUnformatted);
         return responseContentView;
     },
 
     // Private
 
-    _canShowRequestContentView: function()
-    {
+    _canShowRequestContentView: function _canShowRequestContentView() {
         var requestData = this._resource.requestData;
-        if (!requestData)
-            return false;
+        if (!requestData) return false;
 
         var requestDataContentType = this._resource.requestDataContentType;
-        if (requestDataContentType && requestDataContentType.match(/^application\/x-www-form-urlencoded\s*(;.*)?$/i))
-            return false;
+        if (requestDataContentType && requestDataContentType.match(/^application\/x-www-form-urlencoded\s*(;.*)?$/i)) return false;
 
         return true;
     },
 
-    _pathComponentForContentView: function(contentView)
-    {
+    _pathComponentForContentView: function _pathComponentForContentView(contentView) {
         console.assert(contentView);
-        if (!contentView)
-            return null;
-        if (contentView === this._requestContentView)
-            return this._requestPathComponent;
-        if (contentView === this._responseContentView)
-            return this._responsePathComponent;
+        if (!contentView) return null;
+        if (contentView === this._requestContentView) return this._requestPathComponent;
+        if (contentView === this._responseContentView) return this._responsePathComponent;
         console.error("Unknown contentView.");
         return null;
     },
 
-    _identifierForContentView: function(contentView)
-    {
+    _identifierForContentView: function _identifierForContentView(contentView) {
         console.assert(contentView);
-        if (!contentView)
-            return null;
-        if (contentView === this._requestContentView)
-            return WebInspector.ResourceClusterContentView.RequestIdentifier;
-        if (contentView === this._responseContentView)
-            return WebInspector.ResourceClusterContentView.ResponseIdentifier;
+        if (!contentView) return null;
+        if (contentView === this._requestContentView) return WebInspector.ResourceClusterContentView.RequestIdentifier;
+        if (contentView === this._responseContentView) return WebInspector.ResourceClusterContentView.ResponseIdentifier;
         console.error("Unknown contentView.");
         return null;
     },
 
-    _showContentViewForIdentifier: function(identifier)
-    {
+    _showContentViewForIdentifier: function _showContentViewForIdentifier(identifier) {
         var contentViewToShow = null;
 
         switch (identifier) {
-        case WebInspector.ResourceClusterContentView.RequestIdentifier:
-            contentViewToShow = this._canShowRequestContentView() ? this.requestContentView : null;
-            break;
-        case WebInspector.ResourceClusterContentView.ResponseIdentifier:
-            contentViewToShow = this.responseContentView;
-            break;
+            case WebInspector.ResourceClusterContentView.RequestIdentifier:
+                contentViewToShow = this._canShowRequestContentView() ? this.requestContentView : null;
+                break;
+            case WebInspector.ResourceClusterContentView.ResponseIdentifier:
+                contentViewToShow = this.responseContentView;
+                break;
         }
 
-        if (!contentViewToShow)
-            contentViewToShow = this.responseContentView;
+        if (!contentViewToShow) contentViewToShow = this.responseContentView;
 
         console.assert(contentViewToShow);
 
@@ -236,37 +149,98 @@ WebInspector.ResourceClusterContentView.prototype = {
         return this.contentViewContainer.showContentView(contentViewToShow);
     },
 
-    _pathComponentSelected: function(event)
-    {
+    _pathComponentSelected: function _pathComponentSelected(event) {
         this._showContentViewForIdentifier(event.data.pathComponent.representedObject);
     },
 
-    _resourceTypeDidChange: function(event)
-    {
+    _resourceTypeDidChange: function _resourceTypeDidChange(event) {
         // Since resource views are based on the type, we need to make a new content view and tell the container to replace this
         // content view with the new one. Make a new ResourceContentView which will use the new resource type to make the correct
         // concrete ResourceContentView subclass.
 
         var currentResponseContentView = this._responseContentView;
-        if (!currentResponseContentView)
-            return;
+        if (!currentResponseContentView) return;
 
         delete this._responseContentView;
 
         this.contentViewContainer.replaceContentView(currentResponseContentView, this.responseContentView);
     },
 
-    _resourceLoadingDidFinish: function(event)
-    {
+    _resourceLoadingDidFinish: function _resourceLoadingDidFinish(event) {
         if ("_positionToReveal" in this) {
-            if (this._contentViewContainer.currentContentView === this._responseContentView)
-                this._responseContentView.revealPosition(this._positionToReveal, this._textRangeToSelect, this._forceUnformatted);
+            if (this._contentViewContainer.currentContentView === this._responseContentView) this._responseContentView.revealPosition(this._positionToReveal, this._textRangeToSelect, this._forceUnformatted);
 
             delete this._positionToReveal;
             delete this._textRangeToSelect;
             delete this._forceUnformatted;
         }
     }
-};
+}, {
+    resource: { // Public
+
+        get: function () {
+            return this._resource;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    responseContentView: {
+        get: function () {
+            if (this._responseContentView) return this._responseContentView;
+
+            switch (this._resource.type) {
+                case WebInspector.Resource.Type.Document:
+                case WebInspector.Resource.Type.Script:
+                case WebInspector.Resource.Type.Stylesheet:
+                case WebInspector.Resource.Type.XHR:
+                    this._responseContentView = new WebInspector.TextResourceContentView(this._resource);
+                    break;
+
+                case WebInspector.Resource.Type.Image:
+                    this._responseContentView = new WebInspector.ImageResourceContentView(this._resource);
+                    break;
+
+                case WebInspector.Resource.Type.Font:
+                    this._responseContentView = new WebInspector.FontResourceContentView(this._resource);
+                    break;
+
+                default:
+                    this._responseContentView = new WebInspector.GenericResourceContentView(this._resource);
+                    break;
+            }
+
+            return this._responseContentView;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    requestContentView: {
+        get: function () {
+            if (!this._canShowRequestContentView()) return null;
+
+            if (this._requestContentView) return this._requestContentView;
+
+            this._requestContentView = new WebInspector.TextContentView(this._resource.requestData || "", this._resource.requestDataContentType);
+
+            return this._requestContentView;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    selectionPathComponents: {
+        get: function () {
+            var currentContentView = this._contentViewContainer.currentContentView;
+            if (!currentContentView) return [];
+
+            if (!this._canShowRequestContentView()) return currentContentView.selectionPathComponents;
+
+            // Append the current view's path components to the path component representing the current view.
+            var components = [this._pathComponentForContentView(currentContentView)];
+            return components.concat(currentContentView.selectionPathComponents);
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ResourceClusterContentView.prototype.__proto__ = WebInspector.ClusterContentView.prototype;

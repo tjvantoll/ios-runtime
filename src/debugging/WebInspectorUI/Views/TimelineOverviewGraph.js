@@ -23,25 +23,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TimelineOverviewGraph = function(timeline)
-{
+WebInspector.TimelineOverviewGraph = function (timeline) {
     if (this.constructor === WebInspector.TimelineOverviewGraph) {
         // When instantiated directly return an instance of a type-based concrete subclass.
 
         console.assert(timeline && timeline instanceof WebInspector.Timeline);
 
         var timelineType = timeline.type;
-        if (timelineType === WebInspector.TimelineRecord.Type.Network)
-            return new WebInspector.NetworkTimelineOverviewGraph(timeline);
+        if (timelineType === WebInspector.TimelineRecord.Type.Network) return new WebInspector.NetworkTimelineOverviewGraph(timeline);
 
-        if (timelineType === WebInspector.TimelineRecord.Type.Layout)
-            return new WebInspector.LayoutTimelineOverviewGraph(timeline);
+        if (timelineType === WebInspector.TimelineRecord.Type.Layout) return new WebInspector.LayoutTimelineOverviewGraph(timeline);
 
-        if (timelineType === WebInspector.TimelineRecord.Type.Script)
-            return new WebInspector.ScriptTimelineOverviewGraph(timeline);
+        if (timelineType === WebInspector.TimelineRecord.Type.Script) return new WebInspector.ScriptTimelineOverviewGraph(timeline);
 
-        if (timelineType === WebInspector.TimelineRecord.Type.RenderingFrame)
-            return new WebInspector.RenderingFrameTimelineOverviewGraph(timeline);
+        if (timelineType === WebInspector.TimelineRecord.Type.RenderingFrame) return new WebInspector.RenderingFrameTimelineOverviewGraph(timeline);
 
         throw Error("Can't make a graph for an unknown timeline.");
     }
@@ -64,108 +59,22 @@ WebInspector.TimelineOverviewGraph = function(timeline)
 
 WebInspector.TimelineOverviewGraph.StyleClassName = "timeline-overview-graph";
 
-WebInspector.TimelineOverviewGraph.prototype = {
+WebInspector.TimelineOverviewGraph.prototype = Object.defineProperties({
     constructor: WebInspector.TimelineOverviewGraph,
     __proto__: WebInspector.Object.prototype,
 
-    // Public
-
-    get zeroTime()
-    {
-        return this._zeroTime;
-    },
-
-    set zeroTime(x)
-    {
-        if (this._zeroTime === x)
-            return;
-
-        this._zeroTime = x || 0;
-
-        this.needsLayout();
-    },
-
-    get startTime()
-    {
-        return this._startTime;
-    },
-
-    set startTime(x)
-    {
-        if (this._startTime === x)
-            return;
-
-        this._startTime = x || 0;
-
-        this.needsLayout();
-    },
-
-    get endTime()
-    {
-        return this._endTime;
-    },
-
-    set endTime(x)
-    {
-        if (this._endTime === x)
-            return;
-
-        this._endTime = x || 0;
-
-        this.needsLayout();
-    },
-
-    get currentTime()
-    {
-        return this._currentTime;
-    },
-
-    set currentTime(x)
-    {
-        if (this._currentTime === x)
-            return;
-
-        var oldCurrentTime = this._currentTime;
-
-        this._currentTime = x || 0;
-
-        if ((this._startTime <= oldCurrentTime && oldCurrentTime <= this._endTime) || (this._startTime <= this._currentTime && this._currentTime <= this._endTime))
-            this.needsLayout();
-    },
-
-    get timelineOverview()
-    {
-        return this._timelineOverview;
-    },
-
-    set timelineOverview(x)
-    {
-        this._timelineOverview = x;
-    },
-
-    get visible()
-    {
-        return this._visible;
-    },
-
-    shown: function()
-    {
+    shown: function shown() {
         this._visible = true;
         this.updateLayout();
     },
 
-    hidden: function()
-    {
+    hidden: function hidden() {
         this._visible = false;
     },
 
-    reset: function()
-    {
-        // Implemented by sub-classes if needed.
-    },
+    reset: function reset() {},
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         if (this._scheduledLayoutUpdateIdentifier) {
             cancelAnimationFrame(this._scheduledLayoutUpdateIdentifier);
             delete this._scheduledLayoutUpdateIdentifier;
@@ -174,23 +83,97 @@ WebInspector.TimelineOverviewGraph.prototype = {
         // Implemented by sub-classes if needed.
     },
 
-    updateLayoutIfNeeded: function()
-    {
-        if (!this._scheduledLayoutUpdateIdentifier)
-            return;
+    updateLayoutIfNeeded: function updateLayoutIfNeeded() {
+        if (!this._scheduledLayoutUpdateIdentifier) return;
         this.updateLayout();
     },
 
     // Protected
 
-    needsLayout: function()
-    {
-        if (!this._visible)
-            return;
+    needsLayout: function needsLayout() {
+        if (!this._visible) return;
 
-        if (this._scheduledLayoutUpdateIdentifier)
-            return;
+        if (this._scheduledLayoutUpdateIdentifier) return;
 
         this._scheduledLayoutUpdateIdentifier = requestAnimationFrame(this.updateLayout.bind(this));
     }
-};
+}, {
+    zeroTime: { // Public
+
+        get: function () {
+            return this._zeroTime;
+        },
+        set: function (x) {
+            if (this._zeroTime === x) return;
+
+            this._zeroTime = x || 0;
+
+            this.needsLayout();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    startTime: {
+        get: function () {
+            return this._startTime;
+        },
+        set: function (x) {
+            if (this._startTime === x) return;
+
+            this._startTime = x || 0;
+
+            this.needsLayout();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    endTime: {
+        get: function () {
+            return this._endTime;
+        },
+        set: function (x) {
+            if (this._endTime === x) return;
+
+            this._endTime = x || 0;
+
+            this.needsLayout();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    currentTime: {
+        get: function () {
+            return this._currentTime;
+        },
+        set: function (x) {
+            if (this._currentTime === x) return;
+
+            var oldCurrentTime = this._currentTime;
+
+            this._currentTime = x || 0;
+
+            if (this._startTime <= oldCurrentTime && oldCurrentTime <= this._endTime || this._startTime <= this._currentTime && this._currentTime <= this._endTime) this.needsLayout();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    timelineOverview: {
+        get: function () {
+            return this._timelineOverview;
+        },
+        set: function (x) {
+            this._timelineOverview = x;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    visible: {
+        get: function () {
+            return this._visible;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
+
+// Implemented by sub-classes if needed.

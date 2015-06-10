@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.RenderingFrameTimelineOverviewGraph = function(timeline)
-{
+WebInspector.RenderingFrameTimelineOverviewGraph = function (timeline) {
     WebInspector.TimelineOverviewGraph.call(this, timeline);
 
     this.element.classList.add(WebInspector.RenderingFrameTimelineOverviewGraph.StyleClassName);
@@ -34,7 +33,7 @@ WebInspector.RenderingFrameTimelineOverviewGraph = function(timeline)
 
     this._timelineRecordFrames = [];
     this._graphHeightSeconds = NaN;
-    this._framesPerSecondDividerMap = new Map;
+    this._framesPerSecondDividerMap = new Map();
 
     this.reset();
 };
@@ -43,29 +42,11 @@ WebInspector.RenderingFrameTimelineOverviewGraph.StyleClassName = "rendering-fra
 WebInspector.RenderingFrameTimelineOverviewGraph.MaximumGraphHeightSeconds = 0.037;
 WebInspector.RenderingFrameTimelineOverviewGraph.MinimumGraphHeightSeconds = 0.0185;
 
-WebInspector.RenderingFrameTimelineOverviewGraph.prototype = {
+WebInspector.RenderingFrameTimelineOverviewGraph.prototype = Object.defineProperties({
     constructor: WebInspector.RenderingFrameTimelineOverviewGraph,
     __proto__: WebInspector.TimelineOverviewGraph.prototype,
 
-    // Public
-
-    get graphHeightSeconds()
-    {
-        if (!isNaN(this._graphHeightSeconds))
-            return this._graphHeightSeconds;
-
-        var maximumFrameDuration = this._renderingFrameTimeline.records.reduce(function(previousValue, currentValue) {
-            return Math.max(previousValue, currentValue.duration);
-        }, 0);
-
-        this._graphHeightSeconds = maximumFrameDuration * 1.1;  // Add 10% margin above frames.
-        this._graphHeightSeconds = Math.min(this._graphHeightSeconds, WebInspector.RenderingFrameTimelineOverviewGraph.MaximumGraphHeightSeconds);
-        this._graphHeightSeconds = Math.max(this._graphHeightSeconds, WebInspector.RenderingFrameTimelineOverviewGraph.MinimumGraphHeightSeconds);
-        return this._graphHeightSeconds;
-    },
-
-    reset()
-    {
+    reset: function reset() {
         WebInspector.TimelineOverviewGraph.prototype.reset.call(this);
 
         this.element.removeChildren();
@@ -73,12 +54,10 @@ WebInspector.RenderingFrameTimelineOverviewGraph.prototype = {
         this._framesPerSecondDividerMap.clear();
     },
 
-    updateLayout()
-    {
+    updateLayout: function updateLayout() {
         WebInspector.TimelineOverviewGraph.prototype.updateLayout.call(this);
 
-        if (!this._renderingFrameTimeline.records.length)
-            return;
+        if (!this._renderingFrameTimeline.records.length) return;
 
         var records = this._renderingFrameTimeline.records;
         var startIndex = Math.floor(this.startTime);
@@ -88,14 +67,10 @@ WebInspector.RenderingFrameTimelineOverviewGraph.prototype = {
         for (var i = startIndex; i <= endIndex; ++i) {
             var record = records[i];
             var timelineRecordFrame = this._timelineRecordFrames[recordFrameIndex];
-            if (!timelineRecordFrame)
-                timelineRecordFrame = this._timelineRecordFrames[recordFrameIndex] = new WebInspector.TimelineRecordFrame(this, record);
-            else
-                timelineRecordFrame.record = record;
+            if (!timelineRecordFrame) timelineRecordFrame = this._timelineRecordFrames[recordFrameIndex] = new WebInspector.TimelineRecordFrame(this, record);else timelineRecordFrame.record = record;
 
             timelineRecordFrame.refresh(this);
-            if (!timelineRecordFrame.element.parentNode)
-                this.element.appendChild(timelineRecordFrame.element);
+            if (!timelineRecordFrame.element.parentNode) this.element.appendChild(timelineRecordFrame.element);
 
             ++recordFrameIndex;
         }
@@ -111,26 +86,21 @@ WebInspector.RenderingFrameTimelineOverviewGraph.prototype = {
 
     // Private
 
-    _timelineRecordAdded(event)
-    {
+    _timelineRecordAdded: function _timelineRecordAdded(event) {
         this._graphHeightSeconds = NaN;
 
         this.needsLayout();
     },
 
-    _updateDividers()
-    {
-        if (this.graphHeightSeconds === 0)
-            return;
+    _updateDividers: function _updateDividers() {
+        if (this.graphHeightSeconds === 0) return;
 
         var overviewGraphHeight = this.element.offsetHeight;
 
-        function createDividerAtPosition(framesPerSecond)
-        {
+        function createDividerAtPosition(framesPerSecond) {
             var secondsPerFrame = 1 / framesPerSecond;
             var dividerTop = 1 - secondsPerFrame / this.graphHeightSeconds;
-            if (dividerTop < 0.01 || dividerTop >= 1)
-                return;
+            if (dividerTop < 0.01 || dividerTop >= 1) return;
 
             var divider = this._framesPerSecondDividerMap.get(framesPerSecond);
             if (!divider) {
@@ -154,13 +124,29 @@ WebInspector.RenderingFrameTimelineOverviewGraph.prototype = {
         createDividerAtPosition.call(this, 30);
     },
 
-    _updateElementPosition(element, newPosition, property)
-    {
+    _updateElementPosition: function _updateElementPosition(element, newPosition, property) {
         newPosition *= 100;
         newPosition = newPosition.toFixed(2);
 
         var currentPosition = parseFloat(element.style[property]).toFixed(2);
-        if (currentPosition !== newPosition)
-            element.style[property] = newPosition + "%";
+        if (currentPosition !== newPosition) element.style[property] = newPosition + "%";
     }
-};
+}, {
+    graphHeightSeconds: { // Public
+
+        get: function () {
+            if (!isNaN(this._graphHeightSeconds)) return this._graphHeightSeconds;
+
+            var maximumFrameDuration = this._renderingFrameTimeline.records.reduce(function (previousValue, currentValue) {
+                return Math.max(previousValue, currentValue.duration);
+            }, 0);
+
+            this._graphHeightSeconds = maximumFrameDuration * 1.1; // Add 10% margin above frames.
+            this._graphHeightSeconds = Math.min(this._graphHeightSeconds, WebInspector.RenderingFrameTimelineOverviewGraph.MaximumGraphHeightSeconds);
+            this._graphHeightSeconds = Math.max(this._graphHeightSeconds, WebInspector.RenderingFrameTimelineOverviewGraph.MinimumGraphHeightSeconds);
+            return this._graphHeightSeconds;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

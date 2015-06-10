@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.LayoutTimelineDataGridNode = function(layoutTimelineRecord, baseStartTime)
-{
+WebInspector.LayoutTimelineDataGridNode = function (layoutTimelineRecord, baseStartTime) {
     WebInspector.TimelineDataGridNode.call(this, false, null);
 
     this._record = layoutTimelineRecord;
@@ -37,50 +36,55 @@ WebInspector.Object.deprecatedAddConstructorFunctions(WebInspector.LayoutTimelin
 WebInspector.LayoutTimelineDataGridNode.IconStyleClassName = "icon";
 WebInspector.LayoutTimelineDataGridNode.SubtitleStyleClassName = "subtitle";
 
-WebInspector.LayoutTimelineDataGridNode.prototype = {
+WebInspector.LayoutTimelineDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.LayoutTimelineDataGridNode,
     __proto__: WebInspector.TimelineDataGridNode.prototype,
 
-    // Public
-
-    get record()
-    {
-        return this._record;
-    },
-
-    get records()
-    {
-        return [this._record];
-    },
-
-    get data()
-    {
-        return {eventType: this._record.eventType, width: this._record.width, height: this._record.height, area: this._record.width * this._record.height, startTime: this._record.startTime, totalTime: this._record.duration, location: this._record.initiatorCallFrame};
-    },
-
-    createCellContent: function(columnIdentifier, cell)
-    {
-        const emptyValuePlaceholderString = "\u2014";
+    createCellContent: function createCellContent(columnIdentifier, cell) {
+        var emptyValuePlaceholderString = "—";
         var value = this.data[columnIdentifier];
 
         switch (columnIdentifier) {
-        case "eventType":
-            return WebInspector.LayoutTimelineRecord.displayNameForEventType(value);
+            case "eventType":
+                return WebInspector.LayoutTimelineRecord.displayNameForEventType(value);
 
-        case "width":
-        case "height":
-            return isNaN(value) ? emptyValuePlaceholderString : WebInspector.UIString("%fpx").format(value);
+            case "width":
+            case "height":
+                return isNaN(value) ? emptyValuePlaceholderString : WebInspector.UIString("%fpx").format(value);
 
-        case "area":
-            return isNaN(value) ? emptyValuePlaceholderString : WebInspector.UIString("%fpx²").format(value);
+            case "area":
+                return isNaN(value) ? emptyValuePlaceholderString : WebInspector.UIString("%fpx²").format(value);
 
-        case "startTime":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value - this._baseStartTime, true);
+            case "startTime":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value - this._baseStartTime, true);
 
-        case "totalTime":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
+            case "totalTime":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
         }
 
         return WebInspector.TimelineDataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
     }
-};
+}, {
+    record: { // Public
+
+        get: function () {
+            return this._record;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    records: {
+        get: function () {
+            return [this._record];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            return { eventType: this._record.eventType, width: this._record.width, height: this._record.height, area: this._record.width * this._record.height, startTime: this._record.startTime, totalTime: this._record.duration, location: this._record.initiatorCallFrame };
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

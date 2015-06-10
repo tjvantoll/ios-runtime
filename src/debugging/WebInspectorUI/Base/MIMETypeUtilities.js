@@ -23,22 +23,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.fileExtensionForURL = function(url)
-{
+WebInspector.fileExtensionForURL = function (url) {
     var lastPathComponent = parseURL(url).lastPathComponent;
-    if (!lastPathComponent)
-        return "";
+    if (!lastPathComponent) return "";
 
     var index = lastPathComponent.indexOf(".");
-    if (index === -1)
-        return "";
+    if (index === -1) return "";
 
     return lastPathComponent.substr(index + 1);
 };
 
-WebInspector.mimeTypeForFileExtension = function(extension)
-{
-    const extensionToMIMEType = {
+WebInspector.mimeTypeForFileExtension = function (extension) {
+    var extensionToMIMEType = {
         // Document types.
         "html": "text/html",
         "xhtml": "application/xhtml+xml",

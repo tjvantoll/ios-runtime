@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ControlToolbarItem = function(identifier, toolTip, image, imageWidth, imageHeight)
-{
+WebInspector.ControlToolbarItem = function (identifier, toolTip, image, imageWidth, imageHeight) {
     WebInspector.ButtonNavigationItem.call(this, identifier, toolTip, image, imageWidth, imageHeight, false);
 };
 
@@ -35,7 +34,7 @@ WebInspector.ControlToolbarItem.prototype = {
 
     // Private
 
-    _additionalClassNames: [WebInspector.ControlToolbarItem.StyleClassName],
+    _additionalClassNames: [WebInspector.ControlToolbarItem.StyleClassName]
 };
 
 WebInspector.ControlToolbarItem.prototype.__proto__ = WebInspector.ButtonNavigationItem.prototype;

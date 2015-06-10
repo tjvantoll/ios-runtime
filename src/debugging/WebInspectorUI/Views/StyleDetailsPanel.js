@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.StyleDetailsPanel = class StyleDetailsPanel extends WebInspector.Object
-{
-    constructor(className, identifier, label)
-    {
-        super();
+WebInspector.StyleDetailsPanel = (function (_WebInspector$Object) {
+    function StyleDetailsPanel(className, identifier, label) {
+        _classCallCheck(this, StyleDetailsPanel);
+
+        _get(Object.getPrototypeOf(StyleDetailsPanel.prototype), "constructor", this).call(this);
 
         this._element = document.createElement("div");
         this._element.className = className;
@@ -41,120 +49,118 @@ WebInspector.StyleDetailsPanel = class StyleDetailsPanel extends WebInspector.Ob
         this._visible = false;
     }
 
-    // Public
+    _inherits(StyleDetailsPanel, _WebInspector$Object);
 
-    get element()
-    {
-        return this._element;
-    }
+    _createClass(StyleDetailsPanel, [{
+        key: "shown",
+        value: function shown() {
+            if (this._visible) return;
 
-    get navigationItem()
-    {
-        return this._navigationItem;
-    }
+            this._visible = true;
 
-    get nodeStyles()
-    {
-        return this._nodeStyles;
-    }
+            this._refreshNodeStyles();
+        }
+    }, {
+        key: "hidden",
+        value: function hidden() {
+            this._visible = false;
+        }
+    }, {
+        key: "widthDidChange",
+        value: function widthDidChange() {}
+    }, {
+        key: "markAsNeedsRefresh",
+        value: function markAsNeedsRefresh(domNode) {
+            console.assert(domNode);
+            if (!domNode) return;
 
-    shown()
-    {
-        if (this._visible)
-            return;
+            if (!this._nodeStyles || this._nodeStyles.node !== domNode) {
+                if (this._nodeStyles) {
+                    this._nodeStyles.removeEventListener(WebInspector.DOMNodeStyles.Event.Refreshed, this._nodeStylesRefreshed, this);
+                    this._nodeStyles.removeEventListener(WebInspector.DOMNodeStyles.Event.NeedsRefresh, this._nodeStylesNeedsRefreshed, this);
+                }
 
-        this._visible = true;
+                this._nodeStyles = WebInspector.cssStyleManager.stylesForNode(domNode);
 
-        this._refreshNodeStyles();
-    }
+                console.assert(this._nodeStyles);
+                if (!this._nodeStyles) return;
 
-    hidden()
-    {
-        this._visible = false;
-    }
+                this._nodeStyles.addEventListener(WebInspector.DOMNodeStyles.Event.Refreshed, this._nodeStylesRefreshed, this);
+                this._nodeStyles.addEventListener(WebInspector.DOMNodeStyles.Event.NeedsRefresh, this._nodeStylesNeedsRefreshed, this);
 
-    widthDidChange()
-    {
-        // Implemented by subclasses.
-    }
-
-    markAsNeedsRefresh(domNode)
-    {
-        console.assert(domNode);
-        if (!domNode)
-            return;
-
-        if (!this._nodeStyles || this._nodeStyles.node !== domNode) {
-            if (this._nodeStyles) {
-                this._nodeStyles.removeEventListener(WebInspector.DOMNodeStyles.Event.Refreshed, this._nodeStylesRefreshed, this);
-                this._nodeStyles.removeEventListener(WebInspector.DOMNodeStyles.Event.NeedsRefresh, this._nodeStylesNeedsRefreshed, this);
+                this._forceSignificantChange = true;
             }
 
-            this._nodeStyles = WebInspector.cssStyleManager.stylesForNode(domNode);
-
-            console.assert(this._nodeStyles);
-            if (!this._nodeStyles)
-                return;
-
-            this._nodeStyles.addEventListener(WebInspector.DOMNodeStyles.Event.Refreshed, this._nodeStylesRefreshed, this);
-            this._nodeStyles.addEventListener(WebInspector.DOMNodeStyles.Event.NeedsRefresh, this._nodeStylesNeedsRefreshed, this);
-
-            this._forceSignificantChange = true;
+            if (this._visible) this._refreshNodeStyles();
         }
+    }, {
+        key: "refresh",
+        value: function refresh(significantChange) {}
+    }, {
+        key: "_refreshNodeStyles",
+        value: function _refreshNodeStyles() {
+            if (!this._nodeStyles) return;
+            this._nodeStyles.refresh();
+        }
+    }, {
+        key: "_refreshPreservingScrollPosition",
+        value: function _refreshPreservingScrollPosition(significantChange) {
+            significantChange = this._forceSignificantChange || significantChange || false;
+            delete this._forceSignificantChange;
 
-        if (this._visible)
-            this._refreshNodeStyles();
-    }
+            var previousScrollTop = this._initialScrollOffset;
 
-    refresh(significantChange)
-    {
-        // Implemented by subclasses.
-    }
+            // Only remember the scroll position if the previous node is the same as this one.
+            if (this.element.parentNode && this._previousRefreshNodeIdentifier === this._nodeStyles.node.id) previousScrollTop = this.element.parentNode.scrollTop;
 
-    // Private
+            this.refresh(significantChange);
 
-    get _initialScrollOffset()
-    {
-        if (!WebInspector.cssStyleManager.canForcePseudoClasses())
-            return 0;
-        return this.nodeStyles.node.enabledPseudoClasses.length ? 0 : WebInspector.CSSStyleDetailsSidebarPanel.NoForcedPseudoClassesScrollOffset;
-    }
+            this._previousRefreshNodeIdentifier = this._nodeStyles.node.id;
 
-    _refreshNodeStyles()
-    {
-        if (!this._nodeStyles)
-            return;
-        this._nodeStyles.refresh();
-    }
+            if (this.element.parentNode) this.element.parentNode.scrollTop = previousScrollTop;
+        }
+    }, {
+        key: "_nodeStylesRefreshed",
+        value: function _nodeStylesRefreshed(event) {
+            if (this._visible) this._refreshPreservingScrollPosition(event.data.significantChange);
+        }
+    }, {
+        key: "_nodeStylesNeedsRefreshed",
+        value: function _nodeStylesNeedsRefreshed(event) {
+            if (this._visible) this._refreshNodeStyles();
+        }
+    }, {
+        key: "element",
 
-    _refreshPreservingScrollPosition(significantChange)
-    {
-        significantChange = this._forceSignificantChange || significantChange || false;
-        delete this._forceSignificantChange;
+        // Public
 
-        var previousScrollTop = this._initialScrollOffset;
+        get: function () {
+            return this._element;
+        }
+    }, {
+        key: "navigationItem",
+        get: function () {
+            return this._navigationItem;
+        }
+    }, {
+        key: "nodeStyles",
+        get: function () {
+            return this._nodeStyles;
+        }
+    }, {
+        key: "_initialScrollOffset",
 
-        // Only remember the scroll position if the previous node is the same as this one.
-        if (this.element.parentNode && this._previousRefreshNodeIdentifier === this._nodeStyles.node.id)
-            previousScrollTop = this.element.parentNode.scrollTop;
+        // Private
 
-        this.refresh(significantChange);
+        get: function () {
+            if (!WebInspector.cssStyleManager.canForcePseudoClasses()) return 0;
+            return this.nodeStyles.node.enabledPseudoClasses.length ? 0 : WebInspector.CSSStyleDetailsSidebarPanel.NoForcedPseudoClassesScrollOffset;
+        }
+    }]);
 
-        this._previousRefreshNodeIdentifier = this._nodeStyles.node.id;
+    return StyleDetailsPanel;
+})(WebInspector.Object);
 
-        if (this.element.parentNode)
-            this.element.parentNode.scrollTop = previousScrollTop;
-    }
+// Implemented by subclasses.
 
-    _nodeStylesRefreshed(event)
-    {
-        if (this._visible)
-            this._refreshPreservingScrollPosition(event.data.significantChange);
-    }
-
-    _nodeStylesNeedsRefreshed(event)
-    {
-        if (this._visible)
-            this._refreshNodeStyles();
-    }
-};
+// Implemented by subclasses.

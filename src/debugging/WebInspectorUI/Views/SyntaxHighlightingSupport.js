@@ -25,12 +25,10 @@
 
 WebInspector.SyntaxHighlightedStyleClassName = "syntax-highlighted";
 
-WebInspector.syntaxHighlightStringAsDocumentFragment = function(string, mimeType, baseURL)
-{
+WebInspector.syntaxHighlightStringAsDocumentFragment = function (string, mimeType, baseURL) {
     var resultFragment = document.createDocumentFragment();
 
-    function appendText(text, style)
-    {
+    function appendText(text, style) {
         if (!style) {
             resultFragment.appendChild(document.createTextNode(text));
             return;

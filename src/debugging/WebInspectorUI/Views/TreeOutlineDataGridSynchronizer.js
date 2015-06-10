@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TreeOutlineDataGridSynchronizer = class TreeOutlineDataGridSynchronizer extends WebInspector.Object
-{
-    constructor(treeOutline, dataGrid, delegate)
-    {
-        super();
+WebInspector.TreeOutlineDataGridSynchronizer = (function (_WebInspector$Object) {
+    function TreeOutlineDataGridSynchronizer(treeOutline, dataGrid, delegate) {
+        _classCallCheck(this, TreeOutlineDataGridSynchronizer);
+
+        _get(Object.getPrototypeOf(TreeOutlineDataGridSynchronizer.prototype), "constructor", this).call(this);
 
         this._treeOutline = treeOutline;
         this._dataGrid = dataGrid;
@@ -51,244 +59,222 @@ WebInspector.TreeOutlineDataGridSynchronizer = class TreeOutlineDataGridSynchron
         var existingOnHidden = treeOutline.onhidden;
         var existingOnSelect = treeOutline.onselect;
 
-        treeOutline.onadd = function(element) {
+        treeOutline.onadd = (function (element) {
             this._treeElementAdded(element);
-            if (existingOnAdd)
-                existingOnAdd.call(treeOutline, element);
-        }.bind(this);
+            if (existingOnAdd) existingOnAdd.call(treeOutline, element);
+        }).bind(this);
 
-        treeOutline.onremove = function(element) {
+        treeOutline.onremove = (function (element) {
             this._treeElementRemoved(element);
-            if (existingOnRemove)
-                existingOnRemove.call(treeOutline, element);
-        }.bind(this);
+            if (existingOnRemove) existingOnRemove.call(treeOutline, element);
+        }).bind(this);
 
-        treeOutline.onexpand = function(element) {
+        treeOutline.onexpand = (function (element) {
             this._treeElementExpanded(element);
-            if (existingOnExpand)
-                existingOnExpand.call(treeOutline, element);
-        }.bind(this);
+            if (existingOnExpand) existingOnExpand.call(treeOutline, element);
+        }).bind(this);
 
-        treeOutline.oncollapse = function(element) {
+        treeOutline.oncollapse = (function (element) {
             this._treeElementCollapsed(element);
-            if (existingOnCollapse)
-                existingOnCollapse.call(treeOutline, element);
-        }.bind(this);
+            if (existingOnCollapse) existingOnCollapse.call(treeOutline, element);
+        }).bind(this);
 
-        treeOutline.onhidden = function(element, hidden) {
+        treeOutline.onhidden = (function (element, hidden) {
             this._treeElementHiddenChanged(element, hidden);
-            if (existingOnHidden)
-                existingOnHidden.call(treeOutline, element, hidden);
-        }.bind(this);
+            if (existingOnHidden) existingOnHidden.call(treeOutline, element, hidden);
+        }).bind(this);
 
-        treeOutline.onselect = function(element, selectedByUser) {
+        treeOutline.onselect = (function (element, selectedByUser) {
             this._treeElementSelected(element, selectedByUser);
-            if (existingOnSelect)
-                existingOnSelect.call(treeOutline, element, selectedByUser);
-        }.bind(this);
+            if (existingOnSelect) existingOnSelect.call(treeOutline, element, selectedByUser);
+        }).bind(this);
     }
 
-    // Public
+    _inherits(TreeOutlineDataGridSynchronizer, _WebInspector$Object);
 
-    get treeOutline()
-    {
-        return this._treeOutline;
-    }
+    _createClass(TreeOutlineDataGridSynchronizer, [{
+        key: "associate",
+        value: function associate(treeElement, dataGridNode) {
+            console.assert(treeElement);
+            console.assert(dataGridNode);
 
-    get dataGrid()
-    {
-        return this._dataGrid;
-    }
-
-    get delegate()
-    {
-        return this._delegate;
-    }
-
-    get enabled()
-    {
-        return this._enabled;
-    }
-
-    set enabled(x)
-    {
-        this._enabled = x || false;
-    }
-
-    associate(treeElement, dataGridNode)
-    {
-        console.assert(treeElement);
-        console.assert(dataGridNode);
-
-        treeElement.__dataGridNode = dataGridNode;
-        dataGridNode.__treeElement = treeElement;
-    }
-
-    synchronize()
-    {
-        this._dataGrid.scrollContainer.scrollTop = this._treeOutline.element.parentNode.scrollTop;
-        if (this._treeOutline.selectedTreeElement)
-            this._treeOutline.selectedTreeElement.__dataGridNode.select(true);
-        else if (this._dataGrid.selectedNode)
-            this._dataGrid.selectedNode.deselect(true);
-    }
-
-    treeElementForDataGridNode(dataGridNode)
-    {
-        return dataGridNode.__treeElement || null;
-    }
-
-    dataGridNodeForTreeElement(treeElement)
-    {
-        if (treeElement.__dataGridNode)
-            return treeElement.__dataGridNode;
-
-        if (typeof this._delegate.dataGridNodeForTreeElement === "function") {
-            var dataGridNode = this._delegate.dataGridNodeForTreeElement(treeElement);
-            if (dataGridNode)
-                this.associate(treeElement, dataGridNode);
-            return dataGridNode;
+            treeElement.__dataGridNode = dataGridNode;
+            dataGridNode.__treeElement = treeElement;
         }
-
-        return null;
-    }
-
-    // Private
-
-    _treeOutlineScrolled(event)
-    {
-        if (!this._enabled)
-            return;
-
-        if (this._ignoreNextTreeOutlineScrollEvent) {
-            delete this._ignoreNextTreeOutlineScrollEvent;
-            return;
+    }, {
+        key: "synchronize",
+        value: function synchronize() {
+            this._dataGrid.scrollContainer.scrollTop = this._treeOutline.element.parentNode.scrollTop;
+            if (this._treeOutline.selectedTreeElement) this._treeOutline.selectedTreeElement.__dataGridNode.select(true);else if (this._dataGrid.selectedNode) this._dataGrid.selectedNode.deselect(true);
         }
-
-        this._ignoreNextDataGridScrollEvent = true;
-        this._dataGrid.scrollContainer.scrollTop = this._treeOutline.element.parentNode.scrollTop;
-    }
-
-    _dataGridScrolled(event)
-    {
-        if (!this._enabled)
-            return;
-
-        if (this._ignoreNextDataGridScrollEvent) {
-            delete this._ignoreNextDataGridScrollEvent;
-            return;
+    }, {
+        key: "treeElementForDataGridNode",
+        value: function treeElementForDataGridNode(dataGridNode) {
+            return dataGridNode.__treeElement || null;
         }
+    }, {
+        key: "dataGridNodeForTreeElement",
+        value: function dataGridNodeForTreeElement(treeElement) {
+            if (treeElement.__dataGridNode) return treeElement.__dataGridNode;
 
-        this._ignoreNextTreeOutlineScrollEvent = true;
-        this._treeOutline.element.parentNode.scrollTop = this._dataGrid.scrollContainer.scrollTop;
-    }
+            if (typeof this._delegate.dataGridNodeForTreeElement === "function") {
+                var dataGridNode = this._delegate.dataGridNodeForTreeElement(treeElement);
+                if (dataGridNode) this.associate(treeElement, dataGridNode);
+                return dataGridNode;
+            }
 
-    _dataGridNodeSelected(event)
-    {
-        if (!this._enabled)
-            return;
+            return null;
+        }
+    }, {
+        key: "_treeOutlineScrolled",
 
-        var dataGridNode = this._dataGrid.selectedNode;
-        if (dataGridNode)
-            dataGridNode.__treeElement.select(true, true, true, true);
-    }
+        // Private
 
-    _dataGridNodeExpanded(event)
-    {
-        if (!this._enabled)
-            return;
+        value: function _treeOutlineScrolled(event) {
+            if (!this._enabled) return;
 
-        var dataGridNode = event.data.dataGridNode;
-        console.assert(dataGridNode);
+            if (this._ignoreNextTreeOutlineScrollEvent) {
+                delete this._ignoreNextTreeOutlineScrollEvent;
+                return;
+            }
 
-        if (!dataGridNode.__treeElement.expanded)
-            dataGridNode.__treeElement.expand();
-    }
+            this._ignoreNextDataGridScrollEvent = true;
+            this._dataGrid.scrollContainer.scrollTop = this._treeOutline.element.parentNode.scrollTop;
+        }
+    }, {
+        key: "_dataGridScrolled",
+        value: function _dataGridScrolled(event) {
+            if (!this._enabled) return;
 
-    _dataGridNodeCollapsed(event)
-    {
-        if (!this._enabled)
-            return;
+            if (this._ignoreNextDataGridScrollEvent) {
+                delete this._ignoreNextDataGridScrollEvent;
+                return;
+            }
 
-        var dataGridNode = event.data.dataGridNode;
-        console.assert(dataGridNode);
+            this._ignoreNextTreeOutlineScrollEvent = true;
+            this._treeOutline.element.parentNode.scrollTop = this._dataGrid.scrollContainer.scrollTop;
+        }
+    }, {
+        key: "_dataGridNodeSelected",
+        value: function _dataGridNodeSelected(event) {
+            if (!this._enabled) return;
 
-        if (dataGridNode.__treeElement.expanded)
-            dataGridNode.__treeElement.collapse();
-    }
+            var dataGridNode = this._dataGrid.selectedNode;
+            if (dataGridNode) dataGridNode.__treeElement.select(true, true, true, true);
+        }
+    }, {
+        key: "_dataGridNodeExpanded",
+        value: function _dataGridNodeExpanded(event) {
+            if (!this._enabled) return;
 
-    _treeElementSelected(treeElement, selectedByUser)
-    {
-        if (!this._enabled)
-            return;
+            var dataGridNode = event.data.dataGridNode;
+            console.assert(dataGridNode);
 
-        var dataGridNode = treeElement.__dataGridNode;
-        console.assert(dataGridNode);
+            if (!dataGridNode.__treeElement.expanded) dataGridNode.__treeElement.expand();
+        }
+    }, {
+        key: "_dataGridNodeCollapsed",
+        value: function _dataGridNodeCollapsed(event) {
+            if (!this._enabled) return;
 
-        dataGridNode.select(true);
-    }
+            var dataGridNode = event.data.dataGridNode;
+            console.assert(dataGridNode);
 
-    _treeElementAdded(treeElement)
-    {
-        if (!this._enabled)
-            return;
+            if (dataGridNode.__treeElement.expanded) dataGridNode.__treeElement.collapse();
+        }
+    }, {
+        key: "_treeElementSelected",
+        value: function _treeElementSelected(treeElement, selectedByUser) {
+            if (!this._enabled) return;
 
-        var dataGridNode = this.dataGridNodeForTreeElement(treeElement);
-        console.assert(dataGridNode);
+            var dataGridNode = treeElement.__dataGridNode;
+            console.assert(dataGridNode);
 
-        var parentDataGridNode = treeElement.parent.__dataGridNode;
-        console.assert(dataGridNode);
+            dataGridNode.select(true);
+        }
+    }, {
+        key: "_treeElementAdded",
+        value: function _treeElementAdded(treeElement) {
+            if (!this._enabled) return;
 
-        var childIndex = treeElement.parent.children.indexOf(treeElement);
-        console.assert(childIndex !== -1);
+            var dataGridNode = this.dataGridNodeForTreeElement(treeElement);
+            console.assert(dataGridNode);
 
-        parentDataGridNode.insertChild(dataGridNode, childIndex);
-    }
+            var parentDataGridNode = treeElement.parent.__dataGridNode;
+            console.assert(dataGridNode);
 
-    _treeElementRemoved(treeElement)
-    {
-        if (!this._enabled)
-            return;
+            var childIndex = treeElement.parent.children.indexOf(treeElement);
+            console.assert(childIndex !== -1);
 
-        var dataGridNode = treeElement.__dataGridNode;
-        console.assert(dataGridNode);
+            parentDataGridNode.insertChild(dataGridNode, childIndex);
+        }
+    }, {
+        key: "_treeElementRemoved",
+        value: function _treeElementRemoved(treeElement) {
+            if (!this._enabled) return;
 
-        if (dataGridNode.parent)
-            dataGridNode.parent.removeChild(dataGridNode);
-    }
+            var dataGridNode = treeElement.__dataGridNode;
+            console.assert(dataGridNode);
 
-    _treeElementExpanded(treeElement)
-    {
-        if (!this._enabled)
-            return;
+            if (dataGridNode.parent) dataGridNode.parent.removeChild(dataGridNode);
+        }
+    }, {
+        key: "_treeElementExpanded",
+        value: function _treeElementExpanded(treeElement) {
+            if (!this._enabled) return;
 
-        var dataGridNode = treeElement.__dataGridNode;
-        console.assert(dataGridNode);
+            var dataGridNode = treeElement.__dataGridNode;
+            console.assert(dataGridNode);
 
-        if (!dataGridNode.expanded)
-            dataGridNode.expand();
-    }
+            if (!dataGridNode.expanded) dataGridNode.expand();
+        }
+    }, {
+        key: "_treeElementCollapsed",
+        value: function _treeElementCollapsed(treeElement) {
+            if (!this._enabled) return;
 
-    _treeElementCollapsed(treeElement)
-    {
-        if (!this._enabled)
-            return;
+            var dataGridNode = treeElement.__dataGridNode;
+            console.assert(dataGridNode);
 
-        var dataGridNode = treeElement.__dataGridNode;
-        console.assert(dataGridNode);
+            if (dataGridNode.expanded) dataGridNode.collapse();
+        }
+    }, {
+        key: "_treeElementHiddenChanged",
+        value: function _treeElementHiddenChanged(treeElement, hidden) {
+            if (!this._enabled) return;
 
-        if (dataGridNode.expanded)
-            dataGridNode.collapse();
-    }
+            var dataGridNode = treeElement.__dataGridNode;
+            console.assert(dataGridNode);
 
-    _treeElementHiddenChanged(treeElement, hidden)
-    {
-        if (!this._enabled)
-            return;
+            dataGridNode.element.classList.toggle("hidden", hidden);
+        }
+    }, {
+        key: "treeOutline",
 
-        var dataGridNode = treeElement.__dataGridNode;
-        console.assert(dataGridNode);
+        // Public
 
-        dataGridNode.element.classList.toggle("hidden", hidden);
-    }
-};
+        get: function () {
+            return this._treeOutline;
+        }
+    }, {
+        key: "dataGrid",
+        get: function () {
+            return this._dataGrid;
+        }
+    }, {
+        key: "delegate",
+        get: function () {
+            return this._delegate;
+        }
+    }, {
+        key: "enabled",
+        get: function () {
+            return this._enabled;
+        },
+        set: function (x) {
+            this._enabled = x || false;
+        }
+    }]);
+
+    return TreeOutlineDataGridSynchronizer;
+})(WebInspector.Object);

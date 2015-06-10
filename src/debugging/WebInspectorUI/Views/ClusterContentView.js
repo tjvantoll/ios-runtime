@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ClusterContentView = function(representedObject)
-{
+WebInspector.ClusterContentView = function (representedObject) {
     WebInspector.ContentView.call(this, representedObject);
 
     this.element.classList.add(WebInspector.ClusterContentView.StyleClassName);
@@ -40,189 +39,84 @@ WebInspector.ClusterContentView = function(representedObject)
 
 WebInspector.ClusterContentView.StyleClassName = "cluster";
 
-WebInspector.ClusterContentView.prototype = {
+WebInspector.ClusterContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ClusterContentView,
 
-    // Public
-
-    get navigationItems()
-    {
+    updateLayout: function updateLayout() {
         var currentContentView = this._contentViewContainer.currentContentView;
-        return currentContentView ? currentContentView.navigationItems : [];
+        if (currentContentView) currentContentView.updateLayout();
     },
 
-    get contentViewContainer()
-    {
-        return this._contentViewContainer;
-    },
-
-    get supportsSplitContentBrowser()
-    {
-        if (this._contentViewContainer.currentContentView)
-            return this._contentViewContainer.currentContentView.supportsSplitContentBrowser;
-        return true;
-    },
-
-    updateLayout: function()
-    {
-        var currentContentView = this._contentViewContainer.currentContentView;
-        if (currentContentView)
-            currentContentView.updateLayout();
-    },
-
-    shown: function()
-    {
+    shown: function shown() {
         this._contentViewContainer.shown();
     },
 
-    hidden: function()
-    {
+    hidden: function hidden() {
         this._contentViewContainer.hidden();
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         this._contentViewContainer.closeAllContentViews();
 
         WebInspector.ContentView.removeEventListener(null, null, this);
     },
 
-    canGoBack: function()
-    {
+    canGoBack: function canGoBack() {
         return this._contentViewContainer.canGoBack();
     },
 
-    canGoForward: function()
-    {
+    canGoForward: function canGoForward() {
         return this._contentViewContainer.canGoForward();
     },
 
-    goBack: function()
-    {
+    goBack: function goBack() {
         this._contentViewContainer.goBack();
     },
 
-    goForward: function()
-    {
+    goForward: function goForward() {
         this._contentViewContainer.goForward();
     },
 
-    get selectionPathComponents()
-    {
-        if (!this._contentViewContainer.currentContentView)
-            return [];
-        return this._contentViewContainer.currentContentView.selectionPathComponents;
-    },
-
-    get supplementalRepresentedObjects()
-    {
-        if (!this._contentViewContainer.currentContentView)
-            return [];
-        return this._contentViewContainer.currentContentView.supplementalRepresentedObjects;
-    },
-
-    get handleCopyEvent()
-    {
-        var currentContentView = this._contentViewContainer.currentContentView;
-        return currentContentView && typeof currentContentView.handleCopyEvent === "function" ? currentContentView.handleCopyEvent.bind(currentContentView) : null;
-    },
-
-    get supportsSave()
-    {
-        var currentContentView = this._contentViewContainer.currentContentView;
-        return currentContentView && currentContentView.supportsSave;
-    },
-
-    get saveData()
-    {
-        var currentContentView = this._contentViewContainer.currentContentView;
-        return currentContentView && currentContentView.saveData || null;
-    },
-
-    get supportsSearch()
-    {
-        // Always return true so we can intercept the search query to resend it when switching content views.
-        return true;
-    },
-
-    get numberOfSearchResults()
-    {
-        var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView || !currentContentView.supportsSearch)
-            return null;
-        return currentContentView.numberOfSearchResults;
-    },
-
-    get hasPerformedSearch()
-    {
-        var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView || !currentContentView.supportsSearch)
-            return false;
-        return currentContentView.hasPerformedSearch;
-    },
-
-    set automaticallyRevealFirstSearchResult(reveal)
-    {
-        var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView || !currentContentView.supportsSearch)
-            return;
-        currentContentView.automaticallyRevealFirstSearchResult = reveal;
-    },
-
-    performSearch: function(query)
-    {
+    performSearch: function performSearch(query) {
         this._searchQuery = query;
 
         var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView || !currentContentView.supportsSearch)
-            return;
+        if (!currentContentView || !currentContentView.supportsSearch) return;
         currentContentView.performSearch(query);
     },
 
-    searchCleared: function()
-    {
+    searchCleared: function searchCleared() {
         this._searchQuery = null;
 
         var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView || !currentContentView.supportsSearch)
-            return;
+        if (!currentContentView || !currentContentView.supportsSearch) return;
         currentContentView.searchCleared();
     },
 
-    searchQueryWithSelection: function()
-    {
+    searchQueryWithSelection: function searchQueryWithSelection() {
         var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView || !currentContentView.supportsSearch)
-            return null;
+        if (!currentContentView || !currentContentView.supportsSearch) return null;
         return currentContentView.searchQueryWithSelection();
     },
 
-    revealPreviousSearchResult: function(changeFocus)
-    {
+    revealPreviousSearchResult: function revealPreviousSearchResult(changeFocus) {
         var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView || !currentContentView.supportsSearch)
-            return;
+        if (!currentContentView || !currentContentView.supportsSearch) return;
         currentContentView.revealPreviousSearchResult(changeFocus);
     },
 
-    revealNextSearchResult: function(changeFocus)
-    {
+    revealNextSearchResult: function revealNextSearchResult(changeFocus) {
         var currentContentView = this._contentViewContainer.currentContentView;
-        if (!currentContentView || !currentContentView.supportsSearch)
-            return;
+        if (!currentContentView || !currentContentView.supportsSearch) return;
         currentContentView.revealNextSearchResult(changeFocus);
     },
 
     // Private
 
-    _currentContentViewDidChange: function(event)
-    {
+    _currentContentViewDidChange: function _currentContentViewDidChange(event) {
         var currentContentView = this._contentViewContainer.currentContentView;
         if (currentContentView && currentContentView.supportsSearch) {
-            if (this._searchQuery)
-                currentContentView.performSearch(this._searchQuery);
-            else
-                currentContentView.searchCleared();
+            if (this._searchQuery) currentContentView.performSearch(this._searchQuery);else currentContentView.searchCleared();
         }
 
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SelectionPathComponentsDidChange);
@@ -230,26 +124,120 @@ WebInspector.ClusterContentView.prototype = {
         this.dispatchEventToListeners(WebInspector.ContentView.Event.NavigationItemsDidChange);
     },
 
-    _contentViewSelectionPathComponentDidChange: function(event)
-    {
-        if (event.target !== this._contentViewContainer.currentContentView)
-            return;
+    _contentViewSelectionPathComponentDidChange: function _contentViewSelectionPathComponentDidChange(event) {
+        if (event.target !== this._contentViewContainer.currentContentView) return;
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SelectionPathComponentsDidChange);
     },
 
-    _contentViewSupplementalRepresentedObjectsDidChange: function(event)
-    {
-        if (event.target !== this._contentViewContainer.currentContentView)
-            return;
+    _contentViewSupplementalRepresentedObjectsDidChange: function _contentViewSupplementalRepresentedObjectsDidChange(event) {
+        if (event.target !== this._contentViewContainer.currentContentView) return;
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SupplementalRepresentedObjectsDidChange);
     },
 
-    _contentViewNumberOfSearchResultsDidChange: function(event)
-    {
-        if (event.target !== this._contentViewContainer.currentContentView)
-            return;
+    _contentViewNumberOfSearchResultsDidChange: function _contentViewNumberOfSearchResultsDidChange(event) {
+        if (event.target !== this._contentViewContainer.currentContentView) return;
         this.dispatchEventToListeners(WebInspector.ContentView.Event.NumberOfSearchResultsDidChange);
     }
-};
+}, {
+    navigationItems: { // Public
+
+        get: function () {
+            var currentContentView = this._contentViewContainer.currentContentView;
+            return currentContentView ? currentContentView.navigationItems : [];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    contentViewContainer: {
+        get: function () {
+            return this._contentViewContainer;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSplitContentBrowser: {
+        get: function () {
+            if (this._contentViewContainer.currentContentView) return this._contentViewContainer.currentContentView.supportsSplitContentBrowser;
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    selectionPathComponents: {
+        get: function () {
+            if (!this._contentViewContainer.currentContentView) return [];
+            return this._contentViewContainer.currentContentView.selectionPathComponents;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supplementalRepresentedObjects: {
+        get: function () {
+            if (!this._contentViewContainer.currentContentView) return [];
+            return this._contentViewContainer.currentContentView.supplementalRepresentedObjects;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    handleCopyEvent: {
+        get: function () {
+            var currentContentView = this._contentViewContainer.currentContentView;
+            return currentContentView && typeof currentContentView.handleCopyEvent === "function" ? currentContentView.handleCopyEvent.bind(currentContentView) : null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSave: {
+        get: function () {
+            var currentContentView = this._contentViewContainer.currentContentView;
+            return currentContentView && currentContentView.supportsSave;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    saveData: {
+        get: function () {
+            var currentContentView = this._contentViewContainer.currentContentView;
+            return currentContentView && currentContentView.saveData || null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSearch: {
+        get: function () {
+            // Always return true so we can intercept the search query to resend it when switching content views.
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    numberOfSearchResults: {
+        get: function () {
+            var currentContentView = this._contentViewContainer.currentContentView;
+            if (!currentContentView || !currentContentView.supportsSearch) return null;
+            return currentContentView.numberOfSearchResults;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    hasPerformedSearch: {
+        get: function () {
+            var currentContentView = this._contentViewContainer.currentContentView;
+            if (!currentContentView || !currentContentView.supportsSearch) return false;
+            return currentContentView.hasPerformedSearch;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    automaticallyRevealFirstSearchResult: {
+        set: function (reveal) {
+            var currentContentView = this._contentViewContainer.currentContentView;
+            if (!currentContentView || !currentContentView.supportsSearch) return;
+            currentContentView.automaticallyRevealFirstSearchResult = reveal;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ClusterContentView.prototype.__proto__ = WebInspector.ContentView.prototype;

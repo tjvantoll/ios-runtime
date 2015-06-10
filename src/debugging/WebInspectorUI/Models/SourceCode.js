@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.SourceCode = class SourceCode extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.SourceCode = (function (_WebInspector$Object) {
+    function SourceCode() {
+        _classCallCheck(this, SourceCode);
+
+        _get(Object.getPrototypeOf(SourceCode.prototype), "constructor", this).call(this);
 
         this._originalRevision = new WebInspector.SourceCodeRevision(this, null, false);
         this._currentRevision = this._originalRevision;
@@ -37,167 +45,164 @@ WebInspector.SourceCode = class SourceCode extends WebInspector.Object
         this._requestContentPromise = null;
     }
 
-    // Public
+    _inherits(SourceCode, _WebInspector$Object);
 
-    get displayName()
-    {
-        // Implemented by subclasses.
-        console.error("Needs to be implemented by a subclass.");
-        return "";
-    }
+    _createClass(SourceCode, [{
+        key: "addSourceMap",
+        value: function addSourceMap(sourceMap) {
+            console.assert(sourceMap instanceof WebInspector.SourceMap);
 
-    get originalRevision()
-    {
-        return this._originalRevision;
-    }
+            if (!this._sourceMaps) this._sourceMaps = [];
 
-    get currentRevision()
-    {
-        return this._currentRevision;
-    }
+            this._sourceMaps.push(sourceMap);
 
-    set currentRevision(revision)
-    {
-        console.assert(revision instanceof WebInspector.SourceCodeRevision);
-        if (!(revision instanceof WebInspector.SourceCodeRevision))
-            return;
+            this.dispatchEventToListeners(WebInspector.SourceCode.Event.SourceMapAdded);
+        }
+    }, {
+        key: "requestContent",
+        value: function requestContent() {
+            this._requestContentPromise = this._requestContentPromise || this.requestContentFromBackend().then(this._processContent.bind(this));
 
-        console.assert(revision.sourceCode === this);
-        if (revision.sourceCode !== this)
-            return;
+            return this._requestContentPromise;
+        }
+    }, {
+        key: "createSourceCodeLocation",
+        value: function createSourceCodeLocation(lineNumber, columnNumber) {
+            return new WebInspector.SourceCodeLocation(this, lineNumber, columnNumber);
+        }
+    }, {
+        key: "createLazySourceCodeLocation",
+        value: function createLazySourceCodeLocation(lineNumber, columnNumber) {
+            return new WebInspector.LazySourceCodeLocation(this, lineNumber, columnNumber);
+        }
+    }, {
+        key: "createSourceCodeTextRange",
+        value: function createSourceCodeTextRange(textRange) {
+            return new WebInspector.SourceCodeTextRange(this, textRange);
+        }
+    }, {
+        key: "revisionContentDidChange",
 
-        this._currentRevision = revision;
+        // Protected
 
-        this.dispatchEventToListeners(WebInspector.SourceCode.Event.ContentDidChange);
-    }
+        value: function revisionContentDidChange(revision) {
+            if (this._ignoreRevisionContentDidChangeEvent) return;
 
-    get content()
-    {
-        return this._currentRevision.content;
-    }
+            if (revision !== this._currentRevision) return;
 
-    get sourceMaps()
-    {
-        return this._sourceMaps || [];
-    }
+            this.handleCurrentRevisionContentChange();
 
-    addSourceMap(sourceMap)
-    {
-        console.assert(sourceMap instanceof WebInspector.SourceMap);
+            this.dispatchEventToListeners(WebInspector.SourceCode.Event.ContentDidChange);
+        }
+    }, {
+        key: "handleCurrentRevisionContentChange",
+        value: function handleCurrentRevisionContentChange() {}
+    }, {
+        key: "markContentAsStale",
+        value: function markContentAsStale() {
+            this._requestContentPromise = null;
+            this._contentReceived = false;
+        }
+    }, {
+        key: "requestContentFromBackend",
+        value: function requestContentFromBackend() {
+            // Implemented by subclasses.
+            console.error("Needs to be implemented by a subclass.");
+            return Promise.reject(new Error("Needs to be implemented by a subclass."));
+        }
+    }, {
+        key: "_processContent",
 
-        if (!this._sourceMaps)
-            this._sourceMaps = [];
+        // Private
 
-        this._sourceMaps.push(sourceMap);
+        value: function _processContent(parameters) {
+            // Different backend APIs return one of `content, `body`, `text`, or `scriptSource`.
+            var content = parameters.content || parameters.body || parameters.text || parameters.scriptSource;
+            var error = parameters.error;
+            if (parameters.base64Encoded) content = decodeBase64ToBlob(content, this.mimeType);
 
-        this.dispatchEventToListeners(WebInspector.SourceCode.Event.SourceMapAdded);
-    }
+            var revision = this.revisionForRequestedContent;
 
-    get formatterSourceMap()
-    {
-        return this._formatterSourceMap;
-    }
+            this._ignoreRevisionContentDidChangeEvent = true;
+            revision.content = content || null;
+            delete this._ignoreRevisionContentDidChangeEvent;
 
-    set formatterSourceMap(formatterSourceMap)
-    {
-        console.assert(this._formatterSourceMap === null || formatterSourceMap === null);
-        console.assert(formatterSourceMap === null || formatterSourceMap instanceof WebInspector.FormatterSourceMap);
+            return Promise.resolve({
+                error: error,
+                sourceCode: this,
+                content: content
+            });
+        }
+    }, {
+        key: "displayName",
 
-        this._formatterSourceMap = formatterSourceMap;
+        // Public
 
-        this.dispatchEventToListeners(WebInspector.SourceCode.Event.FormatterDidChange);
-    }
+        get: function () {
+            // Implemented by subclasses.
+            console.error("Needs to be implemented by a subclass.");
+            return "";
+        }
+    }, {
+        key: "originalRevision",
+        get: function () {
+            return this._originalRevision;
+        }
+    }, {
+        key: "currentRevision",
+        get: function () {
+            return this._currentRevision;
+        },
+        set: function (revision) {
+            console.assert(revision instanceof WebInspector.SourceCodeRevision);
+            if (!(revision instanceof WebInspector.SourceCodeRevision)) return;
 
-    requestContent()
-    {
-        this._requestContentPromise = this._requestContentPromise || this.requestContentFromBackend().then(this._processContent.bind(this));
+            console.assert(revision.sourceCode === this);
+            if (revision.sourceCode !== this) return;
 
-        return this._requestContentPromise;
-    }
+            this._currentRevision = revision;
 
-    createSourceCodeLocation(lineNumber, columnNumber)
-    {
-        return new WebInspector.SourceCodeLocation(this, lineNumber, columnNumber);
-    }
+            this.dispatchEventToListeners(WebInspector.SourceCode.Event.ContentDidChange);
+        }
+    }, {
+        key: "content",
+        get: function () {
+            return this._currentRevision.content;
+        }
+    }, {
+        key: "sourceMaps",
+        get: function () {
+            return this._sourceMaps || [];
+        }
+    }, {
+        key: "formatterSourceMap",
+        get: function () {
+            return this._formatterSourceMap;
+        },
+        set: function (formatterSourceMap) {
+            console.assert(this._formatterSourceMap === null || formatterSourceMap === null);
+            console.assert(formatterSourceMap === null || formatterSourceMap instanceof WebInspector.FormatterSourceMap);
 
-    createLazySourceCodeLocation(lineNumber, columnNumber)
-    {
-        return new WebInspector.LazySourceCodeLocation(this, lineNumber, columnNumber);
-    }
+            this._formatterSourceMap = formatterSourceMap;
 
-    createSourceCodeTextRange(textRange)
-    {
-        return new WebInspector.SourceCodeTextRange(this, textRange);
-    }
+            this.dispatchEventToListeners(WebInspector.SourceCode.Event.FormatterDidChange);
+        }
+    }, {
+        key: "revisionForRequestedContent",
+        get: function () {
+            // Implemented by subclasses if needed.
+            return this._originalRevision;
+        }
+    }, {
+        key: "mimeType",
+        get: function () {
+            // Implemented by subclasses.
+            console.error("Needs to be implemented by a subclass.");
+        }
+    }]);
 
-    // Protected
-
-    revisionContentDidChange(revision)
-    {
-        if (this._ignoreRevisionContentDidChangeEvent)
-            return;
-
-        if (revision !== this._currentRevision)
-            return;
-
-        this.handleCurrentRevisionContentChange();
-
-        this.dispatchEventToListeners(WebInspector.SourceCode.Event.ContentDidChange);
-    }
-
-    handleCurrentRevisionContentChange()
-    {
-        // Implemented by subclasses if needed.
-    }
-
-    get revisionForRequestedContent()
-    {
-        // Implemented by subclasses if needed.
-        return this._originalRevision;
-    }
-
-    markContentAsStale()
-    {
-        this._requestContentPromise = null;
-        this._contentReceived = false;
-    }
-
-    requestContentFromBackend()
-    {
-        // Implemented by subclasses.
-        console.error("Needs to be implemented by a subclass.");
-        return Promise.reject(new Error("Needs to be implemented by a subclass."));
-    }
-
-    get mimeType()
-    {
-        // Implemented by subclasses.
-        console.error("Needs to be implemented by a subclass.");
-    }
-
-    // Private
-
-    _processContent(parameters)
-    {
-        // Different backend APIs return one of `content, `body`, `text`, or `scriptSource`.
-        var content = parameters.content || parameters.body || parameters.text || parameters.scriptSource;
-        var error = parameters.error;
-        if (parameters.base64Encoded)
-            content = decodeBase64ToBlob(content, this.mimeType);
-
-        var revision = this.revisionForRequestedContent;
-
-        this._ignoreRevisionContentDidChangeEvent = true;
-        revision.content = content || null;
-        delete this._ignoreRevisionContentDidChangeEvent;
-
-        return Promise.resolve({
-            error,
-            sourceCode: this,
-            content,
-        });
-    }
-};
+    return SourceCode;
+})(WebInspector.Object);
 
 WebInspector.SourceCode.Event = {
     ContentDidChange: "source-code-content-did-change",
@@ -206,3 +211,5 @@ WebInspector.SourceCode.Event = {
     LoadingDidFinish: "source-code-loading-did-finish",
     LoadingDidFail: "source-code-loading-did-fail"
 };
+
+// Implemented by subclasses if needed.

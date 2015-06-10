@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ResourceContentView = function(resource, styleClassName)
-{
+WebInspector.ResourceContentView = function (resource, styleClassName) {
     console.assert(resource);
     console.assert(styleClassName);
 
@@ -36,56 +35,41 @@ WebInspector.ResourceContentView = function(resource, styleClassName)
 
     // Append a spinner while waiting for contentAvailable. The subclasses are responsible for removing
     // the spinner before showing the resource content.
-    var spinner = new WebInspector.IndeterminateProgressSpinner;
+    var spinner = new WebInspector.IndeterminateProgressSpinner();
     this.element.appendChild(spinner.element);
 
     this.element.addEventListener("click", this._mouseWasClicked.bind(this), false);
 
     // Request content last so the spinner will always be removed in case the content is immediately available.
-    resource.requestContent().then(this._contentAvailable.bind(this)).catch(this._protocolError.bind(this));
+    resource.requestContent().then(this._contentAvailable.bind(this))["catch"](this._protocolError.bind(this));
 
     if (!this.managesOwnIssues) {
         WebInspector.issueManager.addEventListener(WebInspector.IssueManager.Event.IssueWasAdded, this._issueWasAdded, this);
 
         var issues = WebInspector.issueManager.issuesForSourceCode(resource);
-        for (var i = 0; i < issues.length; ++i)
-            this.addIssue(issues[i]);
+        for (var i = 0; i < issues.length; ++i) this.addIssue(issues[i]);
     }
 };
 
-WebInspector.ResourceContentView.prototype = {
+WebInspector.ResourceContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ResourceContentView,
     __proto__: WebInspector.ContentView.prototype,
 
-    // Public
+    contentAvailable: function contentAvailable(content, base64Encoded) {},
 
-    get resource()
-    {
-        return this._resource;
-    },
-
-    contentAvailable: function(content, base64Encoded)
-    {
-        // Implemented by subclasses.
-    },
-
-    addIssue: function(issue)
-    {
+    addIssue: function addIssue(issue) {
         // This generically shows only the last issue, subclasses can override for better handling.
         this.element.removeChildren();
         this.element.appendChild(WebInspector.createMessageTextView(issue.text, issue.level === WebInspector.IssueMessage.Level.Error));
     },
 
-    closed: function()
-    {
-        if (!this.managesOwnIssues)
-            WebInspector.issueManager.removeEventListener(null, null, this);
+    closed: function closed() {
+        if (!this.managesOwnIssues) WebInspector.issueManager.removeEventListener(null, null, this);
     },
 
     // Private
 
-    _contentAvailable: function(parameters)
-    {
+    _contentAvailable: function _contentAvailable(parameters) {
         if (parameters.error) {
             this._contentError(parameters.error);
             return;
@@ -96,40 +80,44 @@ WebInspector.ResourceContentView.prototype = {
         this.contentAvailable(parameters.content, parameters.base64Encoded);
     },
 
-    _contentError: function(error)
-    {
-        if (this._hasContent())
-            return;
+    _contentError: function _contentError(error) {
+        if (this._hasContent()) return;
 
         this.element.removeChildren();
         this.element.appendChild(WebInspector.createMessageTextView(error, true));
     },
 
-    _protocolError: function(error)
-    {
+    _protocolError: function _protocolError(error) {
         this._contentError(WebInspector.UIString("An error occurred trying to load the resource."));
     },
 
-    _hasContent: function()
-    {
+    _hasContent: function _hasContent() {
         return !this.element.querySelector("." + WebInspector.IndeterminateProgressSpinner.StyleClassName);
     },
 
-    _issueWasAdded: function(event)
-    {
+    _issueWasAdded: function _issueWasAdded(event) {
         console.assert(!this.managesOwnIssues);
 
         var issue = event.data.issue;
 
         // FIXME: Check more than just the issue URL (the document could have multiple resources with the same URL).
-        if (issue.url !== this.resource.url)
-            return;
+        if (issue.url !== this.resource.url) return;
 
         this.addIssue(issue);
     },
 
-    _mouseWasClicked: function(event)
-    {
+    _mouseWasClicked: function _mouseWasClicked(event) {
         WebInspector.handlePossibleLinkClick(event, this.resource.parentFrame);
     }
-};
+}, {
+    resource: { // Public
+
+        get: function () {
+            return this._resource;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
+
+// Implemented by subclasses.

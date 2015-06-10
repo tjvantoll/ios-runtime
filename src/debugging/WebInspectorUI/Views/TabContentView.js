@@ -1,3 +1,5 @@
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,22 +25,26 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TabContentView = function(identifier, styleClassNames, tabBarItem, navigationSidebarPanel, detailsSidebarPanels)
-{
+WebInspector.TabContentView = function (identifier, styleClassNames, tabBarItem, navigationSidebarPanel, detailsSidebarPanels) {
+    var _element$classList;
+
     console.assert(typeof identifier === "string");
-    console.assert(typeof styleClassNames === "string" || styleClassNames.every(function(className) { return typeof className === "string"; }));
+    console.assert(typeof styleClassNames === "string" || styleClassNames.every(function (className) {
+        return typeof className === "string";
+    }));
     console.assert(tabBarItem instanceof WebInspector.TabBarItem);
     console.assert(!navigationSidebarPanel || navigationSidebarPanel instanceof WebInspector.NavigationSidebarPanel);
-    console.assert(!detailsSidebarPanels || detailsSidebarPanels.every(function(detailsSidebarPanel) { return detailsSidebarPanel instanceof WebInspector.DetailsSidebarPanel; }));
+    console.assert(!detailsSidebarPanels || detailsSidebarPanels.every(function (detailsSidebarPanel) {
+        return detailsSidebarPanel instanceof WebInspector.DetailsSidebarPanel;
+    }));
 
     WebInspector.ContentView.call(this, null);
 
     this.element.classList.add("tab");
 
-    if (typeof styleClassNames === "string")
-        styleClassNames = [styleClassNames];
+    if (typeof styleClassNames === "string") styleClassNames = [styleClassNames];
 
-    this.element.classList.add(...styleClassNames);
+    (_element$classList = this.element.classList).add.apply(_element$classList, _toConsumableArray(styleClassNames));
 
     this._identifier = identifier;
     this._tabBarItem = tabBarItem;
@@ -53,70 +59,25 @@ WebInspector.TabContentView = function(identifier, styleClassNames, tabBarItem, 
     this._cookieSetting = new WebInspector.Setting(identifier + "-tab-cookie", {});
 };
 
-WebInspector.TabContentView.prototype = {
+WebInspector.TabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.TabContentView,
     __proto__: WebInspector.ContentView.prototype,
 
-    // Public
+    showDetailsSidebarPanels: function showDetailsSidebarPanels() {},
 
-    get type()
-    {
-        // Implemented by subclasses.
-        return null;
-    },
+    showRepresentedObject: function showRepresentedObject(representedObject, cookie) {},
 
-    get parentTabBrowser()
-    {
-        return this._parentTabBrowser;
-    },
-
-    set parentTabBrowser(tabBrowser)
-    {
-        this._parentTabBrowser = tabBrowser || null;
-    },
-
-    get identifier()
-    {
-        return this._identifier;
-    },
-
-    get tabBarItem()
-    {
-        return this._tabBarItem;
-    },
-
-    get managesDetailsSidebarPanels()
-    {
+    canShowRepresentedObject: function canShowRepresentedObject(representedObject) {
         // Implemented by subclasses.
         return false;
     },
 
-    showDetailsSidebarPanels: function()
-    {
-        // Implemented by subclasses.
+    shown: function shown() {
+        if (this._shouldRestoreStateWhenShown) this.restoreStateFromCookie(WebInspector.StateRestorationType.Delayed);
     },
 
-    showRepresentedObject: function(representedObject, cookie)
-    {
-        // Implemented by subclasses.
-    },
-
-    canShowRepresentedObject: function(representedObject)
-    {
-        // Implemented by subclasses.
-        return false;
-    },
-
-    shown: function()
-    {
-        if (this._shouldRestoreStateWhenShown)
-            this.restoreStateFromCookie(WebInspector.StateRestorationType.Delayed);
-    },
-
-    restoreStateFromCookie: function(restorationType)
-    {
-        if (!this.navigationSidebarPanel)
-            return;
+    restoreStateFromCookie: function restoreStateFromCookie(restorationType) {
+        if (!this.navigationSidebarPanel) return;
 
         if (!this.visible) {
             this._shouldRestoreStateWhenShown = true;
@@ -126,49 +87,100 @@ WebInspector.TabContentView.prototype = {
         this._shouldRestoreStateWhenShown = false;
 
         var relaxMatchDelay = 0;
-        if (restorationType === WebInspector.StateRestorationType.Load)
-            relaxMatchDelay = 1000;
-        else if (restorationType === WebInspector.StateRestorationType.Navigation)
-            relaxMatchDelay = 2000;
+        if (restorationType === WebInspector.StateRestorationType.Load) relaxMatchDelay = 1000;else if (restorationType === WebInspector.StateRestorationType.Navigation) relaxMatchDelay = 2000;
 
         this.navigationSidebarPanel.restoreStateFromCookie(this._cookieSetting.value || {}, relaxMatchDelay);
     },
 
-    saveStateToCookie: function()
-    {
-        if (!this.navigationSidebarPanel)
-            return;
+    saveStateToCookie: function saveStateToCookie() {
+        if (!this.navigationSidebarPanel) return;
 
-        if (this._shouldRestoreStateWhenShown)
-            return;
+        if (this._shouldRestoreStateWhenShown) return;
 
         var cookie = {};
         this.navigationSidebarPanel.saveStateToCookie(cookie);
         this._cookieSetting.value = cookie;
-    },
-
-    get navigationSidebarPanel()
-    {
-        return this._navigationSidebarPanel;
-    },
-
-    get navigationSidebarCollapsedSetting()
-    {
-        return this._navigationSidebarCollapsedSetting;
-    },
-
-    get detailsSidebarPanels()
-    {
-        return this._detailsSidebarPanels;
-    },
-
-    get detailsSidebarCollapsedSetting()
-    {
-        return this._detailsSidebarCollapsedSetting;
-    },
-
-    get detailsSidebarSelectedPanelSetting()
-    {
-        return this._detailsSidebarSelectedPanelSetting;
     }
-};
+
+}, {
+    type: { // Public
+
+        get: function () {
+            // Implemented by subclasses.
+            return null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    parentTabBrowser: {
+        get: function () {
+            return this._parentTabBrowser;
+        },
+        set: function (tabBrowser) {
+            this._parentTabBrowser = tabBrowser || null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    identifier: {
+        get: function () {
+            return this._identifier;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    tabBarItem: {
+        get: function () {
+            return this._tabBarItem;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    managesDetailsSidebarPanels: {
+        get: function () {
+            // Implemented by subclasses.
+            return false;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    navigationSidebarPanel: {
+        get: function () {
+            return this._navigationSidebarPanel;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    navigationSidebarCollapsedSetting: {
+        get: function () {
+            return this._navigationSidebarCollapsedSetting;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    detailsSidebarPanels: {
+        get: function () {
+            return this._detailsSidebarPanels;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    detailsSidebarCollapsedSetting: {
+        get: function () {
+            return this._detailsSidebarCollapsedSetting;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    detailsSidebarSelectedPanelSetting: {
+        get: function () {
+            return this._detailsSidebarSelectedPanelSetting;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
+
+// Implemented by subclasses.
+
+// Implemented by subclasses.

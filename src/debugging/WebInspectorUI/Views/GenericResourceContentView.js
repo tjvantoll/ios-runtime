@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.GenericResourceContentView = function(resource)
-{
+WebInspector.GenericResourceContentView = function (resource) {
     WebInspector.ResourceContentView.call(this, resource, WebInspector.GenericResourceContentView.StyleClassName);
 };
 

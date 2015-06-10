@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,79 +31,83 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.LogManager = class LogManager extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.LogManager = (function (_WebInspector$Object) {
+    function LogManager() {
+        _classCallCheck(this, LogManager);
+
+        _get(Object.getPrototypeOf(LogManager.prototype), "constructor", this).call(this);
 
         WebInspector.Frame.addEventListener(WebInspector.Frame.Event.MainResourceDidChange, this._mainResourceDidChange, this);
     }
 
-    // Public
+    _inherits(LogManager, _WebInspector$Object);
 
-    messageWasAdded(source, level, text, type, url, line, column, repeatCount, parameters, stackTrace, requestId)
-    {
-        // Called from WebInspector.ConsoleObserver.
+    _createClass(LogManager, [{
+        key: "messageWasAdded",
 
-        // FIXME: Get a request from request ID.
+        // Public
 
-        if (parameters)
-            parameters = parameters.map(function(x) { return WebInspector.RemoteObject.fromPayload(x); });
+        value: function messageWasAdded(source, level, text, type, url, line, column, repeatCount, parameters, stackTrace, requestId) {
+            // Called from WebInspector.ConsoleObserver.
 
-        var message = new WebInspector.ConsoleMessage(source, level, text, type, url, line, column, repeatCount, parameters, stackTrace, null);
-        this.dispatchEventToListeners(WebInspector.LogManager.Event.MessageAdded, {message});
-    }
+            // FIXME: Get a request from request ID.
 
-    messagesCleared()
-    {
-        // Called from WebInspector.ConsoleObserver.
+            if (parameters) parameters = parameters.map(function (x) {
+                return WebInspector.RemoteObject.fromPayload(x);
+            });
 
-        WebInspector.ConsoleCommandResultMessage.clearMaximumSavedResultIndex();
+            var message = new WebInspector.ConsoleMessage(source, level, text, type, url, line, column, repeatCount, parameters, stackTrace, null);
+            this.dispatchEventToListeners(WebInspector.LogManager.Event.MessageAdded, { message: message });
+        }
+    }, {
+        key: "messagesCleared",
+        value: function messagesCleared() {
+            // Called from WebInspector.ConsoleObserver.
 
-        // We don't want to clear messages on reloads. We can't determine that easily right now.
-        // FIXME: <rdar://problem/13767079> Console.messagesCleared should include a reason
-        this._shouldClearMessages = true;
-        setTimeout(function() {
-            if (this._shouldClearMessages)
-                this.dispatchEventToListeners(WebInspector.LogManager.Event.ActiveLogCleared);
+            WebInspector.ConsoleCommandResultMessage.clearMaximumSavedResultIndex();
+
+            // We don't want to clear messages on reloads. We can't determine that easily right now.
+            // FIXME: <rdar://problem/13767079> Console.messagesCleared should include a reason
+            this._shouldClearMessages = true;
+            setTimeout((function () {
+                if (this._shouldClearMessages) this.dispatchEventToListeners(WebInspector.LogManager.Event.ActiveLogCleared);
+                delete this._shouldClearMessages;
+            }).bind(this), 0);
+        }
+    }, {
+        key: "messageRepeatCountUpdated",
+        value: function messageRepeatCountUpdated(count) {
+            // Called from WebInspector.ConsoleObserver.
+
+            this.dispatchEventToListeners(WebInspector.LogManager.Event.PreviousMessageRepeatCountUpdated, { count: count });
+        }
+    }, {
+        key: "requestClearMessages",
+        value: function requestClearMessages() {
+            ConsoleAgent.clearMessages();
+        }
+    }, {
+        key: "_mainResourceDidChange",
+
+        // Private
+
+        value: function _mainResourceDidChange(event) {
+            console.assert(event.target instanceof WebInspector.Frame);
+
+            if (!event.target.isMainFrame()) return;
+
+            var oldMainResource = event.data.oldMainResource;
+            var newMainResource = event.target.mainResource;
+            if (oldMainResource.url !== newMainResource.url) this.dispatchEventToListeners(WebInspector.LogManager.Event.Cleared);else this.dispatchEventToListeners(WebInspector.LogManager.Event.SessionStarted);
+
+            WebInspector.ConsoleCommandResultMessage.clearMaximumSavedResultIndex();
+
             delete this._shouldClearMessages;
-        }.bind(this), 0);
-    }
+        }
+    }]);
 
-    messageRepeatCountUpdated(count)
-    {
-        // Called from WebInspector.ConsoleObserver.
-
-        this.dispatchEventToListeners(WebInspector.LogManager.Event.PreviousMessageRepeatCountUpdated, {count});
-    }
-
-    requestClearMessages()
-    {
-        ConsoleAgent.clearMessages();
-    }
-
-    // Private
-
-    _mainResourceDidChange(event)
-    {
-        console.assert(event.target instanceof WebInspector.Frame);
-
-        if (!event.target.isMainFrame())
-            return;
-
-        var oldMainResource = event.data.oldMainResource;
-        var newMainResource = event.target.mainResource;
-        if (oldMainResource.url !== newMainResource.url)
-            this.dispatchEventToListeners(WebInspector.LogManager.Event.Cleared);
-        else
-            this.dispatchEventToListeners(WebInspector.LogManager.Event.SessionStarted);
-
-        WebInspector.ConsoleCommandResultMessage.clearMaximumSavedResultIndex();
-
-        delete this._shouldClearMessages;
-    }
-};
+    return LogManager;
+})(WebInspector.Object);
 
 WebInspector.LogManager.Event = {
     SessionStarted: "log-manager-session-was-started",

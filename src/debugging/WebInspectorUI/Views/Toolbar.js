@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Toolbar = function(element, navigationItems, dontAllowModeChanges) {
+WebInspector.Toolbar = function (element, navigationItems, dontAllowModeChanges) {
     WebInspector.NavigationBar.call(this, element, navigationItems, "toolbar");
 
     this.displayMode = WebInspector.Toolbar.DisplayMode.IconAndLabelVertical;
@@ -53,8 +53,7 @@ WebInspector.Toolbar = function(element, navigationItems, dontAllowModeChanges) 
     this._rightSectionElement.className = WebInspector.Toolbar.ItemSectionStyleClassName + " " + WebInspector.Toolbar.RightItemSectionStyleClassName;
     this._element.appendChild(this._rightSectionElement);
 
-    if (!dontAllowModeChanges)
-        this._element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
+    if (!dontAllowModeChanges) this._element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
 };
 
 // FIXME: Move to a WebInspector.Object subclass and we can remove this.
@@ -95,64 +94,12 @@ WebInspector.Toolbar.SizeMode = {
     Small: "small-size"
 };
 
-WebInspector.Toolbar.prototype = {
+WebInspector.Toolbar.prototype = Object.defineProperties({
     constructor: WebInspector.Toolbar,
 
-    // Public
-
-    get displayMode()
-    {
-        return this._displayMode;
-    },
-
-    set displayMode(mode)
-    {
-        if (mode === this._displayMode)
-            return;
-
-        if (this._displayMode)
-            this._element.classList.remove(this._displayMode);
-
-        // Revert the forced icon-only mode if it was applied.
-        if (this._displayMode === WebInspector.Toolbar.DisplayMode.IconAndLabelHorizontal)
-            this._element.classList.remove(WebInspector.Toolbar.DisplayMode.IconOnly);
-
-        this._displayMode = mode;
-
-        this._element.classList.add(mode);
-
-        this.updateLayout();
-
-        this.dispatchEventToListeners(WebInspector.Toolbar.Event.DisplayModeDidChange);
-    },
-
-    get sizeMode()
-    {
-        return this._sizeMode;
-    },
-
-    set sizeMode(mode)
-    {
-        if (mode === this._sizeMode)
-            return;
-
-        if (this._sizeMode)
-            this._element.classList.remove(this._sizeMode);
-
-        this._sizeMode = mode;
-
-        this._element.classList.add(mode);
-
-        this.updateLayout();
-
-        this.dispatchEventToListeners(WebInspector.Toolbar.Event.SizeModeDidChange);
-    },
-
-    customUpdateLayout: function()
-    {
+    customUpdateLayout: function customUpdateLayout() {
         // Bail early if our sections are not created yet. This means we are being called during construction.
-        if (!this._leftSectionElement || !this._centerSectionElement || !this._rightSectionElement)
-            return;
+        if (!this._leftSectionElement || !this._centerSectionElement || !this._rightSectionElement) return;
 
         // Force collapsed style for JavaScript debuggables.
         if (WebInspector.debuggableType === WebInspector.DebuggableType.JavaScript) {
@@ -169,8 +116,7 @@ WebInspector.Toolbar.prototype = {
             this._element.classList.add(WebInspector.Toolbar.DisplayMode.IconAndLabelHorizontal);
         }
 
-        function isOverflowingToolbar()
-        {
+        function isOverflowingToolbar() {
             var controlSectionWidth = this._controlSectionElement.realOffsetWidth;
             var leftSectionWidth = this._leftSectionElement.realOffsetWidth;
             var centerLeftSectionWidth = this._centerLeftSectionElement.realOffsetWidth;
@@ -189,41 +135,39 @@ WebInspector.Toolbar.prototype = {
             this._element.classList.add(WebInspector.Toolbar.DisplayMode.IconOnly);
         }
 
-        if (!isOverflowingToolbar.call(this))
-            return;
+        if (!isOverflowingToolbar.call(this)) return;
 
         this._element.classList.add(WebInspector.NavigationBar.CollapsedStyleClassName);
     },
 
-    addToolbarItem: function(toolbarItem, sectionIdentifier)
-    {
+    addToolbarItem: function addToolbarItem(toolbarItem, sectionIdentifier) {
         var sectionElement;
 
         switch (sectionIdentifier) {
-        case WebInspector.Toolbar.Section.Control:
-            sectionElement = this._controlSectionElement;
-            break;
+            case WebInspector.Toolbar.Section.Control:
+                sectionElement = this._controlSectionElement;
+                break;
 
-        case WebInspector.Toolbar.Section.Left:
-            sectionElement = this._leftSectionElement;
-            break;
+            case WebInspector.Toolbar.Section.Left:
+                sectionElement = this._leftSectionElement;
+                break;
 
-        case WebInspector.Toolbar.Section.CenterLeft:
-            sectionElement = this._centerLeftSectionElement;
-            break;
+            case WebInspector.Toolbar.Section.CenterLeft:
+                sectionElement = this._centerLeftSectionElement;
+                break;
 
-        default:
-        case WebInspector.Toolbar.Section.Center:
-            sectionElement = this._centerSectionElement;
-            break;
+            default:
+            case WebInspector.Toolbar.Section.Center:
+                sectionElement = this._centerSectionElement;
+                break;
 
-        case WebInspector.Toolbar.Section.CenterRight:
-            sectionElement = this._centerRightSectionElement;
-            break;
+            case WebInspector.Toolbar.Section.CenterRight:
+                sectionElement = this._centerRightSectionElement;
+                break;
 
-        case WebInspector.Toolbar.Section.Right:
-            sectionElement = this._rightSectionElement;
-            break;
+            case WebInspector.Toolbar.Section.Right:
+                sectionElement = this._rightSectionElement;
+                break;
         }
 
         console.assert(sectionElement);
@@ -233,8 +177,7 @@ WebInspector.Toolbar.prototype = {
 
     // Private
 
-    _handleContextMenuEvent: function(event)
-    {
+    _handleContextMenuEvent: function _handleContextMenuEvent(event) {
         var contextMenu = new WebInspector.ContextMenu(event);
 
         contextMenu.appendCheckboxItem(WebInspector.UIString("Icon and Text (Vertical)"), this._changeDisplayMode.bind(this, WebInspector.Toolbar.DisplayMode.IconAndLabelVertical), this._displayMode === WebInspector.Toolbar.DisplayMode.IconAndLabelVertical);
@@ -250,15 +193,58 @@ WebInspector.Toolbar.prototype = {
         contextMenu.show();
     },
 
-    _changeDisplayMode: function(displayMode)
-    {
+    _changeDisplayMode: function _changeDisplayMode(displayMode) {
         this.displayMode = displayMode;
     },
 
-    _toggleSmallIcons: function()
-    {
+    _toggleSmallIcons: function _toggleSmallIcons() {
         this.sizeMode = this._sizeMode === WebInspector.Toolbar.SizeMode.Normal ? WebInspector.Toolbar.SizeMode.Small : WebInspector.Toolbar.SizeMode.Normal;
     }
-};
+}, {
+    displayMode: { // Public
+
+        get: function () {
+            return this._displayMode;
+        },
+        set: function (mode) {
+            if (mode === this._displayMode) return;
+
+            if (this._displayMode) this._element.classList.remove(this._displayMode);
+
+            // Revert the forced icon-only mode if it was applied.
+            if (this._displayMode === WebInspector.Toolbar.DisplayMode.IconAndLabelHorizontal) this._element.classList.remove(WebInspector.Toolbar.DisplayMode.IconOnly);
+
+            this._displayMode = mode;
+
+            this._element.classList.add(mode);
+
+            this.updateLayout();
+
+            this.dispatchEventToListeners(WebInspector.Toolbar.Event.DisplayModeDidChange);
+        },
+        configurable: true,
+        enumerable: true
+    },
+    sizeMode: {
+        get: function () {
+            return this._sizeMode;
+        },
+        set: function (mode) {
+            if (mode === this._sizeMode) return;
+
+            if (this._sizeMode) this._element.classList.remove(this._sizeMode);
+
+            this._sizeMode = mode;
+
+            this._element.classList.add(mode);
+
+            this.updateLayout();
+
+            this.dispatchEventToListeners(WebInspector.Toolbar.Event.SizeModeDidChange);
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.Toolbar.prototype.__proto__ = WebInspector.NavigationBar.prototype;

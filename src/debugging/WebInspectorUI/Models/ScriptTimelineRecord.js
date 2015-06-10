@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,16 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ScriptTimelineRecord = class ScriptTimelineRecord extends WebInspector.TimelineRecord
-{
-    constructor(eventType, startTime, endTime, callFrames, sourceCodeLocation, details, profilePayload)
-    {
-        super(WebInspector.TimelineRecord.Type.Script, startTime, endTime, callFrames, sourceCodeLocation);
+WebInspector.ScriptTimelineRecord = (function (_WebInspector$TimelineRecord) {
+    function ScriptTimelineRecord(eventType, startTime, endTime, callFrames, sourceCodeLocation, details, profilePayload) {
+        _classCallCheck(this, ScriptTimelineRecord);
+
+        _get(Object.getPrototypeOf(ScriptTimelineRecord.prototype), "constructor", this).call(this, WebInspector.TimelineRecord.Type.Script, startTime, endTime, callFrames, sourceCodeLocation);
 
         console.assert(eventType);
 
-        if (eventType in WebInspector.ScriptTimelineRecord.EventType)
-            eventType = WebInspector.ScriptTimelineRecord.EventType[eventType];
+        if (eventType in WebInspector.ScriptTimelineRecord.EventType) eventType = WebInspector.ScriptTimelineRecord.EventType[eventType];
 
         this._eventType = eventType;
         this._details = details || "";
@@ -40,105 +47,105 @@ WebInspector.ScriptTimelineRecord = class ScriptTimelineRecord extends WebInspec
         this._profile = null;
     }
 
-    // Public
+    _inherits(ScriptTimelineRecord, _WebInspector$TimelineRecord);
 
-    get eventType()
-    {
-        return this._eventType;
-    }
+    _createClass(ScriptTimelineRecord, [{
+        key: "saveIdentityToCookie",
+        value: function saveIdentityToCookie(cookie) {
+            _get(Object.getPrototypeOf(ScriptTimelineRecord.prototype), "saveIdentityToCookie", this).call(this, cookie);
 
-    get details()
-    {
-        return this._details;
-    }
+            cookie[WebInspector.ScriptTimelineRecord.EventTypeCookieKey] = this._eventType;
+            cookie[WebInspector.ScriptTimelineRecord.DetailsCookieKey] = this._details;
+        }
+    }, {
+        key: "_initializeProfileFromPayload",
 
-    get profile()
-    {
-        this._initializeProfileFromPayload();
-        return this._profile;
-    }
+        // Private
 
-    saveIdentityToCookie(cookie)
-    {
-        super.saveIdentityToCookie(cookie);
+        value: function _initializeProfileFromPayload(payload) {
+            if (this._profile || !this._profilePayload) return;
 
-        cookie[WebInspector.ScriptTimelineRecord.EventTypeCookieKey] = this._eventType;
-        cookie[WebInspector.ScriptTimelineRecord.DetailsCookieKey] = this._details;
-    }
+            var payload = this._profilePayload;
+            delete this._profilePayload;
 
-    // Private
+            console.assert(payload.rootNodes instanceof Array);
 
-    _initializeProfileFromPayload(payload)
-    {
-        if (this._profile || !this._profilePayload)
-            return;
+            function profileNodeFromPayload(nodePayload) {
+                console.assert("id" in nodePayload);
+                console.assert(nodePayload.calls instanceof Array);
 
-        var payload = this._profilePayload;
-        delete this._profilePayload;
+                if (nodePayload.url) {
+                    var sourceCode = WebInspector.frameResourceManager.resourceForURL(nodePayload.url);
+                    if (!sourceCode) sourceCode = WebInspector.debuggerManager.scriptsForURL(nodePayload.url)[0];
 
-        console.assert(payload.rootNodes instanceof Array);
+                    // The lineNumber is 1-based, but we expect 0-based.
+                    var lineNumber = nodePayload.lineNumber - 1;
 
-        function profileNodeFromPayload(nodePayload)
-        {
-            console.assert("id" in nodePayload);
-            console.assert(nodePayload.calls instanceof Array);
+                    var sourceCodeLocation = sourceCode ? sourceCode.createLazySourceCodeLocation(lineNumber, nodePayload.columnNumber) : null;
+                }
 
-            if (nodePayload.url) {
-                var sourceCode = WebInspector.frameResourceManager.resourceForURL(nodePayload.url);
-                if (!sourceCode)
-                    sourceCode = WebInspector.debuggerManager.scriptsForURL(nodePayload.url)[0];
+                var isProgramCode = nodePayload.functionName === "(program)";
+                var isAnonymousFunction = nodePayload.functionName === "(anonymous function)";
 
-                // The lineNumber is 1-based, but we expect 0-based.
-                var lineNumber = nodePayload.lineNumber - 1;
+                var type = isProgramCode ? WebInspector.ProfileNode.Type.Program : WebInspector.ProfileNode.Type.Function;
+                var functionName = !isProgramCode && !isAnonymousFunction && nodePayload.functionName !== "(unknown)" ? nodePayload.functionName : null;
+                var calls = nodePayload.calls.map(profileNodeCallFromPayload);
 
-                var sourceCodeLocation = sourceCode ? sourceCode.createLazySourceCodeLocation(lineNumber, nodePayload.columnNumber) : null;
+                return new WebInspector.ProfileNode(nodePayload.id, type, functionName, sourceCodeLocation, calls, nodePayload.children);
             }
 
-            var isProgramCode = nodePayload.functionName === "(program)";
-            var isAnonymousFunction = nodePayload.functionName === "(anonymous function)";
+            function profileNodeCallFromPayload(nodeCallPayload) {
+                console.assert("startTime" in nodeCallPayload);
+                console.assert("totalTime" in nodeCallPayload);
 
-            var type = isProgramCode ? WebInspector.ProfileNode.Type.Program : WebInspector.ProfileNode.Type.Function;
-            var functionName = !isProgramCode && !isAnonymousFunction && nodePayload.functionName !== "(unknown)" ? nodePayload.functionName : null;
-            var calls = nodePayload.calls.map(profileNodeCallFromPayload);
-
-            return new WebInspector.ProfileNode(nodePayload.id, type, functionName, sourceCodeLocation, calls, nodePayload.children);
-        }
-
-        function profileNodeCallFromPayload(nodeCallPayload)
-        {
-            console.assert("startTime" in nodeCallPayload);
-            console.assert("totalTime" in nodeCallPayload);
-
-            return new WebInspector.ProfileNodeCall(nodeCallPayload.startTime, nodeCallPayload.totalTime);
-        }
-
-        var rootNodes = payload.rootNodes;
-
-        // Iterate over the node tree using a stack. Doing this recursively can easily cause a stack overflow.
-        // We traverse the profile in post-order and convert the payloads in place until we get back to the root.
-        var stack = [{parent: {children: rootNodes}, index: 0, root: true}];
-        while (stack.length) {
-            var entry = stack.lastValue;
-
-            if (entry.index < entry.parent.children.length) {
-                var childNodePayload = entry.parent.children[entry.index];
-                if (childNodePayload.children && childNodePayload.children.length)
-                    stack.push({parent: childNodePayload, index: 0});
-
-                ++entry.index;
-            } else {
-                if (!entry.root)
-                    entry.parent.children = entry.parent.children.map(profileNodeFromPayload);
-                else
-                    rootNodes = rootNodes.map(profileNodeFromPayload);
-
-                stack.pop();
+                return new WebInspector.ProfileNodeCall(nodeCallPayload.startTime, nodeCallPayload.totalTime);
             }
-        }
 
-        this._profile = new WebInspector.Profile(rootNodes);
-    }
-};
+            var rootNodes = payload.rootNodes;
+
+            // Iterate over the node tree using a stack. Doing this recursively can easily cause a stack overflow.
+            // We traverse the profile in post-order and convert the payloads in place until we get back to the root.
+            var stack = [{ parent: { children: rootNodes }, index: 0, root: true }];
+            while (stack.length) {
+                var entry = stack.lastValue;
+
+                if (entry.index < entry.parent.children.length) {
+                    var childNodePayload = entry.parent.children[entry.index];
+                    if (childNodePayload.children && childNodePayload.children.length) stack.push({ parent: childNodePayload, index: 0 });
+
+                    ++entry.index;
+                } else {
+                    if (!entry.root) entry.parent.children = entry.parent.children.map(profileNodeFromPayload);else rootNodes = rootNodes.map(profileNodeFromPayload);
+
+                    stack.pop();
+                }
+            }
+
+            this._profile = new WebInspector.Profile(rootNodes);
+        }
+    }, {
+        key: "eventType",
+
+        // Public
+
+        get: function () {
+            return this._eventType;
+        }
+    }, {
+        key: "details",
+        get: function () {
+            return this._details;
+        }
+    }, {
+        key: "profile",
+        get: function () {
+            this._initializeProfileFromPayload();
+            return this._profile;
+        }
+    }]);
+
+    return ScriptTimelineRecord;
+})(WebInspector.TimelineRecord);
 
 WebInspector.ScriptTimelineRecord.EventType = {
     ScriptEvaluated: "script-timeline-record-script-evaluated",
@@ -153,13 +160,12 @@ WebInspector.ScriptTimelineRecord.EventType = {
     ConsoleProfileRecorded: "script-timeline-record-console-profile-recorded"
 };
 
-WebInspector.ScriptTimelineRecord.EventType.displayName = function(eventType, details, includeTimerIdentifierInMainTitle)
-{
+WebInspector.ScriptTimelineRecord.EventType.displayName = function (eventType, details, includeTimerIdentifierInMainTitle) {
     if (details && !WebInspector.ScriptTimelineRecord._eventDisplayNames) {
         // These display names are not localized because they closely represent
         // the real API name, just with word spaces and Title Case.
 
-        var nameMap = new Map;
+        var nameMap = new Map();
         nameMap.set("DOMActivate", "DOM Activate");
         nameMap.set("DOMCharacterDataModified", "DOM Character Data Modified");
         nameMap.set("DOMContentLoaded", "DOM Content Loaded");
@@ -294,7 +300,7 @@ WebInspector.ScriptTimelineRecord.EventType.displayName = function(eventType, de
         nameMap.set("webkitplaybacktargetavailabilitychanged", "Playback Target Availability Changed");
         nameMap.set("webkitpointerlockchange", "Pointer Lock Change");
         nameMap.set("webkitpointerlockerror", "Pointer Lock Error");
-        nameMap.set("webkitregionlayoutupdate", "Region Layout Update");    // COMPATIBILITY (iOS 7): regionLayoutUpdated was removed and replaced by regionOversetChanged.
+        nameMap.set("webkitregionlayoutupdate", "Region Layout Update"); // COMPATIBILITY (iOS 7): regionLayoutUpdated was removed and replaced by regionOversetChanged.
         nameMap.set("webkitregionoversetchange", "Region Overset Change");
         nameMap.set("webkitremovesourcebuffer", "Remove Source Buffer");
         nameMap.set("webkitresourcetimingbufferfull", "Resource Timing Buffer Full");
@@ -308,40 +314,36 @@ WebInspector.ScriptTimelineRecord.EventType.displayName = function(eventType, de
         WebInspector.ScriptTimelineRecord._eventDisplayNames = nameMap;
     }
 
-    switch(eventType) {
-    case WebInspector.ScriptTimelineRecord.EventType.ScriptEvaluated:
-        return WebInspector.UIString("Script Evaluated");
-    case WebInspector.ScriptTimelineRecord.EventType.EventDispatched:
-        if (details && (details instanceof String || typeof details === "string")) {
-            var eventDisplayName = WebInspector.ScriptTimelineRecord._eventDisplayNames.get(details) || details.capitalize();
-            return WebInspector.UIString("%s Event Dispatched").format(eventDisplayName);
-        }
+    switch (eventType) {
+        case WebInspector.ScriptTimelineRecord.EventType.ScriptEvaluated:
+            return WebInspector.UIString("Script Evaluated");
+        case WebInspector.ScriptTimelineRecord.EventType.EventDispatched:
+            if (details && (details instanceof String || typeof details === "string")) {
+                var eventDisplayName = WebInspector.ScriptTimelineRecord._eventDisplayNames.get(details) || details.capitalize();
+                return WebInspector.UIString("%s Event Dispatched").format(eventDisplayName);
+            }
 
-        return WebInspector.UIString("Event Dispatched");
-    case WebInspector.ScriptTimelineRecord.EventType.ProbeSampleRecorded:
-        return WebInspector.UIString("Probe Sample Recorded");
-    case WebInspector.ScriptTimelineRecord.EventType.ConsoleProfileRecorded:
-        if (details && (details instanceof String || typeof details === "string"))
-            return WebInspector.UIString("“%s” Profile Recorded").format(details);
-        return WebInspector.UIString("Console Profile Recorded");
-    case WebInspector.ScriptTimelineRecord.EventType.TimerFired:
-        if (details && includeTimerIdentifierInMainTitle)
-            return WebInspector.UIString("Timer %s Fired").format(details);
-        return WebInspector.UIString("Timer Fired");
-    case WebInspector.ScriptTimelineRecord.EventType.TimerInstalled:
-        if (details && includeTimerIdentifierInMainTitle)
-            return WebInspector.UIString("Timer %s Installed").format(details);
-        return WebInspector.UIString("Timer Installed");
-    case WebInspector.ScriptTimelineRecord.EventType.TimerRemoved:
-        if (details && includeTimerIdentifierInMainTitle)
-            return WebInspector.UIString("Timer %s Removed").format(details);
-        return WebInspector.UIString("Timer Removed");
-    case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameFired:
-        return WebInspector.UIString("Animation Frame Fired");
-    case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameRequested:
-        return WebInspector.UIString("Animation Frame Requested");
-    case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameCanceled:
-        return WebInspector.UIString("Animation Frame Canceled");
+            return WebInspector.UIString("Event Dispatched");
+        case WebInspector.ScriptTimelineRecord.EventType.ProbeSampleRecorded:
+            return WebInspector.UIString("Probe Sample Recorded");
+        case WebInspector.ScriptTimelineRecord.EventType.ConsoleProfileRecorded:
+            if (details && (details instanceof String || typeof details === "string")) return WebInspector.UIString("“%s” Profile Recorded").format(details);
+            return WebInspector.UIString("Console Profile Recorded");
+        case WebInspector.ScriptTimelineRecord.EventType.TimerFired:
+            if (details && includeTimerIdentifierInMainTitle) return WebInspector.UIString("Timer %s Fired").format(details);
+            return WebInspector.UIString("Timer Fired");
+        case WebInspector.ScriptTimelineRecord.EventType.TimerInstalled:
+            if (details && includeTimerIdentifierInMainTitle) return WebInspector.UIString("Timer %s Installed").format(details);
+            return WebInspector.UIString("Timer Installed");
+        case WebInspector.ScriptTimelineRecord.EventType.TimerRemoved:
+            if (details && includeTimerIdentifierInMainTitle) return WebInspector.UIString("Timer %s Removed").format(details);
+            return WebInspector.UIString("Timer Removed");
+        case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameFired:
+            return WebInspector.UIString("Animation Frame Fired");
+        case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameRequested:
+            return WebInspector.UIString("Animation Frame Requested");
+        case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameCanceled:
+            return WebInspector.UIString("Animation Frame Canceled");
     }
 };
 

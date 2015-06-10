@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 University of Washington. All rights reserved.
  * Copyright (C) 2014 Apple Inc. All rights reserved.
@@ -24,67 +32,93 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+WebInspector.ReplaySession = (function (_WebInspector$Object) {
+    function ReplaySession(identifier) {
+        _classCallCheck(this, ReplaySession);
 
-WebInspector.ReplaySession = class ReplaySession extends WebInspector.Object
-{
-    constructor(identifier)
-    {
-        super();
+        _get(Object.getPrototypeOf(ReplaySession.prototype), "constructor", this).call(this);
 
         this.identifier = identifier;
         this._segments = [];
         this._timestamp = null;
     }
 
-    // Static
+    _inherits(ReplaySession, _WebInspector$Object);
 
-    static fromPayload(identifier, payload)
-    {
-        var session = new WebInspector.ReplaySession(identifier);
-        session._updateFromPayload(payload);
-        return session;
-    }
+    _createClass(ReplaySession, [{
+        key: "segmentsChanged",
+        value: function segmentsChanged() {
+            // The replay manager won't update the session's list of segments nor create a new session.
+            ReplayAgent.getSessionData.promise(this.identifier).then(this._updateFromPayload.bind(this));
+        }
+    }, {
+        key: "_updateFromPayload",
 
-    // Public
+        // Private
 
-    get segments()
-    {
-        return this._segments.slice();
-    }
+        value: function _updateFromPayload(payload) {
+            var session = payload.session;
+            console.assert(session.id === this.identifier);
 
-    segmentsChanged()
-    {
-        // The replay manager won't update the session's list of segments nor create a new session.
-        ReplayAgent.getSessionData.promise(this.identifier)
-            .then(this._updateFromPayload.bind(this));
-    }
+            var segmentIds = session.segments;
+            var oldSegments = this._segments;
+            var pendingSegments = [];
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
 
-    // Private
+            try {
+                for (var _iterator = segmentIds[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var segmentId = _step.value;
 
-    _updateFromPayload(payload)
-    {
-        var session = payload.session;
-        console.assert(session.id === this.identifier);
-
-        var segmentIds = session.segments;
-        var oldSegments = this._segments;
-        var pendingSegments = [];
-        for (var segmentId of segmentIds)
-            pendingSegments.push(WebInspector.replayManager.getSegment(segmentId));
-
-        var session = this;
-        Promise.all(pendingSegments).then(
-            function(segmentsArray) {
-                session._segments = segmentsArray;
-                session.dispatchEventToListeners(WebInspector.ReplaySession.Event.SegmentsChanged, {oldSegments});
-            },
-            function(error) {
-                console.error("Problem resolving segments: ", error);
+                    pendingSegments.push(WebInspector.replayManager.getSegment(segmentId));
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator["return"]) {
+                        _iterator["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
             }
-        );
-    }
-};
+
+            var session = this;
+            Promise.all(pendingSegments).then(function (segmentsArray) {
+                session._segments = segmentsArray;
+                session.dispatchEventToListeners(WebInspector.ReplaySession.Event.SegmentsChanged, { oldSegments: oldSegments });
+            }, function (error) {
+                console.error("Problem resolving segments: ", error);
+            });
+        }
+    }, {
+        key: "segments",
+
+        // Public
+
+        get: function () {
+            return this._segments.slice();
+        }
+    }], [{
+        key: "fromPayload",
+
+        // Static
+
+        value: function fromPayload(identifier, payload) {
+            var session = new WebInspector.ReplaySession(identifier);
+            session._updateFromPayload(payload);
+            return session;
+        }
+    }]);
+
+    return ReplaySession;
+})(WebInspector.Object);
 
 WebInspector.ReplaySession.Event = {
-    SegmentsChanged: "replay-session-segments-changed",
+    SegmentsChanged: "replay-session-segments-changed"
 };

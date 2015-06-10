@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013-2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DefaultDashboardView = class DefaultDashboardView extends WebInspector.DashboardView
-{
-    constructor(representedObject)
-    {
-        super(representedObject, "default");
+WebInspector.DefaultDashboardView = (function (_WebInspector$DashboardView) {
+    function DefaultDashboardView(representedObject) {
+        _classCallCheck(this, DefaultDashboardView);
+
+        _get(Object.getPrototypeOf(DefaultDashboardView.prototype), "constructor", this).call(this, representedObject, "default");
 
         representedObject.addEventListener(WebInspector.DefaultDashboard.Event.DataDidChange, window.requestAnimationFrame.bind(null, this._updateDisplay.bind(this)));
 
@@ -50,116 +58,113 @@ WebInspector.DefaultDashboardView = class DefaultDashboardView extends WebInspec
             }
         };
 
-        for (var name in this._items)
-            this._appendElementForNamedItem(name);
-    }
-    
-    // Private
-
-    _updateDisplay()
-    {
-        var dashboard = this.representedObject;
-
-        for (var category of ["logs", "issues", "errors"])
-            this._setConsoleItemValue(category, dashboard[category]);
-
-        var countItem = this._items.resourcesCount;
-        countItem.text = this._formatPossibleLargeNumber(dashboard.resourcesCount);
-        this._setItemEnabled(countItem, dashboard.resourcesCount > 0);
+        for (var name in this._items) this._appendElementForNamedItem(name);
     }
 
-    _formatPossibleLargeNumber(number)
-    {
-        return number > 999 ? WebInspector.UIString("999+") : number;
-    }
+    _inherits(DefaultDashboardView, _WebInspector$DashboardView);
 
-    _appendElementForNamedItem(name)
-    {
-        var item = this._items[name];
+    _createClass(DefaultDashboardView, [{
+        key: "_updateDisplay",
 
-        item.container = this._element.appendChild(document.createElement("div"));
-        item.container.className = "item " + name;
-        item.container.title = item.tooltip;
+        // Private
 
-        item.container.appendChild(document.createElement("img"));
+        value: function _updateDisplay() {
+            var dashboard = this.representedObject;
 
-        item.outlet = item.container.appendChild(document.createElement("div"));
-
-        Object.defineProperty(item, "text", {
-            set: function(newText)
-            {
-                if (newText === item.outlet.textContent)
-                    return;
-                item.outlet.textContent = newText;
-            }
-        });
-
-        item.container.addEventListener("click", function(event) {
-            this._itemWasClicked(name);
-        }.bind(this));
-    }
-
-    _itemWasClicked(name)
-    {
-        var item = this._items[name];
-        if (!item.container.classList.contains(WebInspector.DefaultDashboardView.EnabledItemStyleClassName))
-            return;
-
-        if (item.handler)
-            item.handler.call(this);
-    }
-
-    _resourcesWasClicked()
-    {
-        WebInspector.showResourcesTab();
-    }
-
-    _consoleItemWasClicked(scope)
-    {
-        WebInspector.showConsoleTab(scope);
-    }
-
-    _setConsoleItemValue(itemName, newValue)
-    {
-        var iVarName = "_" + itemName;
-        var previousValue = this[iVarName];
-        this[iVarName] = newValue;
-
-        var item = this._items[itemName];
-        item.text = this._formatPossibleLargeNumber(newValue);
-        this._setItemEnabled(item, newValue > 0);
-
-        if (newValue <= previousValue)
-            return;
-
-        var container = item.container;
-
-        function animationEnded(event)
-        {
-            if (event.target === container) {
-                container.classList.remove("pulsing");
-                container.removeEventListener("webkitAnimationEnd", animationEnded);
-            }
+            var _arr = ["logs", "issues", "errors"];
+            for (var _i = 0; _i < _arr.length; _i++) {
+                var category = _arr[_i];
+                this._setConsoleItemValue(category, dashboard[category]);
+            }var countItem = this._items.resourcesCount;
+            countItem.text = this._formatPossibleLargeNumber(dashboard.resourcesCount);
+            this._setItemEnabled(countItem, dashboard.resourcesCount > 0);
         }
+    }, {
+        key: "_formatPossibleLargeNumber",
+        value: function _formatPossibleLargeNumber(number) {
+            return number > 999 ? WebInspector.UIString("999+") : number;
+        }
+    }, {
+        key: "_appendElementForNamedItem",
+        value: function _appendElementForNamedItem(name) {
+            var item = this._items[name];
 
-        // We need to force a style invalidation in the case where we already
-        // were animating this item after we've removed the pulsing CSS class.
-        if (container.classList.contains("pulsing")) {
-            container.classList.remove("pulsing");
-            container.recalculateStyles();
-        } else
-            container.addEventListener("webkitAnimationEnd", animationEnded);
+            item.container = this._element.appendChild(document.createElement("div"));
+            item.container.className = "item " + name;
+            item.container.title = item.tooltip;
 
-        container.classList.add("pulsing");
-    }
+            item.container.appendChild(document.createElement("img"));
 
-    _setItemEnabled(item, enabled)
-    {
-        if (enabled)
-            item.container.classList.add(WebInspector.DefaultDashboardView.EnabledItemStyleClassName);
-        else
-            item.container.classList.remove(WebInspector.DefaultDashboardView.EnabledItemStyleClassName);
-    }
-};
+            item.outlet = item.container.appendChild(document.createElement("div"));
+
+            Object.defineProperty(item, "text", {
+                set: function set(newText) {
+                    if (newText === item.outlet.textContent) return;
+                    item.outlet.textContent = newText;
+                }
+            });
+
+            item.container.addEventListener("click", (function (event) {
+                this._itemWasClicked(name);
+            }).bind(this));
+        }
+    }, {
+        key: "_itemWasClicked",
+        value: function _itemWasClicked(name) {
+            var item = this._items[name];
+            if (!item.container.classList.contains(WebInspector.DefaultDashboardView.EnabledItemStyleClassName)) return;
+
+            if (item.handler) item.handler.call(this);
+        }
+    }, {
+        key: "_resourcesWasClicked",
+        value: function _resourcesWasClicked() {
+            WebInspector.showResourcesTab();
+        }
+    }, {
+        key: "_consoleItemWasClicked",
+        value: function _consoleItemWasClicked(scope) {
+            WebInspector.showConsoleTab(scope);
+        }
+    }, {
+        key: "_setConsoleItemValue",
+        value: function _setConsoleItemValue(itemName, newValue) {
+            var iVarName = "_" + itemName;
+            var previousValue = this[iVarName];
+            this[iVarName] = newValue;
+
+            var item = this._items[itemName];
+            item.text = this._formatPossibleLargeNumber(newValue);
+            this._setItemEnabled(item, newValue > 0);
+
+            if (newValue <= previousValue) return;
+
+            var container = item.container;
+
+            function animationEnded(event) {
+                if (event.target === container) {
+                    container.classList.remove("pulsing");
+                    container.removeEventListener("webkitAnimationEnd", animationEnded);
+                }
+            }
+
+            // We need to force a style invalidation in the case where we already
+            // were animating this item after we've removed the pulsing CSS class.
+            if (container.classList.contains("pulsing")) {
+                container.classList.remove("pulsing");
+                container.recalculateStyles();
+            } else container.addEventListener("webkitAnimationEnd", animationEnded);
+
+            container.classList.add("pulsing");
+        }
+    }, {
+        key: "_setItemEnabled",
+        value: function _setItemEnabled(item, enabled) {
+            if (enabled) item.container.classList.add(WebInspector.DefaultDashboardView.EnabledItemStyleClassName);else item.container.classList.remove(WebInspector.DefaultDashboardView.EnabledItemStyleClassName);
+        }
+    }]);
+
+    return DefaultDashboardView;
+})(WebInspector.DashboardView);
 
 WebInspector.DefaultDashboardView.EnabledItemStyleClassName = "enabled";

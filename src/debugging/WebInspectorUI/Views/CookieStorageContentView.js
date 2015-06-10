@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CookieStorageContentView = function(representedObject)
-{
+WebInspector.CookieStorageContentView = function (representedObject) {
     WebInspector.ContentView.call(this, representedObject);
 
     this.element.classList.add(WebInspector.CookieStorageContentView.StyleClassName);
@@ -34,17 +33,14 @@ WebInspector.CookieStorageContentView = function(representedObject)
 
 WebInspector.CookieStorageContentView.StyleClassName = "cookie-storage";
 
-WebInspector.CookieStorageContentView.prototype = {
+WebInspector.CookieStorageContentView.prototype = Object.defineProperties({
     constructor: WebInspector.CookieStorageContentView,
 
     // Public
 
-    update: function()
-    {
-        function callback(error, cookies)
-        {
-            if (error)
-                return;
+    update: function update() {
+        function callback(error, cookies) {
+            if (error) return;
 
             this._cookies = this._filterCookies(cookies);
             this._rebuildTable();
@@ -53,33 +49,22 @@ WebInspector.CookieStorageContentView.prototype = {
         PageAgent.getCookies(callback.bind(this));
     },
 
-    updateLayout: function()
-    {
-        if (this._dataGrid)
-            this._dataGrid.updateLayout();
+    updateLayout: function updateLayout() {
+        if (this._dataGrid) this._dataGrid.updateLayout();
     },
 
-    saveToCookie: function(cookie)
-    {
+    saveToCookie: function saveToCookie(cookie) {
         cookie.type = WebInspector.ContentViewCookieType.CookieStorage;
         cookie.host = this.representedObject.host;
     },
 
-    get scrollableElements()
-    {
-        if (!this._dataGrid)
-            return [];
-        return [this._dataGrid.scrollContainer];
-    },
-
     // Private
 
-    _rebuildTable: function()
-    {
+    _rebuildTable: function _rebuildTable() {
         // FIXME: If there are no cookies, do we want to show an empty datagrid, or do something like the old
         // inspector and show some text saying there are no cookies?
         if (!this._dataGrid) {
-            var columns = {name: {}, value: {}, domain: {}, path: {}, expires: {}, size: {}, http: {}, secure: {}};
+            var columns = { name: {}, value: {}, domain: {}, path: {}, expires: {}, size: {}, http: {}, secure: {} };
 
             columns.name.title = WebInspector.UIString("Name");
             columns.name.sortable = true;
@@ -126,33 +111,52 @@ WebInspector.CookieStorageContentView.prototype = {
         console.assert(this._dataGrid);
         this._dataGrid.removeChildren();
 
-        for (var cookie of this._cookies) {
-            const checkmark = "\u2713";
-            var data = {
-                "name": cookie.name,
-                "value": cookie.value,
-                "domain": cookie.domain || "",
-                "path": cookie.path || "",
-                "expires": "",
-                "size": Number.bytesToString(cookie.size),
-                "http": cookie.httpOnly ? checkmark : "",
-                "secure": cookie.secure ? checkmark : "",
-            };
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-            if (cookie.type !== WebInspector.CookieType.Request)
-                data["expires"] = cookie.session ? WebInspector.UIString("Session") : new Date(cookie.expires).toLocaleString();
+        try {
+            for (var _iterator = this._cookies[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var cookie = _step.value;
 
-            var node = new WebInspector.DataGridNode(data);
-            node.cookie = cookie;
+                var checkmark = "✓";
+                var data = {
+                    "name": cookie.name,
+                    "value": cookie.value,
+                    "domain": cookie.domain || "",
+                    "path": cookie.path || "",
+                    "expires": "",
+                    "size": Number.bytesToString(cookie.size),
+                    "http": cookie.httpOnly ? checkmark : "",
+                    "secure": cookie.secure ? checkmark : ""
+                };
 
-            this._dataGrid.appendChild(node);
+                if (cookie.type !== WebInspector.CookieType.Request) data["expires"] = cookie.session ? WebInspector.UIString("Session") : new Date(cookie.expires).toLocaleString();
+
+                var node = new WebInspector.DataGridNode(data);
+                node.cookie = cookie;
+
+                this._dataGrid.appendChild(node);
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
 
         this._dataGrid.sortColumnIdentifier = "name";
     },
 
-    _filterCookies: function(cookies)
-    {
+    _filterCookies: function _filterCookies(cookies) {
         var filteredCookies = [];
         var resourcesForDomain = [];
 
@@ -161,15 +165,13 @@ WebInspector.CookieStorageContentView.prototype = {
             var resources = frames[i].resources;
             for (var j = 0; j < resources.length; ++j) {
                 var urlComponents = resources[j].urlComponents;
-                if (urlComponents && urlComponents.host && urlComponents.host === this.representedObject.host)
-                    resourcesForDomain.push(resources[j].url);
+                if (urlComponents && urlComponents.host && urlComponents.host === this.representedObject.host) resourcesForDomain.push(resources[j].url);
             }
 
             // The main resource isn't always in the list of resources, make sure to add it to the list of resources
             // we get the URLs from.
             var mainResourceURLComponents = frames[i].mainResource.urlComponents;
-            if (mainResourceURLComponents && mainResourceURLComponents.host && mainResourceURLComponents.host === this.representedObject.host)
-                resourcesForDomain.push(frames[i].mainResource.url);
+            if (mainResourceURLComponents && mainResourceURLComponents.host && mainResourceURLComponents.host === this.representedObject.host) resourcesForDomain.push(frames[i].mainResource.url);
         }
 
         for (var i = 0; i < cookies.length; ++i) {
@@ -184,80 +186,83 @@ WebInspector.CookieStorageContentView.prototype = {
         return filteredCookies;
     },
 
-    _sortDataGrid: function()
-    {
-        function localeCompare(field, nodeA, nodeB)
-        {
+    _sortDataGrid: function _sortDataGrid() {
+        function localeCompare(field, nodeA, nodeB) {
             return (nodeA.data[field] + "").localeCompare(nodeB.data[field] + "");
         }
 
-        function numberCompare(field, nodeA, nodeB)
-        {
+        function numberCompare(field, nodeA, nodeB) {
             return nodeA.cookie[field] - nodeB.cookie[field];
         }
 
-        function expiresCompare(nodeA, nodeB)
-        {
-            if (nodeA.cookie.session !== nodeB.cookie.session)
-                return nodeA.cookie.session ? 1 : -1;
+        function expiresCompare(nodeA, nodeB) {
+            if (nodeA.cookie.session !== nodeB.cookie.session) return nodeA.cookie.session ? 1 : -1;
 
-            if (nodeA.cookie.session)
-                return 0;
+            if (nodeA.cookie.session) return 0;
 
             return nodeA.data["expires"] - nodeB.data["expires"];
         }
 
         var comparator;
         switch (this._dataGrid.sortColumnIdentifier) {
-            case "value": comparator = localeCompare.bind(this, "value"); break;
-            case "domain": comparator = localeCompare.bind(this, "domain"); break;
-            case "path": comparator = localeCompare.bind(this, "path"); break;
-            case "expires": comparator = expiresCompare; break;
-            case "size": comparator = numberCompare.bind(this, "size"); break;
-            case "http": comparator = localeCompare.bind(this, "http"); break;
-            case "secure": comparator = localeCompare.bind(this, "secure"); break;
+            case "value":
+                comparator = localeCompare.bind(this, "value");break;
+            case "domain":
+                comparator = localeCompare.bind(this, "domain");break;
+            case "path":
+                comparator = localeCompare.bind(this, "path");break;
+            case "expires":
+                comparator = expiresCompare;break;
+            case "size":
+                comparator = numberCompare.bind(this, "size");break;
+            case "http":
+                comparator = localeCompare.bind(this, "http");break;
+            case "secure":
+                comparator = localeCompare.bind(this, "secure");break;
             case "name":
-            default: comparator = localeCompare.bind(this, "name"); break;
+            default:
+                comparator = localeCompare.bind(this, "name");break;
         }
 
         console.assert(comparator);
         this._dataGrid.sortNodes(comparator);
     },
 
-    _deleteCallback: function(node)
-    {
-        if (!node || !node.cookie)
-            return;
+    _deleteCallback: function _deleteCallback(node) {
+        if (!node || !node.cookie) return;
 
         var cookie = node.cookie;
         var cookieURL = (cookie.secure ? "https://" : "http://") + cookie.domain + cookie.path;
 
         // COMPATIBILITY (iOS 6): PageAgent.deleteCookie used to take 'domain', now takes 'url'. Send both.
-        PageAgent.deleteCookie.invoke({cookieName: cookie.name, domain: cookie.domain, url: cookieURL});
+        PageAgent.deleteCookie.invoke({ cookieName: cookie.name, domain: cookie.domain, url: cookieURL });
 
         this.update();
     }
-};
+}, {
+    scrollableElements: {
+        get: function () {
+            if (!this._dataGrid) return [];
+            return [this._dataGrid.scrollContainer];
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.CookieStorageContentView.prototype.__proto__ = WebInspector.ContentView.prototype;
 
-WebInspector.cookieMatchesResourceURL = function(cookie, resourceURL)
-{
+WebInspector.cookieMatchesResourceURL = function (cookie, resourceURL) {
     var parsedURL = parseURL(resourceURL);
-    if (!parsedURL || !WebInspector.cookieDomainMatchesResourceDomain(cookie.domain, parsedURL.host))
-        return false;
+    if (!parsedURL || !WebInspector.cookieDomainMatchesResourceDomain(cookie.domain, parsedURL.host)) return false;
 
-    return (parsedURL.path.startsWith(cookie.path)
-        && (!cookie.port || parsedURL.port === cookie.port)
-        && (!cookie.secure || parsedURL.scheme === "https"));
-}
+    return parsedURL.path.startsWith(cookie.path) && (!cookie.port || parsedURL.port === cookie.port) && (!cookie.secure || parsedURL.scheme === "https");
+};
 
-WebInspector.cookieDomainMatchesResourceDomain = function(cookieDomain, resourceDomain)
-{
-    if (cookieDomain.charAt(0) !== ".")
-        return resourceDomain === cookieDomain;
+WebInspector.cookieDomainMatchesResourceDomain = function (cookieDomain, resourceDomain) {
+    if (cookieDomain.charAt(0) !== ".") return resourceDomain === cookieDomain;
     return !!resourceDomain.match(new RegExp("^([^\\.]+\\.)?" + cookieDomain.substring(1).escapeForRegExp() + "$"), "i");
-}
+};
 
 WebInspector.CookieType = {
     Request: 0,

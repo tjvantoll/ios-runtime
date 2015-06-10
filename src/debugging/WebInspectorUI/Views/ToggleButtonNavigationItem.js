@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ToggleButtonNavigationItem = function(identifier, defaultToolTip, alternateToolTip, defaultImage, alternateImage, imageWidth, imageHeight, suppressEmboss) {
+WebInspector.ToggleButtonNavigationItem = function (identifier, defaultToolTip, alternateToolTip, defaultImage, alternateImage, imageWidth, imageHeight, suppressEmboss) {
     WebInspector.ButtonNavigationItem.call(this, identifier, defaultToolTip, defaultImage, imageWidth, imageHeight, suppressEmboss);
 
     this._toggled = false;
@@ -35,69 +35,8 @@ WebInspector.ToggleButtonNavigationItem = function(identifier, defaultToolTip, a
 
 WebInspector.ToggleButtonNavigationItem.StyleClassName = "toggle";
 
-WebInspector.ToggleButtonNavigationItem.prototype = {
+WebInspector.ToggleButtonNavigationItem.prototype = Object.defineProperties({
     constructor: WebInspector.ToggleButtonNavigationItem,
-
-    // Public
-
-    get defaultToolTip()
-    {
-        return this._defaultToolTip;
-    },
-
-    get alternateToolTip()
-    {
-        return this._alternateToolTip;
-    },
-
-    set alternateToolTip(toolTip)
-    {
-        this._alternateToolTip = toolTip;
-
-        if (this._toggled)
-            this.toolTip = this._alternateToolTip;
-    },
-
-    get defaultImage()
-    {
-        return this._defaultImage;
-    },
-
-    get alternateImage()
-    {
-        return this._alternateImage;
-    },
-
-    set alternateImage(image)
-    {
-        this._alternateImage = image;
-
-        if (this._toggled)
-            this.image = this._alternateImage;
-    },
-
-    get toggled()
-    {
-        return this._toggled;
-    },
-
-    set toggled(flag)
-    {
-        flag = flag || false;
-
-        if (this._toggled === flag)
-            return;
-
-        this._toggled = flag;
-
-        if (this._toggled) {
-            this.toolTip = this._alternateToolTip;
-            this.image = this._alternateImage;
-        } else {
-            this.toolTip = this._defaultToolTip;
-            this.image = this._defaultImage;
-        }
-    },
 
     // Private
 
@@ -107,6 +46,68 @@ WebInspector.ToggleButtonNavigationItem.prototype = {
     // FIXME: We could try overriding _canvasIdentifier() to return different identifiers. If we did that
     // we would also need to override generateStyleText() to use the different identifiers.
     _imageCacheable: false
-};
+}, {
+    defaultToolTip: { // Public
+
+        get: function () {
+            return this._defaultToolTip;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    alternateToolTip: {
+        get: function () {
+            return this._alternateToolTip;
+        },
+        set: function (toolTip) {
+            this._alternateToolTip = toolTip;
+
+            if (this._toggled) this.toolTip = this._alternateToolTip;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    defaultImage: {
+        get: function () {
+            return this._defaultImage;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    alternateImage: {
+        get: function () {
+            return this._alternateImage;
+        },
+        set: function (image) {
+            this._alternateImage = image;
+
+            if (this._toggled) this.image = this._alternateImage;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    toggled: {
+        get: function () {
+            return this._toggled;
+        },
+        set: function (flag) {
+            flag = flag || false;
+
+            if (this._toggled === flag) return;
+
+            this._toggled = flag;
+
+            if (this._toggled) {
+                this.toolTip = this._alternateToolTip;
+                this.image = this._alternateImage;
+            } else {
+                this.toolTip = this._defaultToolTip;
+                this.image = this._defaultImage;
+            }
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ToggleButtonNavigationItem.prototype.__proto__ = WebInspector.ButtonNavigationItem.prototype;

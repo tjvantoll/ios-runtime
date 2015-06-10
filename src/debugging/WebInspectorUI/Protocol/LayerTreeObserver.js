@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,13 +27,20 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.LayerTreeObserver = class LayerTreeObserver
-{
-    // Events defined by the "LayerTree" domain.
-
-    layerTreeDidChange()
-    {
-        if (WebInspector.layerTreeManager.supported)
-            WebInspector.layerTreeManager.layerTreeDidChange();
+WebInspector.LayerTreeObserver = (function () {
+    function LayerTreeObserver() {
+        _classCallCheck(this, LayerTreeObserver);
     }
-};
+
+    _createClass(LayerTreeObserver, [{
+        key: "layerTreeDidChange",
+
+        // Events defined by the "LayerTree" domain.
+
+        value: function layerTreeDidChange() {
+            if (WebInspector.layerTreeManager.supported) WebInspector.layerTreeManager.layerTreeDidChange();
+        }
+    }]);
+
+    return LayerTreeObserver;
+})();

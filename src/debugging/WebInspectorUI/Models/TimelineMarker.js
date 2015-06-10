@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TimelineMarker = class TimelineMarker extends WebInspector.Object
-{
-    constructor(time, type)
-    {
-        super();
+WebInspector.TimelineMarker = (function (_WebInspector$Object) {
+    function TimelineMarker(time, type) {
+        _classCallCheck(this, TimelineMarker);
+
+        _get(Object.getPrototypeOf(TimelineMarker.prototype), "constructor", this).call(this);
 
         console.assert(type);
 
@@ -35,28 +43,32 @@ WebInspector.TimelineMarker = class TimelineMarker extends WebInspector.Object
         this._type = type;
     }
 
-    // Public
+    _inherits(TimelineMarker, _WebInspector$Object);
 
-    get time()
-    {
-        return this._time;
-    }
+    _createClass(TimelineMarker, [{
+        key: "time",
 
-    set time(x)
-    {
-        if (this._time === x)
-            return;
+        // Public
 
-        this._time = x || 0;
+        get: function () {
+            return this._time;
+        },
+        set: function (x) {
+            if (this._time === x) return;
 
-        this.dispatchEventToListeners(WebInspector.TimelineMarker.Event.TimeChanged);
-    }
+            this._time = x || 0;
 
-    get type()
-    {
-        return this._type;
-    }
-};
+            this.dispatchEventToListeners(WebInspector.TimelineMarker.Event.TimeChanged);
+        }
+    }, {
+        key: "type",
+        get: function () {
+            return this._type;
+        }
+    }]);
+
+    return TimelineMarker;
+})(WebInspector.Object);
 
 WebInspector.TimelineMarker.Event = {
     TimeChanged: "timeline-marker-time-changed"

@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,26 +27,31 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CookieStorageObject = class CookieStorageObject
-{
-    constructor(host)
-    {
+WebInspector.CookieStorageObject = (function () {
+    function CookieStorageObject(host) {
+        _classCallCheck(this, CookieStorageObject);
+
         this._host = host;
     }
 
-    // Public
+    _createClass(CookieStorageObject, [{
+        key: "saveIdentityToCookie",
+        value: function saveIdentityToCookie(cookie) {
+            // FIXME: This class will need to look up cookies that are set for this host.
+            cookie[WebInspector.CookieStorageObject.CookieHostCookieKey] = this.host;
+        }
+    }, {
+        key: "host",
 
-    get host()
-    {
-        return this._host;
-    }
+        // Public
 
-    saveIdentityToCookie(cookie)
-    {
-        // FIXME: This class will need to look up cookies that are set for this host.
-        cookie[WebInspector.CookieStorageObject.CookieHostCookieKey] = this.host;
-    }    
-};
+        get: function () {
+            return this._host;
+        }
+    }]);
+
+    return CookieStorageObject;
+})();
 
 WebInspector.CookieStorageObject.TypeIdentifier = "cookie-storage";
 WebInspector.CookieStorageObject.CookieHostCookieKey = "cookie-storage-host";

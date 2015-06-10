@@ -24,8 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ProbeSetDataGridNode = function(dataGrid)
-{
+WebInspector.ProbeSetDataGridNode = function (dataGrid) {
     console.assert(dataGrid instanceof WebInspector.ProbeSetDataGrid, "Invalid ProbeSetDataGrid argument:", dataGrid);
 
     WebInspector.DataGridNode.call(this, this.data);
@@ -40,63 +39,81 @@ WebInspector.ProbeSetDataGridNode = function(dataGrid)
 WebInspector.ProbeSetDataGridNode.SeparatorStyleClassName = "separator";
 WebInspector.ProbeSetDataGridNode.UnknownValueStyleClassName = "unknown-value";
 
-WebInspector.ProbeSetDataGridNode.prototype = {
+WebInspector.ProbeSetDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.ProbeSetDataGridNode,
     __proto__: WebInspector.DataGridNode.prototype,
 
-    // Public
-
-    get element()
-    {
-        return this._element;
-    },
-
-    get data()
-    {
-        return this._data;
-    },
-
-    set frame(value)
-    {
-        console.assert(value instanceof WebInspector.ProbeSetDataFrame, "Invalid ProbeSetDataFrame argument: ", value);
-        this._frame = value;
-
-        var data = {};
-        for (var probe of this.dataGrid.probeSet.probes) {
-            var sample = this.frame[probe.id];
-            if (!sample || !sample.object)
-                data[probe.id] = WebInspector.ProbeSetDataFrame.MissingValue;
-            else
-                data[probe.id] = sample.object;
-        }
-        this._data = data;
-    },
-
-    get frame()
-    {
-        return this._frame;
-    },
-
-    createCellContent: function(columnIdentifier, cell)
-    {
+    createCellContent: function createCellContent(columnIdentifier, cell) {
         var sample = this.data[columnIdentifier];
         if (sample === WebInspector.ProbeSetDataFrame.MissingValue) {
             cell.classList.add(WebInspector.ProbeSetDataGridNode.UnknownValueStyleClassName);
             return sample;
         }
 
-        if (sample instanceof WebInspector.RemoteObject)
-            return WebInspector.FormattedValue.createObjectTreeOrFormattedValueForRemoteObject(sample, null);
+        if (sample instanceof WebInspector.RemoteObject) return WebInspector.FormattedValue.createObjectTreeOrFormattedValueForRemoteObject(sample, null);
 
         return sample;
     },
 
-    updateCellsFromFrame: function(frame, probeSet)
-    {
-    },
+    updateCellsFromFrame: function updateCellsFromFrame(frame, probeSet) {},
 
-    updateCellsForSeparator: function(frame, probeSet)
-    {
+    updateCellsForSeparator: function updateCellsForSeparator(frame, probeSet) {
         this._element.classList.add(WebInspector.ProbeSetDataGridNode.SeparatorStyleClassName);
     }
-};
+}, {
+    element: { // Public
+
+        get: function () {
+            return this._element;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            return this._data;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    frame: {
+        set: function (value) {
+            console.assert(value instanceof WebInspector.ProbeSetDataFrame, "Invalid ProbeSetDataFrame argument: ", value);
+            this._frame = value;
+
+            var data = {};
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = this.dataGrid.probeSet.probes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var probe = _step.value;
+
+                    var sample = this.frame[probe.id];
+                    if (!sample || !sample.object) data[probe.id] = WebInspector.ProbeSetDataFrame.MissingValue;else data[probe.id] = sample.object;
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator["return"]) {
+                        _iterator["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            this._data = data;
+        },
+        get: function () {
+            return this._frame;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

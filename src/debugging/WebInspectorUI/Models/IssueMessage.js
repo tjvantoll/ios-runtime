@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.IssueMessage = class IssueMessage extends WebInspector.Object
-{
-    constructor(source, level, text, url, lineNumber, columnNumber, parameters)
-    {
-        super();
+WebInspector.IssueMessage = (function (_WebInspector$Object) {
+    function IssueMessage(source, level, text, url, lineNumber, columnNumber, parameters) {
+        _classCallCheck(this, IssueMessage);
+
+        _get(Object.getPrototypeOf(IssueMessage.prototype), "constructor", this).call(this);
 
         this._level = level;
         this._text = text;
@@ -37,11 +45,9 @@ WebInspector.IssueMessage = class IssueMessage extends WebInspector.Object
         // once we don't get that value anymore from WebCore.
 
         // FIXME: If the URL is undefined, get the URL from the stacktrace.
-        if (url && url !== "undefined")
-            this._url = url;
+        if (url && url !== "undefined") this._url = url;
 
-        if (typeof lineNumber === "number" && lineNumber >= 0 && this._url)
-            this._sourceCodeLocation = new WebInspector.SourceCodeLocation(WebInspector.frameResourceManager.resourceForURL(url), lineNumber, columnNumber);
+        if (typeof lineNumber === "number" && lineNumber >= 0 && this._url) this._sourceCodeLocation = new WebInspector.SourceCodeLocation(WebInspector.frameResourceManager.resourceForURL(url), lineNumber, columnNumber);
 
         // FIXME: <https://webkit.org/b/142553> Web Inspector: Merge IssueMessage/ConsoleMessage - both attempt to modify the Console Messages parameter independently
 
@@ -53,191 +59,186 @@ WebInspector.IssueMessage = class IssueMessage extends WebInspector.Object
                     continue;
                 }
 
-                if (typeof parameters[i] === "object")
-                    this._parameters.push(WebInspector.RemoteObject.fromPayload(parameters[i]));
-                else
-                    this._parameters.push(WebInspector.RemoteObject.fromPrimitiveValue(parameters[i]));
+                if (typeof parameters[i] === "object") this._parameters.push(WebInspector.RemoteObject.fromPayload(parameters[i]));else this._parameters.push(WebInspector.RemoteObject.fromPrimitiveValue(parameters[i]));
             }
         }
 
         this._formatTextIfNecessary();
 
         switch (source) {
-        case "javascript":
-            // FIXME: It would be nice if we had this information (the specific type of JavaScript error)
-            // as part of the data passed from WebCore, instead of having to determine it ourselves.
-            var prefixRegex = /^([^:]+): (?:DOM Exception \d+: )?/;
-            var match = prefixRegex.exec(this._text);
-            if (match && match[1] in WebInspector.IssueMessage.Type._prefixTypeMap) {
-                this._type = WebInspector.IssueMessage.Type._prefixTypeMap[match[1]];
-                this._text = this._text.substring(match[0].length);
-            } else
+            case "javascript":
+                // FIXME: It would be nice if we had this information (the specific type of JavaScript error)
+                // as part of the data passed from WebCore, instead of having to determine it ourselves.
+                var prefixRegex = /^([^:]+): (?:DOM Exception \d+: )?/;
+                var match = prefixRegex.exec(this._text);
+                if (match && match[1] in WebInspector.IssueMessage.Type._prefixTypeMap) {
+                    this._type = WebInspector.IssueMessage.Type._prefixTypeMap[match[1]];
+                    this._text = this._text.substring(match[0].length);
+                } else this._type = WebInspector.IssueMessage.Type.OtherIssue;
+                break;
+
+            case "html": // COMPATIBILITY (iOS 6).
+            case "css":
+            case "xml":
+                this._type = WebInspector.IssueMessage.Type.PageIssue;
+                break;
+
+            case "network":
+                this._type = WebInspector.IssueMessage.Type.NetworkIssue;
+                break;
+
+            case "security":
+                this._type = WebInspector.IssueMessage.Type.SecurityIssue;
+                break;
+
+            case "console-api":
+            case "storage":
+            case "appcache":
+            case "rendering":
+            case "other":
                 this._type = WebInspector.IssueMessage.Type.OtherIssue;
-            break;
+                break;
 
-        case "html": // COMPATIBILITY (iOS 6).
-        case "css":
-        case "xml":
-            this._type = WebInspector.IssueMessage.Type.PageIssue;
-            break;
-
-        case "network":
-            this._type = WebInspector.IssueMessage.Type.NetworkIssue;
-            break;
-
-        case "security":
-            this._type = WebInspector.IssueMessage.Type.SecurityIssue;
-            break;
-
-        case "console-api":
-        case "storage":
-        case "appcache":
-        case "rendering":
-        case "other":
-            this._type = WebInspector.IssueMessage.Type.OtherIssue;
-            break;
-
-        default:
-            console.error("Unknown issue source:", source);
-            this._type = WebInspector.IssueMessage.Type.OtherIssue;
+            default:
+                console.error("Unknown issue source:", source);
+                this._type = WebInspector.IssueMessage.Type.OtherIssue;
         }
 
-        if (this._sourceCodeLocation)
-            this._sourceCodeLocation.addEventListener(WebInspector.SourceCodeLocation.Event.DisplayLocationChanged, this._sourceCodeLocationDisplayLocationChanged, this);
+        if (this._sourceCodeLocation) this._sourceCodeLocation.addEventListener(WebInspector.SourceCodeLocation.Event.DisplayLocationChanged, this._sourceCodeLocationDisplayLocationChanged, this);
     }
 
-    // Static
+    _inherits(IssueMessage, _WebInspector$Object);
 
-    static displayName(type)
-    {
-        switch(type) {
-        case WebInspector.IssueMessage.Type.SemanticIssue:
-            return WebInspector.UIString("Semantic Issue");
-        case WebInspector.IssueMessage.Type.RangeIssue:
-            return WebInspector.UIString("Range Issue");
-        case WebInspector.IssueMessage.Type.ReferenceIssue:
-            return WebInspector.UIString("Reference Issue");
-        case WebInspector.IssueMessage.Type.TypeIssue:
-            return WebInspector.UIString("Type Issue");
-        case WebInspector.IssueMessage.Type.PageIssue:
-            return WebInspector.UIString("Page Issue");
-        case WebInspector.IssueMessage.Type.NetworkIssue:
-            return WebInspector.UIString("Network Issue");
-        case WebInspector.IssueMessage.Type.SecurityIssue:
-            return WebInspector.UIString("Security Issue");
-        case WebInspector.IssueMessage.Type.OtherIssue:
-            return WebInspector.UIString("Other Issue");
-        default:
-            console.error("Unknown issue message type:", type);
-            return WebInspector.UIString("Other Issue");
+    _createClass(IssueMessage, [{
+        key: "saveIdentityToCookie",
+        value: function saveIdentityToCookie(cookie) {
+            cookie[WebInspector.IssueMessage.URLCookieKey] = this.url;
+            cookie[WebInspector.IssueMessage.LineNumberCookieKey] = this.sourceCodeLocation.lineNumber;
+            cookie[WebInspector.IssueMessage.ColumnNumberCookieKey] = this.sourceCodeLocation.columnNumber;
         }
-    }
+    }, {
+        key: "_formatTextIfNecessary",
 
-    // Public
+        // Private
 
-    get type()
-    {
-        return this._type;
-    }
+        value: function _formatTextIfNecessary() {
+            if (!this._parameters) return;
 
-    get level()
-    {
-        return this._level;
-    }
+            if (WebInspector.RemoteObject.type(this._parameters[0]) !== "string") return;
 
-    get text()
-    {
-        return this._text;
-    }
+            function valueFormatter(obj) {
+                return obj.description;
+            }
 
-    get source()
-    {
-        return this._source;
-    }
+            var formatters = {};
+            formatters.o = valueFormatter;
+            formatters.s = valueFormatter;
+            formatters.f = valueFormatter;
+            formatters.i = valueFormatter;
+            formatters.d = valueFormatter;
 
-    get url()
-    {
-        return this._url;
-    }
+            function append(a, b) {
+                a += b;
+                return a;
+            }
 
-    get lineNumber()
-    {
-        if (this._sourceCodeLocation)
-            return this._sourceCodeLocation.lineNumber;
-    }
+            var result = String.format(this._parameters[0].description, this._parameters.slice(1), formatters, "", append);
+            var resultText = result.formattedResult;
 
-    get columnNumber()
-    {
-        if (this._sourceCodeLocation)
-            return this._sourceCodeLocation.columnNumber;
-    }
+            for (var i = 0; i < result.unusedSubstitutions.length; ++i) resultText += " " + result.unusedSubstitutions[i].description;
 
-    get displayLineNumber()
-    {
-        if (this._sourceCodeLocation)
-            return this._sourceCodeLocation.displayLineNumber;
-    }
-
-    get displayColumnNumber()
-    {
-        if (this._sourceCodeLocation)
-            return this._sourceCodeLocation.displayColumnNumber;
-    }
-
-    get sourceCodeLocation()
-    {
-        return this._sourceCodeLocation;
-    }
-
-    saveIdentityToCookie(cookie)
-    {
-        cookie[WebInspector.IssueMessage.URLCookieKey] = this.url;
-        cookie[WebInspector.IssueMessage.LineNumberCookieKey] = this.sourceCodeLocation.lineNumber;
-        cookie[WebInspector.IssueMessage.ColumnNumberCookieKey] = this.sourceCodeLocation.columnNumber;
-    }
-
-    // Private
-
-    _formatTextIfNecessary()
-    {
-        if (!this._parameters)
-            return;
-
-        if (WebInspector.RemoteObject.type(this._parameters[0]) !== "string")
-            return;
-
-        function valueFormatter(obj)
-        {
-            return obj.description;
+            this._text = resultText;
         }
-
-        var formatters = {};
-        formatters.o = valueFormatter;
-        formatters.s = valueFormatter;
-        formatters.f = valueFormatter;
-        formatters.i = valueFormatter;
-        formatters.d = valueFormatter;
-
-        function append(a, b)
-        {
-            a += b;
-            return a;
+    }, {
+        key: "_sourceCodeLocationDisplayLocationChanged",
+        value: function _sourceCodeLocationDisplayLocationChanged(event) {
+            this.dispatchEventToListeners(WebInspector.IssueMessage.Event.DisplayLocationDidChange, event.data);
         }
+    }, {
+        key: "type",
 
-        var result = String.format(this._parameters[0].description, this._parameters.slice(1), formatters, "", append);
-        var resultText = result.formattedResult;
+        // Public
 
-        for (var i = 0; i < result.unusedSubstitutions.length; ++i)
-            resultText += " " + result.unusedSubstitutions[i].description;
+        get: function () {
+            return this._type;
+        }
+    }, {
+        key: "level",
+        get: function () {
+            return this._level;
+        }
+    }, {
+        key: "text",
+        get: function () {
+            return this._text;
+        }
+    }, {
+        key: "source",
+        get: function () {
+            return this._source;
+        }
+    }, {
+        key: "url",
+        get: function () {
+            return this._url;
+        }
+    }, {
+        key: "lineNumber",
+        get: function () {
+            if (this._sourceCodeLocation) return this._sourceCodeLocation.lineNumber;
+        }
+    }, {
+        key: "columnNumber",
+        get: function () {
+            if (this._sourceCodeLocation) return this._sourceCodeLocation.columnNumber;
+        }
+    }, {
+        key: "displayLineNumber",
+        get: function () {
+            if (this._sourceCodeLocation) return this._sourceCodeLocation.displayLineNumber;
+        }
+    }, {
+        key: "displayColumnNumber",
+        get: function () {
+            if (this._sourceCodeLocation) return this._sourceCodeLocation.displayColumnNumber;
+        }
+    }, {
+        key: "sourceCodeLocation",
+        get: function () {
+            return this._sourceCodeLocation;
+        }
+    }], [{
+        key: "displayName",
 
-        this._text = resultText;
-    }
+        // Static
 
-    _sourceCodeLocationDisplayLocationChanged(event)
-    {
-        this.dispatchEventToListeners(WebInspector.IssueMessage.Event.DisplayLocationDidChange, event.data);
-    }
-};
+        value: function displayName(type) {
+            switch (type) {
+                case WebInspector.IssueMessage.Type.SemanticIssue:
+                    return WebInspector.UIString("Semantic Issue");
+                case WebInspector.IssueMessage.Type.RangeIssue:
+                    return WebInspector.UIString("Range Issue");
+                case WebInspector.IssueMessage.Type.ReferenceIssue:
+                    return WebInspector.UIString("Reference Issue");
+                case WebInspector.IssueMessage.Type.TypeIssue:
+                    return WebInspector.UIString("Type Issue");
+                case WebInspector.IssueMessage.Type.PageIssue:
+                    return WebInspector.UIString("Page Issue");
+                case WebInspector.IssueMessage.Type.NetworkIssue:
+                    return WebInspector.UIString("Network Issue");
+                case WebInspector.IssueMessage.Type.SecurityIssue:
+                    return WebInspector.UIString("Security Issue");
+                case WebInspector.IssueMessage.Type.OtherIssue:
+                    return WebInspector.UIString("Other Issue");
+                default:
+                    console.error("Unknown issue message type:", type);
+                    return WebInspector.UIString("Other Issue");
+            }
+        }
+    }]);
+
+    return IssueMessage;
+})(WebInspector.Object);
 
 WebInspector.IssueMessage.Level = {
     Error: "error",

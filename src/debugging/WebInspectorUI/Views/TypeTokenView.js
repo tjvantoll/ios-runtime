@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014-2015 Apple Inc. All rights reserved.
  *
@@ -23,20 +31,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TypeTokenView = class TypeTokenView extends WebInspector.Object
-{
-    constructor(tokenAnnotator, shouldHaveRightMargin, shouldHaveLeftMargin, titleType, functionOrVariableName)
-    {
+WebInspector.TypeTokenView = (function (_WebInspector$Object) {
+    function TypeTokenView(tokenAnnotator, shouldHaveRightMargin, shouldHaveLeftMargin, titleType, functionOrVariableName) {
+        _classCallCheck(this, TypeTokenView);
+
         console.assert(titleType === WebInspector.TypeTokenView.TitleType.Variable || titleType === WebInspector.TypeTokenView.TitleType.ReturnStatement);
 
-        super();
+        _get(Object.getPrototypeOf(TypeTokenView.prototype), "constructor", this).call(this);
 
         var span = document.createElement("span");
         span.classList.add("type-token");
-        if (shouldHaveRightMargin)
-            span.classList.add("type-token-right-spacing");
-        if (shouldHaveLeftMargin)
-            span.classList.add("type-token-left-spacing");
+        if (shouldHaveRightMargin) span.classList.add("type-token-right-spacing");
+        if (shouldHaveLeftMargin) span.classList.add("type-token-left-spacing");
 
         this.element = span;
         this._tokenAnnotator = tokenAnnotator;
@@ -49,144 +55,120 @@ WebInspector.TypeTokenView = class TypeTokenView extends WebInspector.Object
         this._setUpMouseoverHandlers();
     }
 
-    // Static
+    _inherits(TypeTokenView, _WebInspector$Object);
 
-    static titleForPopover(titleType, functionOrVariableName)
-    {
-        var titleString = null;
-        if (titleType === WebInspector.TypeTokenView.TitleType.Variable)
-            titleString = WebInspector.UIString("Type information for variable: %s").format(functionOrVariableName);
-        else {
-            if (functionOrVariableName)
-                titleString = WebInspector.UIString("Return type for function: %s").format(functionOrVariableName);
-            else
-                titleString = WebInspector.UIString("Return type for anonymous function");
+    _createClass(TypeTokenView, [{
+        key: "update",
+
+        // Public
+
+        value: function update(types) {
+            this._types = types;
+            this._typeSet = WebInspector.TypeSet.fromPayload(this._types);
+
+            var title = this._displayTypeName();
+            if (title === this.element.textContent) return;
+
+            this.element.textContent = title;
+            var hashString = title[title.length - 1] === "?" ? title.slice(0, title.length - 1) : title;
+
+            if (this._colorClass) this.element.classList.remove(this._colorClass);
+
+            this._colorClass = WebInspector.TypeTokenView.ColorClassForType[hashString] || "type-token-default";
+            this.element.classList.add(this._colorClass);
         }
+    }, {
+        key: "_setUpMouseoverHandlers",
 
-        return titleString;
-    }
+        // Private
 
-    // Public
+        value: function _setUpMouseoverHandlers() {
+            var timeoutID = null;
 
-    update(types)
-    {
-        this._types = types;
-        this._typeSet = WebInspector.TypeSet.fromPayload(this._types);
+            this.element.addEventListener("mouseover", (function () {
+                function showPopoverAfterDelay() {
+                    timeoutID = null;
 
-        var title = this._displayTypeName();
-        if (title === this.element.textContent)
-            return;
+                    var domRect = this.element.getBoundingClientRect();
+                    var bounds = new WebInspector.Rect(domRect.left, domRect.top, domRect.width, domRect.height);
+                    this._tokenAnnotator.sourceCodeTextEditor.showPopoverForTypes(this._types, bounds, this._popoverTitle);
+                }
 
-        this.element.textContent = title;
-        var hashString = title[title.length - 1] === "?" ? title.slice(0, title.length - 1) : title;
+                if (this._shouldShowPopover()) timeoutID = setTimeout(showPopoverAfterDelay.bind(this), WebInspector.TypeTokenView.DelayHoverTime);
+            }).bind(this));
 
-        if (this._colorClass)
-            this.element.classList.remove(this._colorClass);
+            this.element.addEventListener("mouseout", function () {
+                if (timeoutID) clearTimeout(timeoutID);
+            });
+        }
+    }, {
+        key: "_shouldShowPopover",
+        value: function _shouldShowPopover() {
+            if (!this._types.isValid) return false;
 
-        this._colorClass = WebInspector.TypeTokenView.ColorClassForType[hashString] || "type-token-default";
-        this.element.classList.add(this._colorClass);
-    }
+            if (this._typeSet.primitiveTypeNames.length > 1) return true;
 
-    // Private
+            if (this._types.structures && this._types.structures.length) return true;
 
-    _setUpMouseoverHandlers()
-    {
-        var timeoutID = null;
+            return false;
+        }
+    }, {
+        key: "_displayTypeName",
+        value: function _displayTypeName() {
+            if (!this._types.isValid) return "";
 
-        this.element.addEventListener("mouseover", function() {
-            function showPopoverAfterDelay()
-            {
-                timeoutID = null;
+            var typeSet = this._typeSet;
 
-                var domRect = this.element.getBoundingClientRect();
-                var bounds = new WebInspector.Rect(domRect.left, domRect.top, domRect.width, domRect.height);
-                this._tokenAnnotator.sourceCodeTextEditor.showPopoverForTypes(this._types, bounds, this._popoverTitle);
+            if (this._types.leastCommonAncestor && !this._typeSet.primitiveTypeNames.length) {
+                if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Object)) return this._types.leastCommonAncestor;
+                if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Object | WebInspector.TypeSet.NullOrUndefinedTypeBits)) return this._types.leastCommonAncestor + "?";
             }
 
-            if (this._shouldShowPopover())
-                timeoutID = setTimeout(showPopoverAfterDelay.bind(this), WebInspector.TypeTokenView.DelayHoverTime);
-        }.bind(this));
+            // The order of these checks are important.
+            // For example, if a value is only a function, it is contained in TypeFunction, but it is also contained in (TypeFunction | TypeNull).
+            // Therefore, more specific types must be checked first.
 
-        this.element.addEventListener("mouseout", function() {
-            if (timeoutID)
-                clearTimeout(timeoutID);
-        });
-    }
+            // The strings returned here should match those in TypeTokenView.ColorClassForType
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Function)) return "Function";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Undefined)) return "Undefined";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Null)) return "Null";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Boolean)) return "Boolean";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Integer)) return "Integer";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Number | WebInspector.TypeSet.TypeBit.Integer)) return "Number";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.String)) return "String";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Symbol)) return "Symbol";
 
-    _shouldShowPopover()
-    {
-        if (!this._types.isValid)
-            return false;
+            if (typeSet.isContainedIn(WebInspector.TypeSet.NullOrUndefinedTypeBits)) return "(?)";
 
-        if (this._typeSet.primitiveTypeNames.length > 1)
-            return true;
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Function | WebInspector.TypeSet.NullOrUndefinedTypeBits)) return "Function?";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Boolean | WebInspector.TypeSet.NullOrUndefinedTypeBits)) return "Boolean?";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Integer | WebInspector.TypeSet.NullOrUndefinedTypeBits)) return "Integer?";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Number | WebInspector.TypeSet.TypeBit.Integer | WebInspector.TypeSet.NullOrUndefinedTypeBits)) return "Number?";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.String | WebInspector.TypeSet.NullOrUndefinedTypeBits)) return "String?";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Symbol | WebInspector.TypeSet.NullOrUndefinedTypeBits)) return "Symbol?";
 
-        if (this._types.structures && this._types.structures.length)
-            return true;
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Object | WebInspector.TypeSet.TypeBit.Function | WebInspector.TypeSet.TypeBit.String)) return "Object";
+            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Object | WebInspector.TypeSet.TypeBit.Function | WebInspector.TypeSet.TypeBit.String | WebInspector.TypeSet.NullOrUndefinedTypeBits)) return "Object?";
 
-        return false;
-    }
-
-    _displayTypeName()
-    {
-        if (!this._types.isValid)
-            return "";
-
-        var typeSet = this._typeSet;
-
-        if (this._types.leastCommonAncestor && !this._typeSet.primitiveTypeNames.length) {
-            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Object))
-                return this._types.leastCommonAncestor;
-            if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Object | WebInspector.TypeSet.NullOrUndefinedTypeBits))
-                return this._types.leastCommonAncestor + "?";
+            return WebInspector.UIString("(many)");
         }
+    }], [{
+        key: "titleForPopover",
 
-        // The order of these checks are important.
-        // For example, if a value is only a function, it is contained in TypeFunction, but it is also contained in (TypeFunction | TypeNull).
-        // Therefore, more specific types must be checked first.
+        // Static
 
-        // The strings returned here should match those in TypeTokenView.ColorClassForType
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Function))
-            return "Function";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Undefined))
-            return "Undefined";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Null))
-            return "Null";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Boolean))
-            return "Boolean";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Integer))
-            return "Integer";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Number | WebInspector.TypeSet.TypeBit.Integer))
-            return "Number";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.String))
-            return "String";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Symbol))
-            return "Symbol";
+        value: function titleForPopover(titleType, functionOrVariableName) {
+            var titleString = null;
+            if (titleType === WebInspector.TypeTokenView.TitleType.Variable) titleString = WebInspector.UIString("Type information for variable: %s").format(functionOrVariableName);else {
+                if (functionOrVariableName) titleString = WebInspector.UIString("Return type for function: %s").format(functionOrVariableName);else titleString = WebInspector.UIString("Return type for anonymous function");
+            }
 
-        if (typeSet.isContainedIn(WebInspector.TypeSet.NullOrUndefinedTypeBits))
-            return "(?)";
+            return titleString;
+        }
+    }]);
 
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Function | WebInspector.TypeSet.NullOrUndefinedTypeBits))
-            return "Function?";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Boolean | WebInspector.TypeSet.NullOrUndefinedTypeBits))
-            return "Boolean?";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Integer | WebInspector.TypeSet.NullOrUndefinedTypeBits))
-            return "Integer?";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Number | WebInspector.TypeSet.TypeBit.Integer | WebInspector.TypeSet.NullOrUndefinedTypeBits))
-            return "Number?";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.String | WebInspector.TypeSet.NullOrUndefinedTypeBits))
-            return "String?";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Symbol | WebInspector.TypeSet.NullOrUndefinedTypeBits))
-            return "Symbol?";
-
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Object | WebInspector.TypeSet.TypeBit.Function | WebInspector.TypeSet.TypeBit.String))
-            return "Object";
-        if (typeSet.isContainedIn(WebInspector.TypeSet.TypeBit.Object | WebInspector.TypeSet.TypeBit.Function | WebInspector.TypeSet.TypeBit.String | WebInspector.TypeSet.NullOrUndefinedTypeBits))
-            return "Object?";
-
-        return WebInspector.UIString("(many)");
-    }
-};
+    return TypeTokenView;
+})(WebInspector.Object);
 
 WebInspector.TypeTokenView.TitleType = {
     Variable: Symbol("title-type-variable"),

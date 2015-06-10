@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CSSRule = class CSSRule extends WebInspector.Object
-{
-    constructor(nodeStyles, ownerStyleSheet, id, type, sourceCodeLocation, selectorText, selectors, matchedSelectorIndices, style, mediaList)
-    {
-        super();
+WebInspector.CSSRule = (function (_WebInspector$Object) {
+    function CSSRule(nodeStyles, ownerStyleSheet, id, type, sourceCodeLocation, selectorText, selectors, matchedSelectorIndices, style, mediaList) {
+        _classCallCheck(this, CSSRule);
+
+        _get(Object.getPrototypeOf(CSSRule.prototype), "constructor", this).call(this);
 
         console.assert(nodeStyles);
         this._nodeStyles = nodeStyles;
@@ -39,156 +47,154 @@ WebInspector.CSSRule = class CSSRule extends WebInspector.Object
         this.update(sourceCodeLocation, selectorText, selectors, matchedSelectorIndices, style, mediaList, true);
     }
 
-    // Public
+    _inherits(CSSRule, _WebInspector$Object);
 
-    get id()
-    {
-        return this._id;
-    }
+    _createClass(CSSRule, [{
+        key: "update",
+        value: function update(sourceCodeLocation, selectorText, selectors, matchedSelectorIndices, style, mediaList, dontFireEvents) {
+            sourceCodeLocation = sourceCodeLocation || null;
+            selectorText = selectorText || "";
+            selectors = selectors || [];
+            matchedSelectorIndices = matchedSelectorIndices || [];
+            style = style || null;
+            mediaList = mediaList || [];
 
-    get ownerStyleSheet()
-    {
-        return this._ownerStyleSheet;
-    }
+            var changed = false;
+            if (!dontFireEvents) {
+                changed = this._selectorText !== selectorText || !Object.shallowEqual(this._selectors, selectors) || !Object.shallowEqual(this._matchedSelectorIndices, matchedSelectorIndices) || this._style !== style || !!this._sourceCodeLocation !== !!sourceCodeLocation || this._mediaList.length !== mediaList.length;
+                // FIXME: Look for differences in the media list arrays.
+            }
 
-    get editable()
-    {
-        return !!this._id && (this._type === WebInspector.CSSRule.Type.Author || this._type === WebInspector.CSSRule.Type.Inspector);
-    }
+            if (this._style) this._style.ownerRule = null;
 
-    update(sourceCodeLocation, selectorText, selectors, matchedSelectorIndices, style, mediaList, dontFireEvents)
-    {
-        sourceCodeLocation = sourceCodeLocation || null;
-        selectorText = selectorText || "";
-        selectors = selectors || [];
-        matchedSelectorIndices = matchedSelectorIndices || [];
-        style = style || null;
-        mediaList = mediaList || [];
+            this._sourceCodeLocation = sourceCodeLocation;
+            this._selectorText = selectorText;
+            this._selectors = selectors;
+            this._matchedSelectorIndices = matchedSelectorIndices;
+            this._style = style;
+            this._mediaList = mediaList;
 
-        var changed = false;
-        if (!dontFireEvents) {
-            changed = this._selectorText !== selectorText || !Object.shallowEqual(this._selectors, selectors) ||
-                !Object.shallowEqual(this._matchedSelectorIndices, matchedSelectorIndices) || this._style !== style ||
-                !!this._sourceCodeLocation !== !!sourceCodeLocation || this._mediaList.length !== mediaList.length;
-            // FIXME: Look for differences in the media list arrays.
+            delete this._matchedSelectors;
+            delete this._matchedSelectorText;
+
+            if (this._style) this._style.ownerRule = this;
+
+            if (changed) this.dispatchEventToListeners(WebInspector.CSSRule.Event.Changed);
         }
+    }, {
+        key: "isEqualTo",
+        value: function isEqualTo(rule) {
+            if (!rule) return false;
 
-        if (this._style)
-            this._style.ownerRule = null;
-
-        this._sourceCodeLocation = sourceCodeLocation;
-        this._selectorText = selectorText;
-        this._selectors = selectors;
-        this._matchedSelectorIndices = matchedSelectorIndices;
-        this._style = style;
-        this._mediaList = mediaList;
-
-        delete this._matchedSelectors;
-        delete this._matchedSelectorText;
-
-        if (this._style)
-            this._style.ownerRule = this;
-
-        if (changed)
-            this.dispatchEventToListeners(WebInspector.CSSRule.Event.Changed);
-    }
-
-    get type()
-    {
-        return this._type;
-    }
-
-    get sourceCodeLocation()
-    {
-        return this._sourceCodeLocation;
-    }
-
-    get selectorText()
-    {
-        return this._selectorText;
-    }
-
-    set selectorText(selectorText)
-    {
-        console.assert(this.editable);
-        if (!this.editable)
-            return;
-
-        if (this._selectorText === selectorText)
-            return;
-
-        this._nodeStyles.changeRuleSelector(this, selectorText);
-    }
-
-    get selectors()
-    {
-        return this._selectors;
-    }
-
-    get matchedSelectorIndices()
-    {
-        return this._matchedSelectorIndices;
-    }
-
-    get matchedSelectors()
-    {
-        // COMPATIBILITY (iOS 6): The selectors array is always empty, so just return an empty array.
-        if (!this._selectors.length) {
-            console.assert(!this._matchedSelectorIndices.length);
-            return [];
+            return Object.shallowEqual(this._id, rule.id);
         }
+    }, {
+        key: "id",
 
-        if (this._matchedSelectors)
-            return this._matchedSelectors;
+        // Public
 
-        this._matchedSelectors = this._selectors.filter(function(element, index) {
-            return this._matchedSelectorIndices.includes(index);
-        }, this);
-
-        return this._matchedSelectors;
-    }
-
-    get matchedSelectorText()
-    {
-        // COMPATIBILITY (iOS 6): The selectors array is always empty, so just return the whole selector.
-        if (!this._selectors.length) {
-            console.assert(!this._matchedSelectorIndices.length);
+        get: function () {
+            return this._id;
+        }
+    }, {
+        key: "ownerStyleSheet",
+        get: function () {
+            return this._ownerStyleSheet;
+        }
+    }, {
+        key: "editable",
+        get: function () {
+            return !!this._id && (this._type === WebInspector.CSSRule.Type.Author || this._type === WebInspector.CSSRule.Type.Inspector);
+        }
+    }, {
+        key: "type",
+        get: function () {
+            return this._type;
+        }
+    }, {
+        key: "sourceCodeLocation",
+        get: function () {
+            return this._sourceCodeLocation;
+        }
+    }, {
+        key: "selectorText",
+        get: function () {
             return this._selectorText;
+        },
+        set: function (selectorText) {
+            console.assert(this.editable);
+            if (!this.editable) return;
+
+            if (this._selectorText === selectorText) return;
+
+            this._nodeStyles.changeRuleSelector(this, selectorText);
         }
+    }, {
+        key: "selectors",
+        get: function () {
+            return this._selectors;
+        }
+    }, {
+        key: "matchedSelectorIndices",
+        get: function () {
+            return this._matchedSelectorIndices;
+        }
+    }, {
+        key: "matchedSelectors",
+        get: function () {
+            // COMPATIBILITY (iOS 6): The selectors array is always empty, so just return an empty array.
+            if (!this._selectors.length) {
+                console.assert(!this._matchedSelectorIndices.length);
+                return [];
+            }
 
-        if ("_matchedSelectorText" in this)
+            if (this._matchedSelectors) return this._matchedSelectors;
+
+            this._matchedSelectors = this._selectors.filter(function (element, index) {
+                return this._matchedSelectorIndices.includes(index);
+            }, this);
+
+            return this._matchedSelectors;
+        }
+    }, {
+        key: "matchedSelectorText",
+        get: function () {
+            // COMPATIBILITY (iOS 6): The selectors array is always empty, so just return the whole selector.
+            if (!this._selectors.length) {
+                console.assert(!this._matchedSelectorIndices.length);
+                return this._selectorText;
+            }
+
+            if ("_matchedSelectorText" in this) return this._matchedSelectorText;
+
+            this._matchedSelectorText = this.matchedSelectors.map(function (x) {
+                return x.text;
+            }).join(", ");
+
             return this._matchedSelectorText;
+        }
+    }, {
+        key: "style",
+        get: function () {
+            return this._style;
+        }
+    }, {
+        key: "mediaList",
+        get: function () {
+            return this._mediaList;
+        }
+    }, {
+        key: "nodeStyles",
 
-        this._matchedSelectorText = this.matchedSelectors.map(function(x) { return x.text; }).join(", ");
+        // Protected
 
-        return this._matchedSelectorText;
-    }
+        get: function () {
+            return this._nodeStyles;
+        }
+    }]);
 
-    get style()
-    {
-        return this._style;
-    }
-
-    get mediaList()
-    {
-        return this._mediaList;
-    }
-
-    isEqualTo(rule)
-    {
-        if (!rule)
-            return false;
-
-        return Object.shallowEqual(this._id, rule.id);
-    }
-
-    // Protected
-
-    get nodeStyles()
-    {
-        return this._nodeStyles;
-    }
-};
+    return CSSRule;
+})(WebInspector.Object);
 
 WebInspector.CSSRule.Event = {
     Changed: "css-rule-changed"

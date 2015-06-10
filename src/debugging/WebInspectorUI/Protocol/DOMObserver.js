@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,62 +27,70 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMObserver = class DOMObserver
-{
-    // Events defined by the "DOM" domain.
-
-    documentUpdated()
-    {
-        WebInspector.domTreeManager._documentUpdated();
+WebInspector.DOMObserver = (function () {
+    function DOMObserver() {
+        _classCallCheck(this, DOMObserver);
     }
 
-    setChildNodes(parentId, payloads)
-    {
-        WebInspector.domTreeManager._setChildNodes(parentId, payloads);
-    }
+    _createClass(DOMObserver, [{
+        key: "documentUpdated",
 
-    attributeModified(nodeId, name, value)
-    {
-        WebInspector.domTreeManager._attributeModified(nodeId, name, value);
-    }
+        // Events defined by the "DOM" domain.
 
-    attributeRemoved(nodeId, name)
-    {
-        WebInspector.domTreeManager._attributeRemoved(nodeId, name);
-    }
+        value: function documentUpdated() {
+            WebInspector.domTreeManager._documentUpdated();
+        }
+    }, {
+        key: "setChildNodes",
+        value: function setChildNodes(parentId, payloads) {
+            WebInspector.domTreeManager._setChildNodes(parentId, payloads);
+        }
+    }, {
+        key: "attributeModified",
+        value: function attributeModified(nodeId, name, value) {
+            WebInspector.domTreeManager._attributeModified(nodeId, name, value);
+        }
+    }, {
+        key: "attributeRemoved",
+        value: function attributeRemoved(nodeId, name) {
+            WebInspector.domTreeManager._attributeRemoved(nodeId, name);
+        }
+    }, {
+        key: "inlineStyleInvalidated",
+        value: function inlineStyleInvalidated(nodeIds) {
+            WebInspector.domTreeManager._inlineStyleInvalidated(nodeIds);
+        }
+    }, {
+        key: "characterDataModified",
+        value: function characterDataModified(nodeId, characterData) {
+            WebInspector.domTreeManager._characterDataModified(nodeId, characterData);
+        }
+    }, {
+        key: "childNodeCountUpdated",
+        value: function childNodeCountUpdated(nodeId, childNodeCount) {
+            WebInspector.domTreeManager._childNodeCountUpdated(nodeId, childNodeCount);
+        }
+    }, {
+        key: "childNodeInserted",
+        value: function childNodeInserted(parentNodeId, previousNodeId, payload) {
+            WebInspector.domTreeManager._childNodeInserted(parentNodeId, previousNodeId, payload);
+        }
+    }, {
+        key: "childNodeRemoved",
+        value: function childNodeRemoved(parentNodeId, nodeId) {
+            WebInspector.domTreeManager._childNodeRemoved(parentNodeId, nodeId);
+        }
+    }, {
+        key: "shadowRootPushed",
+        value: function shadowRootPushed(parentNodeId, nodeId) {
+            WebInspector.domTreeManager._childNodeInserted(parentNodeId, 0, nodeId);
+        }
+    }, {
+        key: "shadowRootPopped",
+        value: function shadowRootPopped(parentNodeId, nodeId) {
+            WebInspector.domTreeManager._childNodeRemoved(parentNodeId, nodeId);
+        }
+    }]);
 
-    inlineStyleInvalidated(nodeIds)
-    {
-        WebInspector.domTreeManager._inlineStyleInvalidated(nodeIds);
-    }
-
-    characterDataModified(nodeId, characterData)
-    {
-        WebInspector.domTreeManager._characterDataModified(nodeId, characterData);
-    }
-
-    childNodeCountUpdated(nodeId, childNodeCount)
-    {
-        WebInspector.domTreeManager._childNodeCountUpdated(nodeId, childNodeCount);
-    }
-
-    childNodeInserted(parentNodeId, previousNodeId, payload)
-    {
-        WebInspector.domTreeManager._childNodeInserted(parentNodeId, previousNodeId, payload);
-    }
-
-    childNodeRemoved(parentNodeId, nodeId)
-    {
-        WebInspector.domTreeManager._childNodeRemoved(parentNodeId, nodeId);
-    }
-
-    shadowRootPushed(parentNodeId, nodeId)
-    {
-        WebInspector.domTreeManager._childNodeInserted(parentNodeId, 0, nodeId);
-    }
-
-    shadowRootPopped(parentNodeId, nodeId)
-    {
-        WebInspector.domTreeManager._childNodeRemoved(parentNodeId, nodeId);
-    }
-};
+    return DOMObserver;
+})();

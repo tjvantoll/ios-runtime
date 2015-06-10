@@ -1,3 +1,13 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +33,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.GeneralTreeElement = class GeneralTreeElement extends WebInspector.TreeElement
-{
-    constructor(classNames, title, subtitle, representedObject, hasChildren)
-    {
-        super("", representedObject, hasChildren);
+WebInspector.GeneralTreeElement = (function (_WebInspector$TreeElement) {
+    function GeneralTreeElement(classNames, title, subtitle, representedObject, hasChildren) {
+        _classCallCheck(this, GeneralTreeElement);
+
+        _get(Object.getPrototypeOf(GeneralTreeElement.prototype), "constructor", this).call(this, "", representedObject, hasChildren);
 
         this.classNames = classNames;
 
@@ -37,343 +47,316 @@ WebInspector.GeneralTreeElement = class GeneralTreeElement extends WebInspector.
         this._status = "";
     }
 
-    // Public
+    _inherits(GeneralTreeElement, _WebInspector$TreeElement);
 
-    get element()
-    {
-        return this._listItemNode;
-    }
+    _createClass(GeneralTreeElement, [{
+        key: "addClassName",
+        value: function addClassName(className) {
+            if (this._classNames.includes(className)) return;
 
-    get iconElement()
-    {
-        this._createElementsIfNeeded();
-        return this._iconElement;
-    }
+            this._classNames.push(className);
 
-    get titlesElement()
-    {
-        this._createElementsIfNeeded();
-        return this._titlesElement;
-    }
-
-    get mainTitleElement()
-    {
-        this._createElementsIfNeeded();
-        return this._mainTitleElement;
-    }
-
-    get subtitleElement()
-    {
-        this._createElementsIfNeeded();
-        this._createSubtitleElementIfNeeded();
-        return this._subtitleElement;
-    }
-
-    get classNames()
-    {
-        return this._classNames;
-    }
-
-    set classNames(x)
-    {
-        if (this._listItemNode && this._classNames) {
-            this._listItemNode.classList.remove(...this._classNames);
+            if (this._listItemNode) this._listItemNode.classList.add(className);
         }
+    }, {
+        key: "removeClassName",
+        value: function removeClassName(className) {
+            if (!this._classNames.includes(className)) return;
 
-        if (typeof x === "string")
-            x = [x];
+            this._classNames.remove(className);
 
-        this._classNames = x || [];
-
-        if (this._listItemNode) {
-            this._listItemNode.classList.add(...this._classNames);
+            if (this._listItemNode) this._listItemNode.classList.remove(className);
         }
-    }
+    }, {
+        key: "isEventWithinDisclosureTriangle",
 
-    addClassName(className)
-    {
-        if (this._classNames.includes(className))
-            return;
+        // Overrides from TreeElement (Private)
 
-        this._classNames.push(className);
-
-        if (this._listItemNode)
-            this._listItemNode.classList.add(className);
-    }
-
-    removeClassName(className)
-    {
-        if (!this._classNames.includes(className))
-            return;
-
-        this._classNames.remove(className);
-
-        if (this._listItemNode)
-            this._listItemNode.classList.remove(className);
-    }
-
-    get small()
-    {
-        return this._small;
-    }
-
-    set small(x)
-    {
-        this._small = x;
-
-        if (this._listItemNode) {
-            if (this._small)
-                this._listItemNode.classList.add(WebInspector.GeneralTreeElement.SmallStyleClassName);
-            else
-                this._listItemNode.classList.remove(WebInspector.GeneralTreeElement.SmallStyleClassName);
+        value: function isEventWithinDisclosureTriangle(event) {
+            return event.target === this._disclosureButton;
         }
-    }
+    }, {
+        key: "onattach",
+        value: function onattach() {
+            var _listItemNode$classList;
 
-    get twoLine()
-    {
-        return this._twoLine;
-    }
+            this._createElementsIfNeeded();
+            this._updateTitleElements();
 
-    set twoLine(x)
-    {
-        this._twoLine = x;
+            this._listItemNode.classList.add("item");
 
-        if (this._listItemNode) {
-            if (this._twoLine)
-                this._listItemNode.classList.add(WebInspector.GeneralTreeElement.TwoLineStyleClassName);
-            else
-                this._listItemNode.classList.remove(WebInspector.GeneralTreeElement.TwoLineStyleClassName);
-        }
-    }
+            if (this._classNames) (_listItemNode$classList = this._listItemNode.classList).add.apply(_listItemNode$classList, _toConsumableArray(this._classNames));
 
-    get mainTitle()
-    {
-        return this._mainTitle;
-    }
+            if (this._small) this._listItemNode.classList.add(WebInspector.GeneralTreeElement.SmallStyleClassName);
 
-    set mainTitle(x)
-    {
-        this._mainTitle = x || "";
-        this._updateTitleElements();
-        this.didChange();
-        this.dispatchEventToListeners(WebInspector.GeneralTreeElement.Event.MainTitleDidChange);
-    }
+            if (this._twoLine) this._listItemNode.classList.add(WebInspector.GeneralTreeElement.TwoLineStyleClassName);
 
-    get subtitle()
-    {
-        return this._subtitle;
-    }
+            this._listItemNode.appendChild(this._disclosureButton);
+            this._listItemNode.appendChild(this._iconElement);
+            if (this._statusElement) this._listItemNode.appendChild(this._statusElement);
+            this._listItemNode.appendChild(this._titlesElement);
 
-    set subtitle(x)
-    {
-        this._subtitle = x || "";
-        this._updateTitleElements();
-        this.didChange();
-    }
-
-    get status()
-    {
-        return this._status;
-    }
-
-    set status(x)
-    {
-        if (this._status === x)
-            return;
-
-        if (!this._statusElement) {
-            this._statusElement = document.createElement("div");
-            this._statusElement.className = WebInspector.GeneralTreeElement.StatusElementStyleClassName;
-        }
-
-        this._status = x || "";
-        this._updateStatusElement();
-        this.didChange();
-    }
-
-    get filterableData()
-    {
-        return {text: [this.mainTitle, this.subtitle]};
-    }
-
-    get tooltipHandledSeparately()
-    {
-        return this._tooltipHandledSeparately;
-    }
-
-    set tooltipHandledSeparately(x)
-    {
-        this._tooltipHandledSeparately = x || false;
-    }
-
-    // Overrides from TreeElement (Private)
-
-    isEventWithinDisclosureTriangle(event)
-    {
-        return event.target === this._disclosureButton;
-    }
-
-    onattach()
-    {
-        this._createElementsIfNeeded();
-        this._updateTitleElements();
-
-        this._listItemNode.classList.add("item");
-
-        if (this._classNames)
-            this._listItemNode.classList.add(...this._classNames);
-
-        if (this._small)
-            this._listItemNode.classList.add(WebInspector.GeneralTreeElement.SmallStyleClassName);
-
-        if (this._twoLine)
-            this._listItemNode.classList.add(WebInspector.GeneralTreeElement.TwoLineStyleClassName);
-
-        this._listItemNode.appendChild(this._disclosureButton);
-        this._listItemNode.appendChild(this._iconElement);
-        if (this._statusElement)
-            this._listItemNode.appendChild(this._statusElement);
-        this._listItemNode.appendChild(this._titlesElement);
-
-        if (this.oncontextmenu && typeof this.oncontextmenu === "function") {
-            this._boundContextMenuEventHandler = this.oncontextmenu.bind(this);
-            this._listItemNode.addEventListener("contextmenu", this._boundContextMenuEventHandler);
-        }
-
-        if (!this._boundContextMenuEventHandler && this.treeOutline.oncontextmenu && typeof this.treeOutline.oncontextmenu === "function") {
-            this._boundContextMenuEventHandler = function(event) { this.treeOutline.oncontextmenu(event, this); }.bind(this);
-            this._listItemNode.addEventListener("contextmenu", this._boundContextMenuEventHandler);
-        }
-    }
-
-    ondetach()
-    {
-        if (this._boundContextMenuEventHandler) {
-            this._listItemNode.removeEventListener("contextmenu", this._boundContextMenuEventHandler);
-            delete this._boundContextMenuEventHandler;
-        }
-    }
-
-    onreveal()
-    {
-        if (this._listItemNode)
-            this._listItemNode.scrollIntoViewIfNeeded(false);
-    }
-
-    // Protected
-
-    callFirstAncestorFunction(functionName, args)
-    {
-        // Call the first ancestor that implements a function named functionName (if any).
-        var currentNode = this.parent;
-        while (currentNode) {
-            if (typeof currentNode[functionName] === "function") {
-                currentNode[functionName].apply(currentNode, args);
-                break;
+            if (this.oncontextmenu && typeof this.oncontextmenu === "function") {
+                this._boundContextMenuEventHandler = this.oncontextmenu.bind(this);
+                this._listItemNode.addEventListener("contextmenu", this._boundContextMenuEventHandler);
             }
 
-            currentNode = currentNode.parent;
+            if (!this._boundContextMenuEventHandler && this.treeOutline.oncontextmenu && typeof this.treeOutline.oncontextmenu === "function") {
+                this._boundContextMenuEventHandler = (function (event) {
+                    this.treeOutline.oncontextmenu(event, this);
+                }).bind(this);
+                this._listItemNode.addEventListener("contextmenu", this._boundContextMenuEventHandler);
+            }
         }
-    }
-
-    // Private
-
-    _createElementsIfNeeded()
-    {
-        if (this._createdElements)
-            return;
-
-        this._disclosureButton = document.createElement("button");
-        this._disclosureButton.className = WebInspector.GeneralTreeElement.DisclosureButtonStyleClassName;
-
-        // Don't allow the disclosure button to be keyboard focusable. The TreeOutline is focusable and has
-        // its own keybindings for toggling expand and collapse.
-        this._disclosureButton.tabIndex = -1;
-
-        this._iconElement = document.createElement("img");
-        this._iconElement.className = WebInspector.GeneralTreeElement.IconElementStyleClassName;
-
-        this._titlesElement = document.createElement("div");
-        this._titlesElement.className = WebInspector.GeneralTreeElement.TitlesElementStyleClassName;
-
-        this._mainTitleElement = document.createElement("span");
-        this._mainTitleElement.className = WebInspector.GeneralTreeElement.MainTitleElementStyleClassName;
-        this._titlesElement.appendChild(this._mainTitleElement);
-
-        this._createdElements = true;
-    }
-
-    _createSubtitleElementIfNeeded()
-    {
-        if (this._subtitleElement)
-            return;
-
-        this._subtitleElement = document.createElement("span");
-        this._subtitleElement.className = WebInspector.GeneralTreeElement.SubtitleElementStyleClassName;
-        this._titlesElement.appendChild(this._subtitleElement);
-    }
-
-    _updateTitleElements()
-    {
-        if (!this._createdElements)
-            return;
-
-        if (typeof this._mainTitle === "string") {
-            if (this._mainTitleElement.textContent !== this._mainTitle)
-                this._mainTitleElement.textContent = this._mainTitle;
-        } else if (this._mainTitle instanceof Node) {
-            this._mainTitleElement.removeChildren();
-            this._mainTitleElement.appendChild(this._mainTitle);
+    }, {
+        key: "ondetach",
+        value: function ondetach() {
+            if (this._boundContextMenuEventHandler) {
+                this._listItemNode.removeEventListener("contextmenu", this._boundContextMenuEventHandler);
+                delete this._boundContextMenuEventHandler;
+            }
         }
+    }, {
+        key: "onreveal",
+        value: function onreveal() {
+            if (this._listItemNode) this._listItemNode.scrollIntoViewIfNeeded(false);
+        }
+    }, {
+        key: "callFirstAncestorFunction",
 
-        if (typeof this._subtitle === "string" && this._subtitle) {
+        // Protected
+
+        value: function callFirstAncestorFunction(functionName, args) {
+            // Call the first ancestor that implements a function named functionName (if any).
+            var currentNode = this.parent;
+            while (currentNode) {
+                if (typeof currentNode[functionName] === "function") {
+                    currentNode[functionName].apply(currentNode, args);
+                    break;
+                }
+
+                currentNode = currentNode.parent;
+            }
+        }
+    }, {
+        key: "_createElementsIfNeeded",
+
+        // Private
+
+        value: function _createElementsIfNeeded() {
+            if (this._createdElements) return;
+
+            this._disclosureButton = document.createElement("button");
+            this._disclosureButton.className = WebInspector.GeneralTreeElement.DisclosureButtonStyleClassName;
+
+            // Don't allow the disclosure button to be keyboard focusable. The TreeOutline is focusable and has
+            // its own keybindings for toggling expand and collapse.
+            this._disclosureButton.tabIndex = -1;
+
+            this._iconElement = document.createElement("img");
+            this._iconElement.className = WebInspector.GeneralTreeElement.IconElementStyleClassName;
+
+            this._titlesElement = document.createElement("div");
+            this._titlesElement.className = WebInspector.GeneralTreeElement.TitlesElementStyleClassName;
+
+            this._mainTitleElement = document.createElement("span");
+            this._mainTitleElement.className = WebInspector.GeneralTreeElement.MainTitleElementStyleClassName;
+            this._titlesElement.appendChild(this._mainTitleElement);
+
+            this._createdElements = true;
+        }
+    }, {
+        key: "_createSubtitleElementIfNeeded",
+        value: function _createSubtitleElementIfNeeded() {
+            if (this._subtitleElement) return;
+
+            this._subtitleElement = document.createElement("span");
+            this._subtitleElement.className = WebInspector.GeneralTreeElement.SubtitleElementStyleClassName;
+            this._titlesElement.appendChild(this._subtitleElement);
+        }
+    }, {
+        key: "_updateTitleElements",
+        value: function _updateTitleElements() {
+            if (!this._createdElements) return;
+
+            if (typeof this._mainTitle === "string") {
+                if (this._mainTitleElement.textContent !== this._mainTitle) this._mainTitleElement.textContent = this._mainTitle;
+            } else if (this._mainTitle instanceof Node) {
+                this._mainTitleElement.removeChildren();
+                this._mainTitleElement.appendChild(this._mainTitle);
+            }
+
+            if (typeof this._subtitle === "string" && this._subtitle) {
+                this._createSubtitleElementIfNeeded();
+                if (this._subtitleElement.textContent !== this._subtitle) this._subtitleElement.textContent = this._subtitle;
+                this._titlesElement.classList.remove(WebInspector.GeneralTreeElement.NoSubtitleStyleClassName);
+            } else if (this._subtitle instanceof Node) {
+                this._createSubtitleElementIfNeeded();
+                this._subtitleElement.removeChildren();
+                this._subtitleElement.appendChild(this._subtitle);
+            } else {
+                if (this._subtitleElement) this._subtitleElement.textContent = "";
+                this._titlesElement.classList.add(WebInspector.GeneralTreeElement.NoSubtitleStyleClassName);
+            }
+
+            // Set a default tooltip if there isn't a custom one already assigned.
+            if (!this.tooltip && !this._tooltipHandledSeparately) {
+                console.assert(this._listItemNode);
+
+                // Get the textContent for the elements since they can contain other nodes,
+                // and the tool tip only cares about the text.
+                var mainTitleText = this._mainTitleElement.textContent;
+                var subtitleText = this._subtitleElement ? this._subtitleElement.textContent : "";
+
+                if (mainTitleText && subtitleText) this._listItemNode.title = mainTitleText + (this._small && !this._twoLine ? " — " : "\n") + subtitleText;else if (mainTitleText) this._listItemNode.title = mainTitleText;else this._listItemNode.title = subtitleText;
+            }
+        }
+    }, {
+        key: "_updateStatusElement",
+        value: function _updateStatusElement() {
+            if (!this._statusElement) return;
+
+            if (!this._statusElement.parentNode && this._listItemNode) this._listItemNode.insertBefore(this._statusElement, this._titlesElement);
+
+            if (this._status instanceof Node) {
+                this._statusElement.removeChildren();
+                this._statusElement.appendChild(this._status);
+            } else this._statusElement.textContent = this._status;
+        }
+    }, {
+        key: "element",
+
+        // Public
+
+        get: function () {
+            return this._listItemNode;
+        }
+    }, {
+        key: "iconElement",
+        get: function () {
+            this._createElementsIfNeeded();
+            return this._iconElement;
+        }
+    }, {
+        key: "titlesElement",
+        get: function () {
+            this._createElementsIfNeeded();
+            return this._titlesElement;
+        }
+    }, {
+        key: "mainTitleElement",
+        get: function () {
+            this._createElementsIfNeeded();
+            return this._mainTitleElement;
+        }
+    }, {
+        key: "subtitleElement",
+        get: function () {
+            this._createElementsIfNeeded();
             this._createSubtitleElementIfNeeded();
-            if (this._subtitleElement.textContent !== this._subtitle)
-                this._subtitleElement.textContent = this._subtitle;
-            this._titlesElement.classList.remove(WebInspector.GeneralTreeElement.NoSubtitleStyleClassName);
-        } else if (this._subtitle instanceof Node) {
-            this._createSubtitleElementIfNeeded();
-            this._subtitleElement.removeChildren();
-            this._subtitleElement.appendChild(this._subtitle);
-        } else {
-            if (this._subtitleElement)
-                this._subtitleElement.textContent = "";
-            this._titlesElement.classList.add(WebInspector.GeneralTreeElement.NoSubtitleStyleClassName);
+            return this._subtitleElement;
         }
+    }, {
+        key: "classNames",
+        get: function () {
+            return this._classNames;
+        },
+        set: function (x) {
+            if (this._listItemNode && this._classNames) {
+                var _listItemNode$classList2;
 
-        // Set a default tooltip if there isn't a custom one already assigned.
-        if (!this.tooltip && !this._tooltipHandledSeparately) {
-            console.assert(this._listItemNode);
+                (_listItemNode$classList2 = this._listItemNode.classList).remove.apply(_listItemNode$classList2, _toConsumableArray(this._classNames));
+            }
 
-            // Get the textContent for the elements since they can contain other nodes,
-            // and the tool tip only cares about the text.
-            var mainTitleText = this._mainTitleElement.textContent;
-            var subtitleText = this._subtitleElement ? this._subtitleElement.textContent : "";
+            if (typeof x === "string") x = [x];
 
-            if (mainTitleText && subtitleText)
-                this._listItemNode.title = mainTitleText + (this._small && !this._twoLine ? " \u2014 " : "\n") + subtitleText;
-            else if (mainTitleText)
-                this._listItemNode.title = mainTitleText;
-            else
-                this._listItemNode.title = subtitleText;
+            this._classNames = x || [];
+
+            if (this._listItemNode) {
+                var _listItemNode$classList3;
+
+                (_listItemNode$classList3 = this._listItemNode.classList).add.apply(_listItemNode$classList3, _toConsumableArray(this._classNames));
+            }
         }
-    }
+    }, {
+        key: "small",
+        get: function () {
+            return this._small;
+        },
+        set: function (x) {
+            this._small = x;
 
-    _updateStatusElement()
-    {
-        if (!this._statusElement)
-            return;
+            if (this._listItemNode) {
+                if (this._small) this._listItemNode.classList.add(WebInspector.GeneralTreeElement.SmallStyleClassName);else this._listItemNode.classList.remove(WebInspector.GeneralTreeElement.SmallStyleClassName);
+            }
+        }
+    }, {
+        key: "twoLine",
+        get: function () {
+            return this._twoLine;
+        },
+        set: function (x) {
+            this._twoLine = x;
 
-        if (!this._statusElement.parentNode && this._listItemNode)
-            this._listItemNode.insertBefore(this._statusElement, this._titlesElement);
+            if (this._listItemNode) {
+                if (this._twoLine) this._listItemNode.classList.add(WebInspector.GeneralTreeElement.TwoLineStyleClassName);else this._listItemNode.classList.remove(WebInspector.GeneralTreeElement.TwoLineStyleClassName);
+            }
+        }
+    }, {
+        key: "mainTitle",
+        get: function () {
+            return this._mainTitle;
+        },
+        set: function (x) {
+            this._mainTitle = x || "";
+            this._updateTitleElements();
+            this.didChange();
+            this.dispatchEventToListeners(WebInspector.GeneralTreeElement.Event.MainTitleDidChange);
+        }
+    }, {
+        key: "subtitle",
+        get: function () {
+            return this._subtitle;
+        },
+        set: function (x) {
+            this._subtitle = x || "";
+            this._updateTitleElements();
+            this.didChange();
+        }
+    }, {
+        key: "status",
+        get: function () {
+            return this._status;
+        },
+        set: function (x) {
+            if (this._status === x) return;
 
-        if (this._status instanceof Node) {
-            this._statusElement.removeChildren();
-            this._statusElement.appendChild(this._status);
-        } else
-            this._statusElement.textContent = this._status;
-    }
-};
+            if (!this._statusElement) {
+                this._statusElement = document.createElement("div");
+                this._statusElement.className = WebInspector.GeneralTreeElement.StatusElementStyleClassName;
+            }
+
+            this._status = x || "";
+            this._updateStatusElement();
+            this.didChange();
+        }
+    }, {
+        key: "filterableData",
+        get: function () {
+            return { text: [this.mainTitle, this.subtitle] };
+        }
+    }, {
+        key: "tooltipHandledSeparately",
+        get: function () {
+            return this._tooltipHandledSeparately;
+        },
+        set: function (x) {
+            this._tooltipHandledSeparately = x || false;
+        }
+    }]);
+
+    return GeneralTreeElement;
+})(WebInspector.TreeElement);
 
 WebInspector.GeneralTreeElement.DisclosureButtonStyleClassName = "disclosure-button";
 WebInspector.GeneralTreeElement.IconElementStyleClassName = "icon";

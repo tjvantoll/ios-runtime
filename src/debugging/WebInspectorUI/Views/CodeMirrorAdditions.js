@@ -30,34 +30,27 @@
     // and JavaScript modes to supply two styles for each token. One for the
     // token and one with the mode name.
 
-    function tokenizeLinkString(stream, state)
-    {
+    function tokenizeLinkString(stream, state) {
         console.assert(state._linkQuoteCharacter !== undefined);
 
         // Eat the string until the same quote is found that started the string.
         // If this is unquoted, then eat until whitespace or common parse errors.
-        if (state._linkQuoteCharacter)
-            stream.eatWhile(new RegExp("[^" + state._linkQuoteCharacter + "]"));
-        else
-            stream.eatWhile(/[^\s\u00a0=<>\"\']/);
+        if (state._linkQuoteCharacter) stream.eatWhile(new RegExp("[^" + state._linkQuoteCharacter + "]"));else stream.eatWhile(/[^\s\u00a0=<>\"\']/);
 
         // If the stream isn't at the end of line then we found the end quote.
         // In the case, change _linkTokenize to parse the end of the link next.
         // Otherwise _linkTokenize will stay as-is to parse more of the link.
-        if (!stream.eol())
-            state._linkTokenize = tokenizeEndOfLinkString;
+        if (!stream.eol()) state._linkTokenize = tokenizeEndOfLinkString;
 
         return "link";
     }
 
-    function tokenizeEndOfLinkString(stream, state)
-    {
+    function tokenizeEndOfLinkString(stream, state) {
         console.assert(state._linkQuoteCharacter !== undefined);
         console.assert(state._linkBaseStyle);
 
         // Eat the quote character to style it with the base style.
-        if (state._linkQuoteCharacter)
-            stream.eat(state._linkQuoteCharacter);
+        if (state._linkQuoteCharacter) stream.eat(state._linkQuoteCharacter);
 
         var style = state._linkBaseStyle;
 
@@ -69,12 +62,11 @@
         return style;
     }
 
-    function extendedXMLToken(stream, state)
-    {
+    function extendedXMLToken(stream, state) {
         if (state._linkTokenize) {
             // Call the link tokenizer instead.
             var style = state._linkTokenize(stream, state);
-            return style && (style + " m-" + this.name);
+            return style && style + " m-" + this.name;
         }
 
         // Remember the start position so we can rewind if needed.
@@ -84,10 +76,7 @@
             // Look for "href" or "src" attributes. If found then we should
             // expect a string later that should get the "link" style instead.
             var text = stream.current().toLowerCase();
-            if (text === "href" || text === "src")
-                state._expectLink = true;
-            else
-                delete state._expectLink;
+            if (text === "href" || text === "src") state._expectLink = true;else delete state._expectLink;
         } else if (state._expectLink && style === "string") {
             var current = stream.current();
 
@@ -110,8 +99,7 @@
 
                 // Eat the open quote of the string so the string style
                 // will be used for the quote character.
-                if (state._linkQuoteCharacter)
-                    stream.eat(state._linkQuoteCharacter);
+                if (state._linkQuoteCharacter) stream.eat(state._linkQuoteCharacter);
             }
         } else if (style) {
             // We don't expect other tokens between attribute and string since
@@ -120,16 +108,14 @@
             delete state._expectLink;
         }
 
-        return style && (style + " m-" + this.name);
+        return style && style + " m-" + this.name;
     }
 
-    function tokenizeCSSURLString(stream, state)
-    {
+    function tokenizeCSSURLString(stream, state) {
         console.assert(state._urlQuoteCharacter);
 
         // If we are an unquoted url string, return whitespace blocks as a whitespace token (null).
-        if (state._unquotedURLString && stream.eatSpace())
-            return null;
+        if (state._unquotedURLString && stream.eatSpace()) return null;
 
         var ch = null;
         var escaped = false;
@@ -144,32 +130,27 @@
                 break;
             }
             escaped = !escaped && ch === "\\";
-            if (!/[\s\u00a0]/.test(ch))
-                lastNonWhitespace = stream.pos;
+            if (!/[\s\u00a0]/.test(ch)) lastNonWhitespace = stream.pos;
         }
 
         // If we are an unquoted url string, do not include trailing whitespace, rewind to the last real character.
-        if (state._unquotedURLString)
-            stream.pos = lastNonWhitespace;
+        if (state._unquotedURLString) stream.pos = lastNonWhitespace;
 
         // If we have reached the proper the end of the url string, switch to the end tokenizer to reset the state.
         if (reachedEndOfURL) {
-            if (!state._unquotedURLString)
-                stream.backUp(1);
+            if (!state._unquotedURLString) stream.backUp(1);
             this._urlTokenize = tokenizeEndOfCSSURLString;
         }
 
         return "link";
     }
 
-    function tokenizeEndOfCSSURLString(stream, state)
-    {
+    function tokenizeEndOfCSSURLString(stream, state) {
         console.assert(state._urlQuoteCharacter);
         console.assert(state._urlBaseStyle);
 
         // Eat the quote character to style it with the base style.
-        if (!state._unquotedURLString)
-            stream.eat(state._urlQuoteCharacter);
+        if (!state._unquotedURLString) stream.eat(state._urlQuoteCharacter);
 
         var style = state._urlBaseStyle;
 
@@ -180,14 +161,13 @@
         return style;
     }
 
-    function extendedCSSToken(stream, state)
-    {
+    function extendedCSSToken(stream, state) {
         var hexColorRegex = /#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/g;
 
         if (state._urlTokenize) {
             // Call the link tokenizer instead.
             var style = state._urlTokenize(stream, state);
-            return style && (style + " m-" + (this.alternateName || this.name));
+            return style && style + " m-" + (this.alternateName || this.name);
         }
 
         // Remember the start position so we can rewind if needed.
@@ -199,8 +179,7 @@
                 if (stream.current() === "url") {
                     // If the current text is "url" then we should expect the next string token to be a link.
                     state._expectLink = true;
-                } else if (hexColorRegex.test(stream.current()))
-                    style = style + " hex-color";
+                } else if (hexColorRegex.test(stream.current())) style = style + " hex-color";
             } else if (state._expectLink) {
                 delete state._expectLink;
 
@@ -219,25 +198,22 @@
 
                     // Eat the open quote of the string so the string style
                     // will be used for the quote character.
-                    if (!state._unquotedURLString)
-                        stream.eat(state._urlQuoteCharacter);
+                    if (!state._unquotedURLString) stream.eat(state._urlQuoteCharacter);
                 }
             }
         }
 
-        return style && (style + " m-" + (this.alternateName || this.name));
+        return style && style + " m-" + (this.alternateName || this.name);
     }
 
-    function extendedToken(stream, state)
-    {
+    function extendedToken(stream, state) {
         // CodeMirror moves the original token function to _token when we extended it.
         // So call it to get the style that we will add an additional class name to.
         var style = this._token(stream, state);
-        return style && (style + " m-" + (this.alternateName || this.name));
+        return style && style + " m-" + (this.alternateName || this.name);
     }
 
-    function extendedCSSRuleStartState(base)
-    {
+    function extendedCSSRuleStartState(base) {
         // CodeMirror moves the original token function to _startState when we extended it.
         // So call it to get the original start state that we will modify.
         var state = this._startState(base);
@@ -250,23 +226,19 @@
         return state;
     }
 
-    function scrollCursorIntoView(codeMirror, event)
-    {
+    function scrollCursorIntoView(codeMirror, event) {
         // We don't want to use the default implementation since it can cause massive jumping
         // when the editor is contained inside overflow elements.
         event.preventDefault();
 
-        function delayedWork()
-        {
+        function delayedWork() {
             // Don't try to scroll unless the editor is focused.
-            if (!codeMirror.getWrapperElement().classList.contains("CodeMirror-focused"))
-                return;
+            if (!codeMirror.getWrapperElement().classList.contains("CodeMirror-focused")) return;
 
             // The cursor element can contain multiple cursors. The first one is the blinky cursor,
             // which is the one we want to scroll into view. It can be missing, so check first.
             var cursorElement = codeMirror.getScrollerElement().getElementsByClassName("CodeMirror-cursor")[0];
-            if (cursorElement)
-                cursorElement.scrollIntoViewIfNeeded(false);
+            if (cursorElement) cursorElement.scrollIntoViewIfNeeded(false);
         }
 
         // We need to delay this because CodeMirror can fire scrollCursorIntoView as a view is being blurred
@@ -275,42 +247,38 @@
         setTimeout(delayedWork, 0);
     }
 
-    CodeMirror.extendMode("css", {token: extendedCSSToken});
-    CodeMirror.extendMode("xml", {token: extendedXMLToken});
-    CodeMirror.extendMode("javascript", {token: extendedToken});
+    CodeMirror.extendMode("css", { token: extendedCSSToken });
+    CodeMirror.extendMode("xml", { token: extendedXMLToken });
+    CodeMirror.extendMode("javascript", { token: extendedToken });
 
     CodeMirror.defineMode("css-rule", CodeMirror.modes.css);
-    CodeMirror.extendMode("css-rule", {token: extendedCSSToken, startState: extendedCSSRuleStartState, alternateName: "css"});
+    CodeMirror.extendMode("css-rule", { token: extendedCSSToken, startState: extendedCSSRuleStartState, alternateName: "css" });
 
-    CodeMirror.defineInitHook(function(codeMirror) {
+    CodeMirror.defineInitHook(function (codeMirror) {
         codeMirror.on("scrollCursorIntoView", scrollCursorIntoView);
     });
 
-    CodeMirror.defineExtension("hasLineClass", function(line, where, className) {
+    CodeMirror.defineExtension("hasLineClass", function (line, where, className) {
         // This matches the arguments to addLineClass and removeLineClass.
-        var classProperty = (where === "text" ? "textClass" : (where === "background" ? "bgClass" : "wrapClass"));
+        var classProperty = where === "text" ? "textClass" : where === "background" ? "bgClass" : "wrapClass";
         var lineInfo = this.lineInfo(line);
-        if (!lineInfo)
-            return false;
+        if (!lineInfo) return false;
 
-        if (!lineInfo[classProperty])
-            return false;
+        if (!lineInfo[classProperty]) return false;
 
         // Test for the simple case.
-        if (lineInfo[classProperty] === className)
-            return true;
+        if (lineInfo[classProperty] === className) return true;
 
         // Do a quick check for the substring. This is faster than a regex, which requires escaping the input first.
         var index = lineInfo[classProperty].indexOf(className);
-        if (index === -1)
-            return false;
+        if (index === -1) return false;
 
         // Check that it is surrounded by spaces. Add padding spaces first to work with beginning and end of string cases.
         var paddedClass = " " + lineInfo[classProperty] + " ";
         return paddedClass.indexOf(" " + className + " ", index) !== -1;
     });
 
-    CodeMirror.defineExtension("setUniqueBookmark", function(position, options) {
+    CodeMirror.defineExtension("setUniqueBookmark", function (position, options) {
         var marks = this.findMarksAt(position);
         for (var i = 0; i < marks.length; ++i) {
             if (marks[i].__uniqueBookmark) {
@@ -324,7 +292,7 @@
         return uniqueBookmark;
     });
 
-    CodeMirror.defineExtension("toggleLineClass", function(line, where, className) {
+    CodeMirror.defineExtension("toggleLineClass", function (line, where, className) {
         if (this.hasLineClass(line, where, className)) {
             this.removeLineClass(line, where, className);
             return false;
@@ -334,10 +302,9 @@
         return true;
     });
 
-    CodeMirror.defineExtension("alterNumberInRange", function(amount, startPosition, endPosition, updateSelection) {
+    CodeMirror.defineExtension("alterNumberInRange", function (amount, startPosition, endPosition, updateSelection) {
         // We don't try if the range is multiline, pass to another key handler.
-        if (startPosition.line !== endPosition.line)
-            return false;
+        if (startPosition.line !== endPosition.line) return false;
 
         if (updateSelection) {
             // Remember the cursor position/selection.
@@ -356,8 +323,7 @@
             var character = line.charAt(i);
 
             if (character === ".") {
-                if (foundPeriod)
-                    break;
+                if (foundPeriod) break;
                 foundPeriod = true;
             } else if (character !== "-" && character !== "+" && isNaN(parseInt(character))) {
                 // Found the end already, just scan backwards.
@@ -393,8 +359,7 @@
         }
 
         // No number range found, pass to another key handler.
-        if (isNaN(start) || isNaN(end))
-            return false;
+        if (isNaN(start) || isNaN(end)) return false;
 
         var number = parseFloat(line.substring(start, end));
 
@@ -403,8 +368,8 @@
         var alteredNumber = Number((number + amount).toFixed(6));
         var alteredNumberString = alteredNumber.toString();
 
-        var from = {line: startPosition.line, ch: start};
-        var to = {line: startPosition.line, ch: end};
+        var from = { line: startPosition.line, ch: start };
+        var to = { line: startPosition.line, ch: end };
 
         this.replaceRange(alteredNumberString, from, to);
 
@@ -414,11 +379,9 @@
 
             // Fix up the selection so it follows the increase or decrease in the replacement length.
             if (previousLength !== newLength) {
-                if (selectionStart.line === from.line && selectionStart.ch > from.ch)
-                    selectionStart.ch += newLength - previousLength;
+                if (selectionStart.line === from.line && selectionStart.ch > from.ch) selectionStart.ch += newLength - previousLength;
 
-                if (selectionEnd.line === from.line && selectionEnd.ch > from.ch)
-                    selectionEnd.ch += newLength - previousLength;
+                if (selectionEnd.line === from.line && selectionEnd.ch > from.ch) selectionEnd.ch += newLength - previousLength;
             }
 
             this.setSelection(selectionStart, selectionEnd);
@@ -427,15 +390,12 @@
         return true;
     });
 
-    function alterNumber(amount, codeMirror)
-    {
-        function findNumberToken(position)
-        {
+    function alterNumber(amount, codeMirror) {
+        function findNumberToken(position) {
             // CodeMirror includes the unit in the number token, so searching for
             // number tokens is the best way to get both the number and unit.
             var token = codeMirror.getTokenAt(position);
-            if (token && token.type && /\bnumber\b/.test(token.type))
-                return token;
+            if (token && token.type && /\bnumber\b/.test(token.type)) return token;
             return null;
         }
 
@@ -449,33 +409,31 @@
             token = findNumberToken(position);
         }
 
-        if (!token)
-            return CodeMirror.Pass;
+        if (!token) return CodeMirror.Pass;
 
-        var foundNumber = codeMirror.alterNumberInRange(amount, {ch: token.start, line: position.line}, {ch: token.end, line: position.line}, true);
-        if (!foundNumber)
-            return CodeMirror.Pass;
+        var foundNumber = codeMirror.alterNumberInRange(amount, { ch: token.start, line: position.line }, { ch: token.end, line: position.line }, true);
+        if (!foundNumber) return CodeMirror.Pass;
     }
 
-    CodeMirror.defineExtension("rectsForRange", function(range) {
+    CodeMirror.defineExtension("rectsForRange", function (range) {
         var lineRects = [];
 
         for (var line = range.start.line; line <= range.end.line; ++line) {
             var lineContent = this.getLine(line);
 
-            var startChar = line === range.start.line ? range.start.ch : (lineContent.length - lineContent.trimLeft().length);
+            var startChar = line === range.start.line ? range.start.ch : lineContent.length - lineContent.trimLeft().length;
             var endChar = line === range.end.line ? range.end.ch : lineContent.length;
-            var firstCharCoords = this.cursorCoords({ch: startChar, line});
-            var endCharCoords = this.cursorCoords({ch: endChar, line});
+            var firstCharCoords = this.cursorCoords({ ch: startChar, line: line });
+            var endCharCoords = this.cursorCoords({ ch: endChar, line: line });
 
             // Handle line wrapping.
             if (firstCharCoords.bottom !== endCharCoords.bottom) {
                 var maxY = -Number.MAX_VALUE;
                 for (var ch = startChar; ch <= endChar; ++ch) {
-                    var coords = this.cursorCoords({ch, line});
+                    var coords = this.cursorCoords({ ch: ch, line: line });
                     if (coords.bottom > maxY) {
                         if (ch > startChar) {
-                            var maxX = Math.ceil(this.cursorCoords({ch: ch - 1, line}).right);
+                            var maxX = Math.ceil(this.cursorCoords({ ch: ch - 1, line: line }).right);
                             lineRects.push(new WebInspector.Rect(minX, minY, maxX - minX, maxY - minY));
                         }
                         var minX = Math.floor(coords.left);
@@ -496,7 +454,7 @@
         return lineRects;
     });
 
-    CodeMirror.defineExtension("createColorMarkers", function(range, callback) {
+    CodeMirror.defineExtension("createColorMarkers", function (range, callback) {
         var createdMarkers = [];
 
         var start = range instanceof WebInspector.TextRange ? range.startLine : 0;
@@ -516,8 +474,8 @@
                     continue;
                 }
 
-                var from = {line: lineNumber, ch: match.index};
-                var to = {line: lineNumber, ch: match.index + match[0].length};
+                var from = { line: lineNumber, ch: match.index };
+                var to = { line: lineNumber, ch: match.index + match[0].length };
 
                 var foundColorMarker = false;
                 var markers = this.findMarksAt(to);
@@ -552,8 +510,7 @@
 
                 createdMarkers.push(marker);
 
-                if (callback)
-                    callback(marker, color, colorString);
+                if (callback) callback(marker, color, colorString);
 
                 match = colorRegex.exec(lineContent);
             }
@@ -562,7 +519,7 @@
         return createdMarkers;
     });
 
-    CodeMirror.defineExtension("createGradientMarkers", function(range, callback) {
+    CodeMirror.defineExtension("createGradientMarkers", function (range, callback) {
         var createdMarkers = [];
 
         var start = range instanceof WebInspector.TextRange ? range.startLine : 0;
@@ -581,10 +538,8 @@
                 var openParentheses = 0;
                 var c = null;
                 while (c = lineContent[endChar]) {
-                    if (c === "(")
-                        openParentheses++;
-                    if (c === ")")
-                        openParentheses--;
+                    if (c === "(") openParentheses++;
+                    if (c === ")") openParentheses--;
 
                     if (openParentheses === -1) {
                         endChar++;
@@ -596,8 +551,7 @@
                         lineNumber++;
                         endChar = 0;
                         lineContent = this.getLine(lineNumber);
-                        if (!lineContent)
-                            break;
+                        if (!lineContent) break;
                     }
                 }
 
@@ -606,8 +560,8 @@
                     continue;
                 }
 
-                var from = {line: startLine, ch: startChar};
-                var to = {line: lineNumber, ch: endChar};
+                var from = { line: startLine, ch: startChar };
+                var to = { line: lineNumber, ch: endChar };
 
                 var gradientString = this.getRange(from, to);
                 var gradient = WebInspector.Gradient.fromString(gradientString);
@@ -620,8 +574,7 @@
 
                 createdMarkers.push(marker);
 
-                if (callback)
-                    callback(marker, gradient, gradientString);
+                if (callback) callback(marker, gradient, gradientString);
 
                 match = gradientRegex.exec(lineContent);
             }
@@ -630,10 +583,7 @@
         return createdMarkers;
     });
 
-    function ignoreKey(codeMirror)
-    {
-        // Do nothing to ignore the key.
-    }
+    function ignoreKey(codeMirror) {}
 
     CodeMirror.keyMap["default"] = {
         "Alt-Up": alterNumber.bind(null, 1),
@@ -654,35 +604,33 @@
     // Register some extra MIME-types for CodeMirror. These are in addition to the
     // ones CodeMirror already registers, like text/html, text/javascript, etc.
     var extraXMLTypes = ["text/xml", "text/xsl"];
-    extraXMLTypes.forEach(function(type) {
+    extraXMLTypes.forEach(function (type) {
         CodeMirror.defineMIME(type, "xml");
     });
 
     var extraHTMLTypes = ["application/xhtml+xml", "image/svg+xml"];
-    extraHTMLTypes.forEach(function(type) {
+    extraHTMLTypes.forEach(function (type) {
         CodeMirror.defineMIME(type, "htmlmixed");
     });
 
-    var extraJavaScriptTypes = ["text/ecmascript", "application/javascript", "application/ecmascript", "application/x-javascript",
-        "text/x-javascript", "text/javascript1.1", "text/javascript1.2", "text/javascript1.3", "text/jscript", "text/livescript"];
-    extraJavaScriptTypes.forEach(function(type) {
+    var extraJavaScriptTypes = ["text/ecmascript", "application/javascript", "application/ecmascript", "application/x-javascript", "text/x-javascript", "text/javascript1.1", "text/javascript1.2", "text/javascript1.3", "text/jscript", "text/livescript"];
+    extraJavaScriptTypes.forEach(function (type) {
         CodeMirror.defineMIME(type, "javascript");
     });
 
     var extraJSONTypes = ["application/x-json", "text/x-json"];
-    extraJSONTypes.forEach(function(type) {
-        CodeMirror.defineMIME(type, {name: "javascript", json: true});
+    extraJSONTypes.forEach(function (type) {
+        CodeMirror.defineMIME(type, { name: "javascript", json: true });
     });
-
 })();
 
-WebInspector.compareCodeMirrorPositions = function(a, b)
-{
+WebInspector.compareCodeMirrorPositions = function (a, b) {
     var lineCompare = a.line - b.line;
-    if (lineCompare !== 0)
-        return lineCompare;
+    if (lineCompare !== 0) return lineCompare;
 
     var aColumn = "ch" in a ? a.ch : Number.MAX_VALUE;
     var bColumn = "ch" in b ? b.ch : Number.MAX_VALUE;
     return aColumn - bColumn;
 };
+
+// Do nothing to ignore the key.

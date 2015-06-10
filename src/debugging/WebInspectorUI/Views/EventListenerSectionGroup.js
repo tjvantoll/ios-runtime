@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.EventListenerSectionGroup = class EventListenerSectionGroup extends WebInspector.DetailsSectionGroup
-{
-    constructor(eventListener, nodeId)
-    {
-        super();
+WebInspector.EventListenerSectionGroup = (function (_WebInspector$DetailsSectionGroup) {
+    function EventListenerSectionGroup(eventListener, nodeId) {
+        _classCallCheck(this, EventListenerSectionGroup);
+
+        _get(Object.getPrototypeOf(EventListenerSectionGroup.prototype), "constructor", this).call(this);
 
         this._eventListener = eventListener;
         this._nodeId = nodeId;
@@ -39,64 +47,63 @@ WebInspector.EventListenerSectionGroup = class EventListenerSectionGroup extends
         this.rows = rows;
     }
 
-    // Private
+    _inherits(EventListenerSectionGroup, _WebInspector$DetailsSectionGroup);
 
-    _nodeTextOrLink()
-    {
-        var node = this._eventListener.node;
-        console.assert(node);
-        if (!node)
-            return "";
+    _createClass(EventListenerSectionGroup, [{
+        key: "_nodeTextOrLink",
 
-        if (node.nodeType() === Node.DOCUMENT_NODE)
-            return "document";
+        // Private
 
-        return WebInspector.linkifyNodeReference(node);
-    }
+        value: function _nodeTextOrLink() {
+            var node = this._eventListener.node;
+            console.assert(node);
+            if (!node) return "";
 
-    _type()
-    {
-        if (this._eventListener.useCapture)
-            return WebInspector.UIString("Capturing");
+            if (node.nodeType() === Node.DOCUMENT_NODE) return "document";
 
-        if (this._eventListener.isAttribute)
-            return WebInspector.UIString("Attribute");
-
-        return WebInspector.UIString("Bubbling");
-    }
-
-    _functionTextOrLink()
-    {
-        var match = this._eventListener.handlerBody.match(/function ([^\(]+?)\(/);
-        if (match) {
-            var anonymous = false;
-            var functionName = match[1];
-        } else {
-            var anonymous = true;
-            var functionName = WebInspector.UIString("(anonymous function)");
+            return WebInspector.linkifyNodeReference(node);
         }
+    }, {
+        key: "_type",
+        value: function _type() {
+            if (this._eventListener.useCapture) return WebInspector.UIString("Capturing");
 
-        if (!this._eventListener.location)
-            return functionName;
+            if (this._eventListener.isAttribute) return WebInspector.UIString("Attribute");
 
-        // COMPATIBILITY (iOS 6): In the past scriptId could be a URL. Now it is always a script identifier.
-        // So try looking up the resource by URL if a script can't be found directly.
-        var scriptIdentifierOrURL = this._eventListener.location.scriptId;
-        var sourceCode = WebInspector.debuggerManager.scriptForIdentifier(scriptIdentifierOrURL);
-        if (!sourceCode)
-            sourceCode = WebInspector.frameResourceManager.resourceForURL(scriptIdentifierOrURL);
+            return WebInspector.UIString("Bubbling");
+        }
+    }, {
+        key: "_functionTextOrLink",
+        value: function _functionTextOrLink() {
+            var match = this._eventListener.handlerBody.match(/function ([^\(]+?)\(/);
+            if (match) {
+                var anonymous = false;
+                var functionName = match[1];
+            } else {
+                var anonymous = true;
+                var functionName = WebInspector.UIString("(anonymous function)");
+            }
 
-        if (!sourceCode)
-            return functionName;
+            if (!this._eventListener.location) return functionName;
 
-        var sourceCodeLocation = sourceCode.createSourceCodeLocation(this._eventListener.location.lineNumber, this._eventListener.location.columnNumber || 0);
-        var linkElement = WebInspector.createSourceCodeLocationLink(sourceCodeLocation, anonymous);
-        if (anonymous)
-            return linkElement;
+            // COMPATIBILITY (iOS 6): In the past scriptId could be a URL. Now it is always a script identifier.
+            // So try looking up the resource by URL if a script can't be found directly.
+            var scriptIdentifierOrURL = this._eventListener.location.scriptId;
+            var sourceCode = WebInspector.debuggerManager.scriptForIdentifier(scriptIdentifierOrURL);
+            if (!sourceCode) sourceCode = WebInspector.frameResourceManager.resourceForURL(scriptIdentifierOrURL);
 
-        var fragment = document.createDocumentFragment();
-        fragment.appendChild(linkElement);
-        fragment.appendChild(document.createTextNode(functionName));
-        return fragment;
-    }
-};
+            if (!sourceCode) return functionName;
+
+            var sourceCodeLocation = sourceCode.createSourceCodeLocation(this._eventListener.location.lineNumber, this._eventListener.location.columnNumber || 0);
+            var linkElement = WebInspector.createSourceCodeLocationLink(sourceCodeLocation, anonymous);
+            if (anonymous) return linkElement;
+
+            var fragment = document.createDocumentFragment();
+            fragment.appendChild(linkElement);
+            fragment.appendChild(document.createTextNode(functionName));
+            return fragment;
+        }
+    }]);
+
+    return EventListenerSectionGroup;
+})(WebInspector.DetailsSectionGroup);

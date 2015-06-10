@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.IndexedDatabaseObjectStoreContentView = function(objectStoreOrIndex)
-{
+WebInspector.IndexedDatabaseObjectStoreContentView = function (objectStoreOrIndex) {
     WebInspector.ContentView.call(this, objectStoreOrIndex);
 
     this.element.classList.add(WebInspector.IndexedDatabaseObjectStoreContentView.StyleClassName);
@@ -37,12 +36,9 @@ WebInspector.IndexedDatabaseObjectStoreContentView = function(objectStoreOrIndex
         this._objectStoreIndex = objectStoreOrIndex;
     }
 
-    function displayKeyPath(keyPath)
-    {
-        if (!keyPath)
-            return "";
-        if (keyPath instanceof Array)
-            return keyPath.join(WebInspector.UIString(", "));
+    function displayKeyPath(keyPath) {
+        if (!keyPath) return "";
+        if (keyPath instanceof Array) return keyPath.join(WebInspector.UIString(", "));
         console.assert(keyPath instanceof String || typeof keyPath === "string");
         return keyPath;
     }
@@ -50,15 +46,15 @@ WebInspector.IndexedDatabaseObjectStoreContentView = function(objectStoreOrIndex
     var displayPrimaryKeyPath = displayKeyPath(this._objectStore.keyPath);
 
     var columnInfo = {
-        primaryKey: {title: displayPrimaryKeyPath ? WebInspector.UIString("Primary Key \u2014 %s").format(displayPrimaryKeyPath) : WebInspector.UIString("Primary Key")},
+        primaryKey: { title: displayPrimaryKeyPath ? WebInspector.UIString("Primary Key — %s").format(displayPrimaryKeyPath) : WebInspector.UIString("Primary Key") },
         key: {},
-        value: {title: WebInspector.UIString("Value")}
+        value: { title: WebInspector.UIString("Value") }
     };
 
     if (this._objectStoreIndex) {
         // When there is an index, show the key path in the Key column.
         var displayIndexKeyPath = displayKeyPath(this._objectStoreIndex.keyPath);
-        columnInfo.key.title = WebInspector.UIString("Index Key \u2014 %s").format(displayIndexKeyPath);
+        columnInfo.key.title = WebInspector.UIString("Index Key — %s").format(displayIndexKeyPath);
     } else {
         // Only need to show Key for indexes -- it is the same as Primary Key
         // when there is no index being used.
@@ -79,24 +75,15 @@ WebInspector.IndexedDatabaseObjectStoreContentView = function(objectStoreOrIndex
 
 WebInspector.IndexedDatabaseObjectStoreContentView.StyleClassName = "indexed-database-object-store";
 
-WebInspector.IndexedDatabaseObjectStoreContentView.prototype = {
+WebInspector.IndexedDatabaseObjectStoreContentView.prototype = Object.defineProperties({
     constructor: WebInspector.IndexedDatabaseObjectStoreContentView,
     __proto__: WebInspector.ContentView.prototype,
 
-    // Public
-
-    get navigationItems()
-    {
-        return [this._refreshButtonNavigationItem];
-    },
-
-    closed: function()
-    {
+    closed: function closed() {
         this._reset();
     },
 
-    saveToCookie: function(cookie)
-    {
+    saveToCookie: function saveToCookie(cookie) {
         cookie.type = WebInspector.ContentViewCookieType.IndexedDatabaseObjectStore;
         cookie.securityOrigin = this._objectStore.parentDatabase.securityOrigin;
         cookie.databaseName = this._objectStore.parentDatabase.name;
@@ -104,52 +91,86 @@ WebInspector.IndexedDatabaseObjectStoreContentView.prototype = {
         cookie.objectStoreIndexName = this._objectStoreIndex && this._objectStoreIndex.name;
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         this._dataGrid.updateLayout();
     },
 
     // Private
 
-    _reset: function()
-    {
-        for (var entry of this._entries) {
-            entry.primaryKey.release();
-            entry.key.release();
-            entry.value.release();
+    _reset: function _reset() {
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = this._entries[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var entry = _step.value;
+
+                entry.primaryKey.release();
+                entry.key.release();
+                entry.value.release();
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
 
         this._entries = [];
         this._dataGrid.removeChildren();
     },
 
-    _dataGridScrolled: function()
-    {
-        if (!this._moreEntriesAvailable || !this._dataGrid.isScrolledToLastRow())
-            return;
+    _dataGridScrolled: function _dataGridScrolled() {
+        if (!this._moreEntriesAvailable || !this._dataGrid.isScrolledToLastRow()) return;
 
         this._fetchMoreData();
     },
 
-    _fetchMoreData: function()
-    {
-        if (this._fetchingMoreData)
-            return;
+    _fetchMoreData: function _fetchMoreData() {
+        if (this._fetchingMoreData) return;
 
-        function processEntries(entries, moreAvailable)
-        {
+        function processEntries(entries, moreAvailable) {
             this._entries = this._entries.concat(entries);
             this._moreEntriesAvailable = moreAvailable;
 
-            for (var entry of entries) {
-                var dataGridNode = new WebInspector.IndexedDatabaseEntryDataGridNode(entry);
-                this._dataGrid.appendChild(dataGridNode);
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = entries[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var entry = _step2.value;
+
+                    var dataGridNode = new WebInspector.IndexedDatabaseEntryDataGridNode(entry);
+                    this._dataGrid.appendChild(dataGridNode);
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+                        _iterator2["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
             }
 
             delete this._fetchingMoreData;
 
-            if (moreAvailable && this._dataGrid.isScrolledToLastRow())
-                this._fetchMoreData();
+            if (moreAvailable && this._dataGrid.isScrolledToLastRow()) this._fetchMoreData();
         }
 
         this._fetchingMoreData = true;
@@ -157,9 +178,17 @@ WebInspector.IndexedDatabaseObjectStoreContentView.prototype = {
         WebInspector.storageManager.requestIndexedDatabaseData(this._objectStore, this._objectStoreIndex, this._entries.length, 25, processEntries.bind(this));
     },
 
-    _refreshButtonClicked: function()
-    {
+    _refreshButtonClicked: function _refreshButtonClicked() {
         this._reset();
         this._fetchMoreData();
     }
-};
+}, {
+    navigationItems: { // Public
+
+        get: function () {
+            return [this._refreshButtonNavigationItem];
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

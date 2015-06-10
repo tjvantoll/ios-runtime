@@ -31,107 +31,83 @@
  */
 
 if (!window.Symbol) {
-    window.Symbol = function(string)
-    {
+    window.Symbol = function (string) {
         return string;
-    }
+    };
 }
 
 if (!window.InspectorFrontendHost) {
-    WebInspector.InspectorFrontendHostStub = function()
-    {
-    };
+    WebInspector.InspectorFrontendHostStub = function () {};
 
     WebInspector.InspectorFrontendHostStub.prototype = {
         // Public
 
-        initializeWebSocket: function(url)
-        {
+        initializeWebSocket: function initializeWebSocket(url) {
             var socket = new WebSocket(url);
             socket.addEventListener("open", socketReady.bind(this));
 
-            function socketReady()
-            {
+            function socketReady() {
                 this._socket = socket;
 
-                this._socket.addEventListener("message", function(message) { InspectorBackend.dispatch(message.data); });
-                this._socket.addEventListener("error", function(error) { console.error(error); });
+                this._socket.addEventListener("message", function (message) {
+                    InspectorBackend.dispatch(message.data);
+                });
+                this._socket.addEventListener("error", function (error) {
+                    console.error(error);
+                });
 
                 this._sendPendingMessagesToBackendIfNeeded();
             }
         },
 
-        bringToFront: function()
-        {
+        bringToFront: function bringToFront() {
             this._windowVisible = true;
         },
 
-        closeWindow: function()
-        {
+        closeWindow: function closeWindow() {
             this._windowVisible = false;
         },
 
-        requestSetDockSide: function(side)
-        {
+        requestSetDockSide: function requestSetDockSide(side) {
             InspectorFrontendAPI.setDockSide(side);
         },
 
-        setAttachedWindowHeight: function(height)
-        {
-        },
+        setAttachedWindowHeight: function setAttachedWindowHeight(height) {},
 
-        setAttachedWindowWidth: function(width)
-        {
-        },
+        setAttachedWindowWidth: function setAttachedWindowWidth(width) {},
 
-        setToolbarHeight: function(width)
-        {
-        },
+        setToolbarHeight: function setToolbarHeight(width) {},
 
-        moveWindowBy: function(x, y)
-        {
-        },
+        moveWindowBy: function moveWindowBy(x, y) {},
 
-        loaded: function()
-        {
-        },
+        loaded: function loaded() {},
 
-        localizedStringsURL: function()
-        {
+        localizedStringsURL: function localizedStringsURL() {
             return undefined;
         },
 
-        debuggableType: function()
-        {
+        debuggableType: function debuggableType() {
             return "js";
         },
 
-        inspectedURLChanged: function(title)
-        {
+        inspectedURLChanged: function inspectedURLChanged(title) {
             document.title = title;
         },
 
-        copyText: function(text)
-        {
+        copyText: function copyText(text) {
             this._textToCopy = text;
-            if (!document.execCommand("copy"))
-                console.error("Clipboard access is denied");
+            if (!document.execCommand("copy")) console.error("Clipboard access is denied");
         },
 
-        openInNewTab: function(url)
-        {
+        openInNewTab: function openInNewTab(url) {
             window.open(url, "_blank");
         },
 
-        save: function(url, content, base64Encoded, forceSaveAs)
-        {
-        },
+        save: function save(url, content, base64Encoded, forceSaveAs) {},
 
-        sendMessageToBackend: function(message)
-        {
+        sendMessageToBackend: function sendMessageToBackend(message) {
             if (!this._socket) {
-                if (!this._pendingMessages)
-                    this._pendingMessages = [];
+                if (!this._pendingMessages) this._pendingMessages = [];
                 this._pendingMessages.push(message);
                 return;
             }
@@ -141,40 +117,32 @@ if (!window.InspectorFrontendHost) {
             this._socket.send(message);
         },
 
-        platform: function()
-        {
+        platform: function platform() {
             return (navigator.platform.match(/mac|win|linux/i) || ["other"])[0].toLowerCase();
         },
 
-        beep: function()
-        {
-        },
+        beep: function beep() {},
 
-        showContextMenu: function(event, menuObject)
-        {
-        },
+        showContextMenu: function showContextMenu(event, menuObject) {},
 
         // Private
 
-        _sendPendingMessagesToBackendIfNeeded: function()
-        {
-            if (!this._pendingMessages)
-                return;
+        _sendPendingMessagesToBackendIfNeeded: function _sendPendingMessagesToBackendIfNeeded() {
+            if (!this._pendingMessages) return;
 
-            for (var i = 0; i < this._pendingMessages.length; ++i)
-                this._socket.send(this._pendingMessages[i]);
+            for (var i = 0; i < this._pendingMessages.length; ++i) this._socket.send(this._pendingMessages[i]);
 
             delete this._pendingMessages;
         }
     };
 
     InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
-    
+
     var host;
     if (window.location.hash) {
         host = window.location.hash.substring(1, window.location.hash.length);
     } else if (window.location.protocol == "http:" || window.location.protocol == "https:") {
-        host = window.location.hostname + ":8080"
+        host = window.location.hostname + ":8080";
     } else {
         host = "localhost:8080";
     }

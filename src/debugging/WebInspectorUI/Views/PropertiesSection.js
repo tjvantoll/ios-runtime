@@ -23,17 +23,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.PropertiesSection = function(title, subtitle)
-{
-    this.propertiesElement = document.createElement("ol");
-    this.propertiesElement.className = "properties properties-tree";
-    this.propertiesElement.tabIndex = 0;
-    this.propertiesTreeOutline = new WebInspector.TreeOutline(this.propertiesElement);
-    this.propertiesTreeOutline.section = this;
+WebInspector.PropertiesSection = function (title, subtitle) {
+  this.propertiesElement = document.createElement("ol");
+  this.propertiesElement.className = "properties properties-tree";
+  this.propertiesElement.tabIndex = 0;
+  this.propertiesTreeOutline = new WebInspector.TreeOutline(this.propertiesElement);
+  this.propertiesTreeOutline.section = this;
 
-    WebInspector.Section.call(this, title, subtitle);
+  WebInspector.Section.call(this, title, subtitle);
 
-    this.element.appendChild(this.propertiesElement);
+  this.element.appendChild(this.propertiesElement);
 };
 
 WebInspector.PropertiesSection.prototype.__proto__ = WebInspector.Section.prototype;

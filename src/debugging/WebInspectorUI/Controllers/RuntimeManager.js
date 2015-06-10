@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,93 +31,113 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.RuntimeManager = class RuntimeManager extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.RuntimeManager = (function (_WebInspector$Object) {
+    function RuntimeManager() {
+        _classCallCheck(this, RuntimeManager);
+
+        _get(Object.getPrototypeOf(RuntimeManager.prototype), "constructor", this).call(this);
 
         // Enable the RuntimeAgent to receive notification of execution contexts.
-        if (RuntimeAgent.enable)
-            RuntimeAgent.enable();
+        if (RuntimeAgent.enable) RuntimeAgent.enable();
     }
 
-    // Public
+    _inherits(RuntimeManager, _WebInspector$Object);
 
-    evaluateInInspectedWindow(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, saveResult, callback)
-    {
-        if (!expression) {
-            // There is no expression, so the completion should happen against global properties.
-            expression = "this";
-        }
+    _createClass(RuntimeManager, [{
+        key: "evaluateInInspectedWindow",
 
-        function evalCallback(error, result, wasThrown, savedResultIndex)
-        {
-            this.dispatchEventToListeners(WebInspector.RuntimeManager.Event.DidEvaluate);
+        // Public
 
-            if (error) {
-                console.error(error);
-                callback(null, false);
+        value: function evaluateInInspectedWindow(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, saveResult, callback) {
+            if (!expression) {
+                // There is no expression, so the completion should happen against global properties.
+                expression = "this";
+            }
+
+            function evalCallback(error, result, wasThrown, savedResultIndex) {
+                this.dispatchEventToListeners(WebInspector.RuntimeManager.Event.DidEvaluate);
+
+                if (error) {
+                    console.error(error);
+                    callback(null, false);
+                    return;
+                }
+
+                if (returnByValue) callback(null, wasThrown, wasThrown ? null : result, savedResultIndex);else callback(WebInspector.RemoteObject.fromPayload(result), wasThrown, savedResultIndex);
+            }
+
+            if (WebInspector.debuggerManager.activeCallFrame) {
+                // COMPATIBILITY (iOS 6): "generatePreview" did not exist.
+                // COMPATIBILITY (iOS 8): "saveResult" did not exist.
+                DebuggerAgent.evaluateOnCallFrame.invoke({ callFrameId: WebInspector.debuggerManager.activeCallFrame.id, expression: expression, objectGroup: objectGroup, includeCommandLineAPI: includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole: doNotPauseOnExceptionsAndMuteConsole, returnByValue: returnByValue, generatePreview: generatePreview, saveResult: saveResult }, evalCallback.bind(this));
                 return;
             }
 
-            if (returnByValue)
-                callback(null, wasThrown, wasThrown ? null : result, savedResultIndex);
-            else
-                callback(WebInspector.RemoteObject.fromPayload(result), wasThrown, savedResultIndex);
-        }
-
-        if (WebInspector.debuggerManager.activeCallFrame) {
+            // COMPATIBILITY (iOS 6): Execution context identifiers (contextId) did not exist
+            // in iOS 6. Fallback to including the frame identifier (frameId).
             // COMPATIBILITY (iOS 6): "generatePreview" did not exist.
             // COMPATIBILITY (iOS 8): "saveResult" did not exist.
-            DebuggerAgent.evaluateOnCallFrame.invoke({callFrameId: WebInspector.debuggerManager.activeCallFrame.id, expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, saveResult}, evalCallback.bind(this));
-            return;
+            var contextId = WebInspector.quickConsole.executionContextIdentifier;
+            RuntimeAgent.evaluate.invoke({ expression: expression, objectGroup: objectGroup, includeCommandLineAPI: includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole: doNotPauseOnExceptionsAndMuteConsole, contextId: contextId, frameId: contextId, returnByValue: returnByValue, generatePreview: generatePreview, saveResult: saveResult }, evalCallback.bind(this));
         }
+    }, {
+        key: "saveResult",
+        value: function saveResult(remoteObject, callback) {
+            console.assert(remoteObject instanceof WebInspector.RemoteObject);
 
-        // COMPATIBILITY (iOS 6): Execution context identifiers (contextId) did not exist
-        // in iOS 6. Fallback to including the frame identifier (frameId).
-        // COMPATIBILITY (iOS 6): "generatePreview" did not exist.
-        // COMPATIBILITY (iOS 8): "saveResult" did not exist.
-        var contextId = WebInspector.quickConsole.executionContextIdentifier;
-        RuntimeAgent.evaluate.invoke({expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, contextId, frameId: contextId, returnByValue, generatePreview, saveResult}, evalCallback.bind(this));
-    }
-
-    saveResult(remoteObject, callback)
-    {
-        console.assert(remoteObject instanceof WebInspector.RemoteObject);
-
-        if (!RuntimeAgent.saveResult) {
-            callback(undefined);
-            return;
-        }
-
-        function mycallback(error, savedResultIndex)
-        {
-            callback(savedResultIndex);
-        }
-
-        if (remoteObject.objectId)
-            RuntimeAgent.saveResult(remoteObject.asCallArgument(), mycallback);
-        else
-            RuntimeAgent.saveResult(remoteObject.asCallArgument(), WebInspector.quickConsole.executionContextIdentifier, mycallback);
-    }
-
-    getPropertiesForRemoteObject(objectId, callback)
-    {
-        RuntimeAgent.getProperties(objectId, function(error, result) {
-            if (error) {
-                callback(error);
+            if (!RuntimeAgent.saveResult) {
+                callback(undefined);
                 return;
             }
 
-            var properties = new Map;
-            for (var property of result)
-                properties.set(property.name, property);
+            function mycallback(error, savedResultIndex) {
+                callback(savedResultIndex);
+            }
 
-            callback(null, properties);
-        });
-    }
-};
+            if (remoteObject.objectId) RuntimeAgent.saveResult(remoteObject.asCallArgument(), mycallback);else RuntimeAgent.saveResult(remoteObject.asCallArgument(), WebInspector.quickConsole.executionContextIdentifier, mycallback);
+        }
+    }, {
+        key: "getPropertiesForRemoteObject",
+        value: function getPropertiesForRemoteObject(objectId, callback) {
+            RuntimeAgent.getProperties(objectId, function (error, result) {
+                if (error) {
+                    callback(error);
+                    return;
+                }
+
+                var properties = new Map();
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
+
+                try {
+                    for (var _iterator = result[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                        var property = _step.value;
+
+                        properties.set(property.name, property);
+                    }
+                } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator["return"]) {
+                            _iterator["return"]();
+                        }
+                    } finally {
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
+                    }
+                }
+
+                callback(null, properties);
+            });
+        }
+    }]);
+
+    return RuntimeManager;
+})(WebInspector.Object);
 
 WebInspector.RuntimeManager.Event = {
     DidEvaluate: "runtime-manager-did-evaluate"

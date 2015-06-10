@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Adobe Systems Incorporated. All rights reserved.
  *
@@ -27,11 +35,11 @@
  * SUCH DAMAGE.
  */
 
-WebInspector.ContentFlow = class ContentFlow extends WebInspector.Object
-{
-    constructor(documentNodeIdentifier, name, overset, contentNodes)
-    {
-        super();
+WebInspector.ContentFlow = (function (_WebInspector$Object) {
+    function ContentFlow(documentNodeIdentifier, name, overset, contentNodes) {
+        _classCallCheck(this, ContentFlow);
+
+        _get(Object.getPrototypeOf(ContentFlow.prototype), "constructor", this).call(this);
 
         this._documentNodeIdentifier = documentNodeIdentifier;
         this._name = name;
@@ -39,64 +47,68 @@ WebInspector.ContentFlow = class ContentFlow extends WebInspector.Object
         this._contentNodes = contentNodes;
     }
 
-    // Public
+    _inherits(ContentFlow, _WebInspector$Object);
 
-    get id()
-    {
-        // Use the flow node id, to avoid collisions when we change main document id.
-        return this._documentNodeIdentifier + ":" + this._name;
-    }
+    _createClass(ContentFlow, [{
+        key: "insertContentNodeBefore",
+        value: function insertContentNodeBefore(contentNode, referenceNode) {
+            var index = this._contentNodes.indexOf(referenceNode);
+            console.assert(index !== -1);
+            this._contentNodes.splice(index, 0, contentNode);
+            this.dispatchEventToListeners(WebInspector.ContentFlow.Event.ContentNodeWasAdded, { node: contentNode, before: referenceNode });
+        }
+    }, {
+        key: "appendContentNode",
+        value: function appendContentNode(contentNode) {
+            this._contentNodes.push(contentNode);
+            this.dispatchEventToListeners(WebInspector.ContentFlow.Event.ContentNodeWasAdded, { node: contentNode });
+        }
+    }, {
+        key: "removeContentNode",
+        value: function removeContentNode(contentNode) {
+            var index = this._contentNodes.indexOf(contentNode);
+            console.assert(index !== -1);
+            this._contentNodes.splice(index, 1);
+            this.dispatchEventToListeners(WebInspector.ContentFlow.Event.ContentNodeWasRemoved, { node: contentNode });
+        }
+    }, {
+        key: "id",
 
-    get documentNodeIdentifier()
-    {
-        return this._documentNodeIdentifier;
-    }
+        // Public
 
-    get name()
-    {
-        return this._name;
-    }
+        get: function () {
+            // Use the flow node id, to avoid collisions when we change main document id.
+            return this._documentNodeIdentifier + ":" + this._name;
+        }
+    }, {
+        key: "documentNodeIdentifier",
+        get: function () {
+            return this._documentNodeIdentifier;
+        }
+    }, {
+        key: "name",
+        get: function () {
+            return this._name;
+        }
+    }, {
+        key: "overset",
+        get: function () {
+            return this._overset;
+        },
+        set: function (overset) {
+            if (this._overset === overset) return;
+            this._overset = overset;
+            this.dispatchEventToListeners(WebInspector.ContentFlow.Event.FlowOversetWasChanged);
+        }
+    }, {
+        key: "contentNodes",
+        get: function () {
+            return this._contentNodes;
+        }
+    }]);
 
-    get overset()
-    {
-        return this._overset;
-    }
-
-    set overset(overset)
-    {
-        if (this._overset === overset)
-            return;
-        this._overset = overset;
-        this.dispatchEventToListeners(WebInspector.ContentFlow.Event.FlowOversetWasChanged);
-    }
-
-    get contentNodes()
-    {
-        return this._contentNodes;
-    }
-
-    insertContentNodeBefore(contentNode, referenceNode)
-    {
-        var index = this._contentNodes.indexOf(referenceNode);
-        console.assert(index !== -1);
-        this._contentNodes.splice(index, 0, contentNode);
-        this.dispatchEventToListeners(WebInspector.ContentFlow.Event.ContentNodeWasAdded, {node: contentNode, before: referenceNode});
-    }
-
-    appendContentNode(contentNode)
-    {
-        this._contentNodes.push(contentNode);
-        this.dispatchEventToListeners(WebInspector.ContentFlow.Event.ContentNodeWasAdded, {node: contentNode});
-    }
-
-    removeContentNode(contentNode)
-    {
-        var index = this._contentNodes.indexOf(contentNode);
-        console.assert(index !== -1);
-        this._contentNodes.splice(index, 1);
-        this.dispatchEventToListeners(WebInspector.ContentFlow.Event.ContentNodeWasRemoved, {node: contentNode});
-    }
-};
+    return ContentFlow;
+})(WebInspector.Object);
 
 WebInspector.ContentFlow.Event = {
     OversetWasChanged: "content-flow-overset-was-changed",

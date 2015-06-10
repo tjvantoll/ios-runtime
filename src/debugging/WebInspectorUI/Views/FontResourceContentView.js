@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.FontResourceContentView = function(resource)
-{
+WebInspector.FontResourceContentView = function (resource) {
     WebInspector.ResourceContentView.call(this, resource, WebInspector.FontResourceContentView.StyleClassName);
 
     this._styleElement = null;
@@ -48,43 +47,30 @@ WebInspector.FontResourceContentView.PreviewLines = ["ABCDEFGHIJKLM", "NOPQRSTUV
 WebInspector.FontResourceContentView.MaximumFontSize = 72;
 WebInspector.FontResourceContentView.MinimumFontSize = 12;
 
-WebInspector.FontResourceContentView.prototype = {
+WebInspector.FontResourceContentView.prototype = Object.defineProperties({
     constructor: WebInspector.FontResourceContentView,
 
-    // Public
-
-    get previewElement()
-    {
-        return this._previewElement;
-    },
-
-    sizeToFit: function()
-    {
-        if (!this._previewElement)
-            return;
+    sizeToFit: function sizeToFit() {
+        if (!this._previewElement) return;
 
         // Start at the maximum size and try progressively smaller font sizes until minimum is reached or the preview element is not as wide as the main element.
         for (var fontSize = WebInspector.FontResourceContentView.MaximumFontSize; fontSize >= WebInspector.FontResourceContentView.MinimumFontSize; fontSize -= 5) {
             this._previewElement.style.fontSize = fontSize + "px";
-            if (this._previewElement.offsetWidth <= this.element.offsetWidth)
-                break;
+            if (this._previewElement.offsetWidth <= this.element.offsetWidth) break;
         }
     },
 
-    contentAvailable: function(content, base64Encoded)
-    {
+    contentAvailable: function contentAvailable(content, base64Encoded) {
         this.element.removeChildren();
 
-        const uniqueFontName = "WebInspectorFontPreview" + (++WebInspector.FontResourceContentView._uniqueFontIdentifier);
+        var uniqueFontName = "WebInspectorFontPreview" + ++WebInspector.FontResourceContentView._uniqueFontIdentifier;
 
         var format = "";
 
         // We need to specify a format when loading SVG fonts to make them work.
-        if (this.resource.mimeTypeComponents.type === "image/svg+xml")
-            format = " format(\"svg\")";
+        if (this.resource.mimeTypeComponents.type === "image/svg+xml") format = " format(\"svg\")";
 
-        if (this._styleElement && this._styleElement.parentNode)
-            this._styleElement.parentNode.removeChild(this._styleElement);
+        if (this._styleElement && this._styleElement.parentNode) this._styleElement.parentNode.removeChild(this._styleElement);
 
         this._fontObjectURL = this.resource.createObjectURL();
 
@@ -92,15 +78,13 @@ WebInspector.FontResourceContentView.prototype = {
         this._styleElement.textContent = "@font-face { font-family: \"" + uniqueFontName + "\"; src: url(" + this._fontObjectURL + ")" + format + "; }";
 
         // The style element will be added when shown later if we are not visible now.
-        if (this.visible)
-            document.head.appendChild(this._styleElement);
+        if (this.visible) document.head.appendChild(this._styleElement);
 
         this._previewElement = document.createElement("div");
         this._previewElement.className = WebInspector.FontResourceContentView.PreviewElementStyleClassName;
         this._previewElement.style.fontFamily = uniqueFontName;
 
-        function createMetricElement(className)
-        {
+        function createMetricElement(className) {
             var metricElement = document.createElement("div");
             metricElement.className = WebInspector.FontResourceContentView.MetricElementStyleClassName + " " + className;
             return metricElement;
@@ -130,34 +114,36 @@ WebInspector.FontResourceContentView.prototype = {
         this.sizeToFit();
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         this.sizeToFit();
     },
 
-    shown: function()
-    {
+    shown: function shown() {
         // Add the style element since it is removed when hidden.
-        if (this._styleElement)
-            document.head.appendChild(this._styleElement);
+        if (this._styleElement) document.head.appendChild(this._styleElement);
     },
 
-    hidden: function()
-    {
+    hidden: function hidden() {
         // Remove the style element so it will not stick around when this content view is destroyed.
-        if (this._styleElement && this._styleElement.parentNode)
-            this._styleElement.parentNode.removeChild(this._styleElement);
+        if (this._styleElement && this._styleElement.parentNode) this._styleElement.parentNode.removeChild(this._styleElement);
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         // This is a workaround for the fact that the browser does not send any events
         // when a @font-face resource is loaded. So, we assume it could be needed until
         // the content view is destroyed, as re-attaching the style element would cause
         // the object URL to be resolved again.
-        if (this._fontObjectURL)
-            URL.revokeObjectURL(this._fontObjectURL);
+        if (this._fontObjectURL) URL.revokeObjectURL(this._fontObjectURL);
     }
-};
+}, {
+    previewElement: { // Public
+
+        get: function () {
+            return this._previewElement;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.FontResourceContentView.prototype.__proto__ = WebInspector.ResourceContentView.prototype;

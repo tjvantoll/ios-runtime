@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.RenderingFrameTimelineDataGridNode = function(renderingFrameTimelineRecord, baseStartTime)
-{
+WebInspector.RenderingFrameTimelineDataGridNode = function (renderingFrameTimelineRecord, baseStartTime) {
     WebInspector.TimelineDataGridNode.call(this, false, null);
 
     this._record = renderingFrameTimelineRecord;
@@ -34,45 +33,50 @@ WebInspector.RenderingFrameTimelineDataGridNode = function(renderingFrameTimelin
 WebInspector.RenderingFrameTimelineDataGridNode.IconStyleClassName = "icon";
 WebInspector.RenderingFrameTimelineDataGridNode.SubtitleStyleClassName = "subtitle";
 
-WebInspector.RenderingFrameTimelineDataGridNode.prototype = {
+WebInspector.RenderingFrameTimelineDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.RenderingFrameTimelineDataGridNode,
     __proto__: WebInspector.TimelineDataGridNode.prototype,
 
-    // Public
-
-    get record()
-    {
-        return this._record;
-    },
-
-    get records()
-    {
-        return [this._record];
-    },
-
-    get data()
-    {
-        var layoutTime = this._record.durationForRecords(WebInspector.TimelineRecord.Type.Layout);
-        var scriptTime = this._record.durationForRecords(WebInspector.TimelineRecord.Type.Script);
-        return {startTime: this._record.startTime, layoutTime, scriptTime, otherTime: this._record.durationRemainder, totalTime: this._record.duration};
-    },
-
-    createCellContent: function(columnIdentifier, cell)
-    {
-        const emptyValuePlaceholderString = "\u2014";
+    createCellContent: function createCellContent(columnIdentifier, cell) {
+        var emptyValuePlaceholderString = "—";
         var value = this.data[columnIdentifier];
 
         switch (columnIdentifier) {
-        case "startTime":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value - this._baseStartTime, true);
+            case "startTime":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value - this._baseStartTime, true);
 
-        case "layoutTime":
-        case "scriptTime":
-        case "otherTime":
-        case "totalTime":
-            return (isNaN(value) || value === 0) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
+            case "layoutTime":
+            case "scriptTime":
+            case "otherTime":
+            case "totalTime":
+                return isNaN(value) || value === 0 ? emptyValuePlaceholderString : Number.secondsToString(value, true);
         }
 
         return WebInspector.TimelineDataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
     }
-};
+}, {
+    record: { // Public
+
+        get: function () {
+            return this._record;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    records: {
+        get: function () {
+            return [this._record];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            var layoutTime = this._record.durationForRecords(WebInspector.TimelineRecord.Type.Layout);
+            var scriptTime = this._record.durationForRecords(WebInspector.TimelineRecord.Type.Script);
+            return { startTime: this._record.startTime, layoutTime: layoutTime, scriptTime: scriptTime, otherTime: this._record.durationRemainder, totalTime: this._record.duration };
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

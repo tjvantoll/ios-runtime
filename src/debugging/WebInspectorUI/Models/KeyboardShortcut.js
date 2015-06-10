@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.KeyboardShortcut = class KeyboardShortcut extends WebInspector.Object
-{
-    constructor(modifiers, key, callback, targetElement)
-    {
-        super();
+WebInspector.KeyboardShortcut = (function (_WebInspector$Object) {
+    function KeyboardShortcut(modifiers, key, callback, targetElement) {
+        _classCallCheck(this, KeyboardShortcut);
+
+        _get(Object.getPrototypeOf(KeyboardShortcut.prototype), "constructor", this).call(this);
 
         console.assert(key);
         console.assert(!callback || typeof callback === "function");
@@ -38,8 +46,7 @@ WebInspector.KeyboardShortcut = class KeyboardShortcut extends WebInspector.Obje
             key = new WebInspector.Key(key.charCodeAt(0), key);
         }
 
-        if (callback && !targetElement)
-            targetElement = document;
+        if (callback && !targetElement) targetElement = document;
 
         this._modifiers = modifiers || WebInspector.KeyboardShortcut.Modifier.None;
         this._key = key;
@@ -50,8 +57,7 @@ WebInspector.KeyboardShortcut = class KeyboardShortcut extends WebInspector.Obje
 
         if (targetElement) {
             var targetKeyboardShortcuts = targetElement._keyboardShortcuts;
-            if (!targetKeyboardShortcuts)
-                targetKeyboardShortcuts = targetElement._keyboardShortcuts = [];
+            if (!targetKeyboardShortcuts) targetKeyboardShortcuts = targetElement._keyboardShortcuts = [];
 
             targetKeyboardShortcuts.push(this);
 
@@ -62,186 +68,180 @@ WebInspector.KeyboardShortcut = class KeyboardShortcut extends WebInspector.Obje
         }
     }
 
-    // Static
+    _inherits(KeyboardShortcut, _WebInspector$Object);
 
-    static _handleKeyDown(event)
-    {
-        if (event.defaultPrevented)
-            return;
+    _createClass(KeyboardShortcut, [{
+        key: "unbind",
+        value: function unbind() {
+            this._disabled = true;
 
-        for (var targetElement = event.target; targetElement; targetElement = targetElement.parentNode) {
-            if (!targetElement._keyboardShortcuts)
-                continue;
+            if (!this._targetElement) return;
 
-            for (var i = 0; i < targetElement._keyboardShortcuts.length; ++i) {
-                var keyboardShortcut = targetElement._keyboardShortcuts[i];
-                if (!keyboardShortcut.matchesEvent(event))
-                    continue;
+            var targetKeyboardShortcuts = this._targetElement._keyboardShortcuts;
+            if (!targetKeyboardShortcuts) return;
 
-                if (!keyboardShortcut.callback)
-                    continue;
+            targetKeyboardShortcuts.remove(this);
+        }
+    }, {
+        key: "matchesEvent",
+        value: function matchesEvent(event) {
+            if (this._disabled) return false;
 
-                keyboardShortcut.callback(event, keyboardShortcut);
+            if (this._key.keyCode !== event.keyCode) return false;
 
-                if (keyboardShortcut.implicitlyPreventsDefault)
-                    event.preventDefault();
+            var eventModifiers = WebInspector.KeyboardShortcut.Modifier.None;
+            if (event.shiftKey) eventModifiers |= WebInspector.KeyboardShortcut.Modifier.Shift;
+            if (event.ctrlKey) eventModifiers |= WebInspector.KeyboardShortcut.Modifier.Control;
+            if (event.altKey) eventModifiers |= WebInspector.KeyboardShortcut.Modifier.Option;
+            if (event.metaKey) eventModifiers |= WebInspector.KeyboardShortcut.Modifier.Command;
+            return this._modifiers === eventModifiers;
+        }
+    }, {
+        key: "modifiers",
 
-                return;
+        // Public
+
+        get: function () {
+            return this._modifiers;
+        }
+    }, {
+        key: "key",
+        get: function () {
+            return this._key;
+        }
+    }, {
+        key: "displayName",
+        get: function () {
+            var result = "";
+
+            if (this._modifiers & WebInspector.KeyboardShortcut.Modifier.Control) result += "⌃";
+            if (this._modifiers & WebInspector.KeyboardShortcut.Modifier.Option) result += WebInspector.Platform.name === "mac" ? "⌥" : "⎇";
+            if (this._modifiers & WebInspector.KeyboardShortcut.Modifier.Shift) result += "⇧";
+            if (this._modifiers & WebInspector.KeyboardShortcut.Modifier.Command) result += "⌘";
+
+            result += this._key.toString();
+
+            return result;
+        }
+    }, {
+        key: "callback",
+        get: function () {
+            return this._callback;
+        },
+        set: function (callback) {
+            console.assert(!callback || typeof callback === "function");
+
+            this._callback = callback || null;
+        }
+    }, {
+        key: "disabled",
+        get: function () {
+            return this._disabled;
+        },
+        set: function (disabled) {
+            this._disabled = disabled || false;
+        }
+    }, {
+        key: "implicitlyPreventsDefault",
+        get: function () {
+            return this._implicitlyPreventsDefault;
+        },
+        set: function (implicitly) {
+            this._implicitlyPreventsDefault = implicitly;
+        }
+    }], [{
+        key: "_handleKeyDown",
+
+        // Static
+
+        value: function _handleKeyDown(event) {
+            if (event.defaultPrevented) return;
+
+            for (var targetElement = event.target; targetElement; targetElement = targetElement.parentNode) {
+                if (!targetElement._keyboardShortcuts) continue;
+
+                for (var i = 0; i < targetElement._keyboardShortcuts.length; ++i) {
+                    var keyboardShortcut = targetElement._keyboardShortcuts[i];
+                    if (!keyboardShortcut.matchesEvent(event)) continue;
+
+                    if (!keyboardShortcut.callback) continue;
+
+                    keyboardShortcut.callback(event, keyboardShortcut);
+
+                    if (keyboardShortcut.implicitlyPreventsDefault) event.preventDefault();
+
+                    return;
+                }
             }
         }
-    }
+    }]);
 
-    // Public
+    return KeyboardShortcut;
+})(WebInspector.Object);
 
-    get modifiers()
-    {
-        return this._modifiers;
-    }
+WebInspector.Key = (function () {
+    function Key(keyCode, displayName) {
+        _classCallCheck(this, Key);
 
-    get key()
-    {
-        return this._key;
-    }
-
-    get displayName()
-    {
-        var result = "";
-
-        if (this._modifiers & WebInspector.KeyboardShortcut.Modifier.Control)
-            result += "\u2303";
-        if (this._modifiers & WebInspector.KeyboardShortcut.Modifier.Option)
-            result += WebInspector.Platform.name === "mac" ? "\u2325" : "\u2387";
-        if (this._modifiers & WebInspector.KeyboardShortcut.Modifier.Shift)
-            result += "\u21e7";
-        if (this._modifiers & WebInspector.KeyboardShortcut.Modifier.Command)
-            result += "\u2318";
-
-        result += this._key.toString();
-
-        return result;
-    }
-
-    get callback()
-    {
-        return this._callback;
-    }
-
-    set callback(callback)
-    {
-        console.assert(!callback || typeof callback === "function");
-
-        this._callback = callback || null;
-    }
-
-    get disabled()
-    {
-        return this._disabled;
-    }
-
-    set disabled(disabled)
-    {
-        this._disabled = disabled || false;
-    }
-
-    get implicitlyPreventsDefault()
-    {
-        return this._implicitlyPreventsDefault;
-    }
-
-    set implicitlyPreventsDefault(implicitly)
-    {
-        this._implicitlyPreventsDefault = implicitly;
-    }
-
-    unbind()
-    {
-        this._disabled = true;
-
-        if (!this._targetElement)
-            return;
-
-        var targetKeyboardShortcuts = this._targetElement._keyboardShortcuts;
-        if (!targetKeyboardShortcuts)
-            return;
-
-        targetKeyboardShortcuts.remove(this);
-    }
-
-    matchesEvent(event)
-    {
-        if (this._disabled)
-            return false;
-
-        if (this._key.keyCode !== event.keyCode)
-            return false;
-
-        var eventModifiers = WebInspector.KeyboardShortcut.Modifier.None;
-        if (event.shiftKey)
-            eventModifiers |= WebInspector.KeyboardShortcut.Modifier.Shift;
-        if (event.ctrlKey)
-            eventModifiers |= WebInspector.KeyboardShortcut.Modifier.Control;
-        if (event.altKey)
-            eventModifiers |= WebInspector.KeyboardShortcut.Modifier.Option;
-        if (event.metaKey)
-            eventModifiers |= WebInspector.KeyboardShortcut.Modifier.Command;
-        return this._modifiers === eventModifiers;
-    }
-};
-
-WebInspector.Key = class Key
-{
-    constructor(keyCode, displayName)
-    {
         this._keyCode = keyCode;
         this._displayName = displayName;
     }
 
-    // Public
+    _createClass(Key, [{
+        key: "toString",
+        value: function toString() {
+            return this._displayName;
+        }
+    }, {
+        key: "keyCode",
 
-    get keyCode()
-    {
-        return this._keyCode;
-    }
+        // Public
 
-    get displayName()
-    {
-        return this._displayName;
-    }
+        get: function () {
+            return this._keyCode;
+        }
+    }, {
+        key: "displayName",
+        get: function () {
+            return this._displayName;
+        }
+    }]);
 
-    toString()
-    {
-        return this._displayName;
-    }
-};
+    return Key;
+})();
 
-WebInspector.KeyboardShortcut.Modifier = {
+WebInspector.KeyboardShortcut.Modifier = Object.defineProperties({
     None: 0,
     Shift: 1,
     Control: 2,
     Option: 4,
-    Command: 8,
+    Command: 8
 
-    get CommandOrControl()
-    {
-        return WebInspector.Platform.name === "mac" ? this.Command : this.Control;
+}, {
+    CommandOrControl: {
+        get: function () {
+            return WebInspector.Platform.name === "mac" ? this.Command : this.Control;
+        },
+        configurable: true,
+        enumerable: true
     }
-};
+});
 
 WebInspector.KeyboardShortcut.Key = {
-    Backspace: new WebInspector.Key(8, "\u232b"),
-    Tab: new WebInspector.Key(9, "\u21e5"),
-    Enter: new WebInspector.Key(13, "\u21a9"),
-    Escape: new WebInspector.Key(27, "\u238b"),
+    Backspace: new WebInspector.Key(8, "⌫"),
+    Tab: new WebInspector.Key(9, "⇥"),
+    Enter: new WebInspector.Key(13, "↩"),
+    Escape: new WebInspector.Key(27, "⎋"),
     Space: new WebInspector.Key(32, "Space"),
-    PageUp: new WebInspector.Key(33, "\u21de"),
-    PageDown: new WebInspector.Key(34, "\u21df"),
-    End: new WebInspector.Key(35, "\u2198"),
-    Home: new WebInspector.Key(36, "\u2196"),
-    Left: new WebInspector.Key(37, "\u2190"),
-    Up: new WebInspector.Key(38, "\u2191"),
-    Right: new WebInspector.Key(39, "\u2192"),
-    Down: new WebInspector.Key(40, "\u2193"),
-    Delete: new WebInspector.Key(46, "\u2326"),
+    PageUp: new WebInspector.Key(33, "⇞"),
+    PageDown: new WebInspector.Key(34, "⇟"),
+    End: new WebInspector.Key(35, "↘"),
+    Home: new WebInspector.Key(36, "↖"),
+    Left: new WebInspector.Key(37, "←"),
+    Up: new WebInspector.Key(38, "↑"),
+    Right: new WebInspector.Key(39, "→"),
+    Down: new WebInspector.Key(40, "↓"),
+    Delete: new WebInspector.Key(46, "⌦"),
     Zero: new WebInspector.Key(48, "0"),
     F1: new WebInspector.Key(112, "F1"),
     F2: new WebInspector.Key(113, "F2"),
@@ -263,5 +263,5 @@ WebInspector.KeyboardShortcut.Key = {
     Slash: new WebInspector.Key(191, "/"),
     Backslash: new WebInspector.Key(220, "\\"),
     Apostrophe: new WebInspector.Key(192, "`"),
-    SingleQuote: new WebInspector.Key(222, "\'")
+    SingleQuote: new WebInspector.Key(222, "'")
 };

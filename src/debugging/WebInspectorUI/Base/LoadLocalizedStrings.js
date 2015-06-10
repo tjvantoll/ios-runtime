@@ -23,12 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-(function() {
-    if (WebInspector.dontLocalizeUserInterface)
-        return;
+(function () {
+    if (WebInspector.dontLocalizeUserInterface) return;
 
     var localizedStringsURL = InspectorFrontendHost.localizedStringsURL();
     console.assert(localizedStringsURL);
-    if (localizedStringsURL)
-        document.write("<script src=\"" + localizedStringsURL + "\"></script>");
+    if (localizedStringsURL) document.write("<script src=\"" + localizedStringsURL + "\"></script>");
 })();

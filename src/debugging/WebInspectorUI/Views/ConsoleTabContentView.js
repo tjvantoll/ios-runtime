@@ -23,58 +23,57 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ConsoleTabContentView = function(identifier)
-{
+WebInspector.ConsoleTabContentView = function (identifier) {
     var tabBarItem = new WebInspector.TabBarItem("Images/Console.svg", WebInspector.UIString("Console"));
 
     WebInspector.ContentBrowserTabContentView.call(this, identifier || "console", "console", tabBarItem, null, null, true);
 };
 
-WebInspector.ConsoleTabContentView.prototype = {
+WebInspector.ConsoleTabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ConsoleTabContentView,
     __proto__: WebInspector.ContentBrowserTabContentView.prototype,
 
-    // Public
-
-    get type()
-    {
-        return WebInspector.ConsoleTabContentView.Type;
-    },
-
-    shown: function()
-    {
+    shown: function shown() {
         WebInspector.ContentBrowserTabContentView.prototype.shown.call(this);
 
-        if (this.contentBrowser.currentContentView === WebInspector.consoleContentView)
-            return;
+        if (this.contentBrowser.currentContentView === WebInspector.consoleContentView) return;
 
         // Be sure to close the view in the split content browser before showing it in the
         // tab content browser. We can only show a content view in one browser at a time.
-        if (WebInspector.consoleContentView.parentContainer)
-            WebInspector.consoleContentView.parentContainer.closeContentView(WebInspector.consoleContentView);
+        if (WebInspector.consoleContentView.parentContainer) WebInspector.consoleContentView.parentContainer.closeContentView(WebInspector.consoleContentView);
 
         this.contentBrowser.showContentView(WebInspector.consoleContentView);
 
         console.assert(this.contentBrowser.currentContentView === WebInspector.consoleContentView);
     },
 
-    showRepresentedObject: function(representedObject, cookie)
-    {
+    showRepresentedObject: function showRepresentedObject(representedObject, cookie) {
         // Do nothing. The shown function will handle things. Calling
         // ContentBrowserTabContentView.shown will cause a new LogContentView
         // to be created instead of reusing WebInspector.consoleContentView.
         console.assert(representedObject instanceof WebInspector.LogObject);
     },
 
-    canShowRepresentedObject: function(representedObject)
-    {
+    canShowRepresentedObject: function canShowRepresentedObject(representedObject) {
         return representedObject instanceof WebInspector.LogObject;
-    },
-
-    get supportsSplitContentBrowser()
-    {
-        return false;
     }
-};
+
+}, {
+    type: { // Public
+
+        get: function () {
+            return WebInspector.ConsoleTabContentView.Type;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSplitContentBrowser: {
+        get: function () {
+            return false;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ConsoleTabContentView.Type = "console";

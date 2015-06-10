@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014 Apple Inc. All rights reserved.
  *
@@ -23,30 +31,39 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Profile = class Profile extends WebInspector.Object
-{
-    constructor(topDownRootNodes)
-    {
-        super();
+WebInspector.Profile = (function (_WebInspector$Object) {
+    function Profile(topDownRootNodes) {
+        _classCallCheck(this, Profile);
+
+        _get(Object.getPrototypeOf(Profile.prototype), "constructor", this).call(this);
 
         topDownRootNodes = topDownRootNodes || [];
 
         console.assert(topDownRootNodes instanceof Array);
-        console.assert(topDownRootNodes.reduce(function(previousValue, node) { return previousValue && node instanceof WebInspector.ProfileNode; }, true));
+        console.assert(topDownRootNodes.reduce(function (previousValue, node) {
+            return previousValue && node instanceof WebInspector.ProfileNode;
+        }, true));
 
         this._topDownRootNodes = topDownRootNodes;
     }
 
-    // Public
+    _inherits(Profile, _WebInspector$Object);
 
-    get topDownRootNodes()
-    {
-        return this._topDownRootNodes;
-    }
+    _createClass(Profile, [{
+        key: "topDownRootNodes",
 
-    get bottomUpRootNodes()
-    {
-        // FIXME: Implement.
-        return [];
-    }
-};
+        // Public
+
+        get: function () {
+            return this._topDownRootNodes;
+        }
+    }, {
+        key: "bottomUpRootNodes",
+        get: function () {
+            // FIXME: Implement.
+            return [];
+        }
+    }]);
+
+    return Profile;
+})(WebInspector.Object);

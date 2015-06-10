@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.GoToLineDialog = class GoToLineDialog extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.GoToLineDialog = (function (_WebInspector$Object) {
+    function GoToLineDialog() {
+        _classCallCheck(this, GoToLineDialog);
+
+        _get(Object.getPrototypeOf(GoToLineDialog.prototype), "constructor", this).call(this);
 
         this._element = document.createElement("div");
         this._element.className = "go-to-line-dialog";
@@ -50,118 +58,117 @@ WebInspector.GoToLineDialog = class GoToLineDialog extends WebInspector.Object
         this._dismissing = false;
     }
 
-    // Public
+    _inherits(GoToLineDialog, _WebInspector$Object);
 
-    present(parent)
-    {
-        parent.appendChild(this._element);
-        this._input.focus();
-        this._clear();
-    }
+    _createClass(GoToLineDialog, [{
+        key: "present",
 
-    dismiss()
-    {
-        if (this._dismissing)
-            return;
+        // Public
 
-        var parent = this._element.parentNode;
-        if (!parent)
-            return;
-
-        this._dismissing = true;
-
-        parent.removeChild(this._element);
-
-        if (this.delegate && typeof this.delegate.goToLineDialogWasDismissed === "function")
-            this.delegate.goToLineDialogWasDismissed(this);
-
-        this._dismissing = false;
-    }
-
-    // Protected
-
-    handleEvent(event)
-    {
-        switch (event.type) {
-        case "input":
-            this._handleInputEvent(event);
-            break;
-        case "keydown":
-            this._handleKeydownEvent(event);
-            break;
-        case "blur":
-            this._handleBlurEvent(event);
-            break;
-        case "mousedown":
-            this._handleMousedownEvent(event);
-            break;
-        case "click":
-            this._handleClickEvent(event);
-            break;
+        value: function present(parent) {
+            parent.appendChild(this._element);
+            this._input.focus();
+            this._clear();
         }
-    }
+    }, {
+        key: "dismiss",
+        value: function dismiss() {
+            if (this._dismissing) return;
 
-    // Private
+            var parent = this._element.parentNode;
+            if (!parent) return;
 
-    _handleInputEvent(event)
-    {
-        if (this._input.value === "")
-            this._element.classList.remove(WebInspector.GoToLineDialog.NonEmptyClassName);
-        else
-            this._element.classList.add(WebInspector.GoToLineDialog.NonEmptyClassName);
-    }
+            this._dismissing = true;
 
-    _handleKeydownEvent(event)
-    {
-        if (event.keyCode === WebInspector.KeyboardShortcut.Key.Escape.keyCode) {
-            if (this._input.value === "")
-                this.dismiss();
-            else
-                this._clear();
+            parent.removeChild(this._element);
 
-            event.preventDefault();
-        } else if (event.keyCode === WebInspector.KeyboardShortcut.Key.Enter.keyCode) {
-            var value = parseInt(this._input.value, 10);
+            if (this.delegate && typeof this.delegate.goToLineDialogWasDismissed === "function") this.delegate.goToLineDialogWasDismissed(this);
 
-            var valueIsValid = false;
-            if (this.delegate && typeof this.delegate.isGoToLineDialogValueValid === "function")
-                valueIsValid = this.delegate.isGoToLineDialogValueValid(this, value);
+            this._dismissing = false;
+        }
+    }, {
+        key: "handleEvent",
 
-            if (valueIsValid && this.delegate && typeof this.delegate.goToLineDialogValueWasValidated === "function") {
-                this.delegate.goToLineDialogValueWasValidated(this, value);
-                this.dismiss();
-                return;
+        // Protected
+
+        value: function handleEvent(event) {
+            switch (event.type) {
+                case "input":
+                    this._handleInputEvent(event);
+                    break;
+                case "keydown":
+                    this._handleKeydownEvent(event);
+                    break;
+                case "blur":
+                    this._handleBlurEvent(event);
+                    break;
+                case "mousedown":
+                    this._handleMousedownEvent(event);
+                    break;
+                case "click":
+                    this._handleClickEvent(event);
+                    break;
             }
-
-            this._input.select();
-
-            InspectorFrontendHost.beep();
         }
-    }
+    }, {
+        key: "_handleInputEvent",
 
-    _handleBlurEvent(event)
-    {
-        this.dismiss();
-    }
+        // Private
 
-    _handleMousedownEvent(event)
-    {
-        this._input.select();
-        // This ensures we don't get a "blur" event triggered for the text field
-        // which would end up dimissing the dialog, which is not the intent.
-        event.preventDefault();
-    }
+        value: function _handleInputEvent(event) {
+            if (this._input.value === "") this._element.classList.remove(WebInspector.GoToLineDialog.NonEmptyClassName);else this._element.classList.add(WebInspector.GoToLineDialog.NonEmptyClassName);
+        }
+    }, {
+        key: "_handleKeydownEvent",
+        value: function _handleKeydownEvent(event) {
+            if (event.keyCode === WebInspector.KeyboardShortcut.Key.Escape.keyCode) {
+                if (this._input.value === "") this.dismiss();else this._clear();
 
-    _handleClickEvent(event)
-    {
-        this._clear();
-    }
+                event.preventDefault();
+            } else if (event.keyCode === WebInspector.KeyboardShortcut.Key.Enter.keyCode) {
+                var value = parseInt(this._input.value, 10);
 
-    _clear()
-    {
-        this._input.value = "";
-        this._element.classList.remove(WebInspector.GoToLineDialog.NonEmptyClassName);
-    }
-};
+                var valueIsValid = false;
+                if (this.delegate && typeof this.delegate.isGoToLineDialogValueValid === "function") valueIsValid = this.delegate.isGoToLineDialogValueValid(this, value);
+
+                if (valueIsValid && this.delegate && typeof this.delegate.goToLineDialogValueWasValidated === "function") {
+                    this.delegate.goToLineDialogValueWasValidated(this, value);
+                    this.dismiss();
+                    return;
+                }
+
+                this._input.select();
+
+                InspectorFrontendHost.beep();
+            }
+        }
+    }, {
+        key: "_handleBlurEvent",
+        value: function _handleBlurEvent(event) {
+            this.dismiss();
+        }
+    }, {
+        key: "_handleMousedownEvent",
+        value: function _handleMousedownEvent(event) {
+            this._input.select();
+            // This ensures we don't get a "blur" event triggered for the text field
+            // which would end up dimissing the dialog, which is not the intent.
+            event.preventDefault();
+        }
+    }, {
+        key: "_handleClickEvent",
+        value: function _handleClickEvent(event) {
+            this._clear();
+        }
+    }, {
+        key: "_clear",
+        value: function _clear() {
+            this._input.value = "";
+            this._element.classList.remove(WebInspector.GoToLineDialog.NonEmptyClassName);
+        }
+    }]);
+
+    return GoToLineDialog;
+})(WebInspector.Object);
 
 WebInspector.GoToLineDialog.NonEmptyClassName = "non-empty";

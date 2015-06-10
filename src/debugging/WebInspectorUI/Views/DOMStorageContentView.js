@@ -24,8 +24,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMStorageContentView = function(representedObject)
-{
+WebInspector.DOMStorageContentView = function (representedObject) {
     WebInspector.ContentView.call(this, representedObject);
 
     this.element.classList.add(WebInspector.DOMStorageContentView.StyleClassName);
@@ -36,8 +35,8 @@ WebInspector.DOMStorageContentView = function(representedObject)
     representedObject.addEventListener(WebInspector.DOMStorageObject.Event.ItemUpdated, this.itemUpdated, this);
 
     var columns = {};
-    columns.key = {title: WebInspector.UIString("Key"), sortable: true};
-    columns.value = {title: WebInspector.UIString("Value"), sortable: true};
+    columns.key = { title: WebInspector.UIString("Key"), sortable: true };
+    columns.value = { title: WebInspector.UIString("Value"), sortable: true };
 
     this._dataGrid = new WebInspector.DataGrid(columns, this._editingCallback.bind(this), this._deleteCallback.bind(this));
     this._dataGrid.sortOrder = WebInspector.DataGrid.SortOrder.Ascending;
@@ -54,131 +53,191 @@ WebInspector.DOMStorageContentView.DuplicateKeyStyleClassName = "duplicate-key";
 WebInspector.DOMStorageContentView.MissingKeyStyleClassName = "missing-key";
 WebInspector.DOMStorageContentView.MissingValueStyleClassName = "missing-value";
 
-
-WebInspector.DOMStorageContentView.prototype = {
+WebInspector.DOMStorageContentView.prototype = Object.defineProperties({
     constructor: WebInspector.DOMStorageContentView,
     __proto__: WebInspector.ContentView.prototype,
 
     // Public
 
-    saveToCookie: function(cookie)
-    {
+    saveToCookie: function saveToCookie(cookie) {
         cookie.type = WebInspector.ContentViewCookieType.DOMStorage;
         cookie.isLocalStorage = this.representedObject.isLocalStorage();
         cookie.host = this.representedObject.host;
     },
 
-    itemsCleared: function(event)
-    {
+    itemsCleared: function itemsCleared(event) {
         this._dataGrid.removeChildren();
         this._dataGrid.addPlaceholderNode();
     },
 
-    itemRemoved: function(event)
-    {
-        for (var node of this._dataGrid.children) {
-            if (node.data.key === event.data.key)
-                return this._dataGrid.removeChild(node);
+    itemRemoved: function itemRemoved(event) {
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = this._dataGrid.children[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var node = _step.value;
+
+                if (node.data.key === event.data.key) return this._dataGrid.removeChild(node);
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
     },
 
-    itemAdded: function(event)
-    {
+    itemAdded: function itemAdded(event) {
         var key = event.data.key;
         var value = event.data.value;
 
         // Enforce key uniqueness.
-        for (var node of this._dataGrid.children) {
-            if (node.data.key === key)
-                return;
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+            for (var _iterator2 = this._dataGrid.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                var node = _step2.value;
+
+                if (node.data.key === key) return;
+            }
+        } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+                    _iterator2["return"]();
+                }
+            } finally {
+                if (_didIteratorError2) {
+                    throw _iteratorError2;
+                }
+            }
         }
 
-        var data = {key, value};
+        var data = { key: key, value: value };
         this._dataGrid.appendChild(new WebInspector.DataGridNode(data, false));
         this._sortDataGrid();
     },
 
-    itemUpdated: function(event)
-    {
+    itemUpdated: function itemUpdated(event) {
         var key = event.data.key;
         var value = event.data.value;
 
         var keyFound = false;
-        for (var childNode of this._dataGrid.children) {
-            if (childNode.data.key === key) {
-                // Remove any rows that are now duplicates.
-                if (keyFound) {
-                    this._dataGrid.removeChild(childNode);
-                    continue;
-                }
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
 
-                keyFound = true;
-                childNode.data.value = value;
-                childNode.refresh();
+        try {
+            for (var _iterator3 = this._dataGrid.children[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                var childNode = _step3.value;
+
+                if (childNode.data.key === key) {
+                    // Remove any rows that are now duplicates.
+                    if (keyFound) {
+                        this._dataGrid.removeChild(childNode);
+                        continue;
+                    }
+
+                    keyFound = true;
+                    childNode.data.value = value;
+                    childNode.refresh();
+                }
+            }
+        } catch (err) {
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion3 && _iterator3["return"]) {
+                    _iterator3["return"]();
+                }
+            } finally {
+                if (_didIteratorError3) {
+                    throw _iteratorError3;
+                }
             }
         }
+
         this._sortDataGrid();
     },
 
-    updateLayout: function()
-    {
-        if (this._dataGrid)
-            this._dataGrid.updateLayout();
-    },
-
-    get scrollableElements()
-    {
-        if (!this._dataGrid)
-            return [];
-        return [this._dataGrid.scrollContainer];
+    updateLayout: function updateLayout() {
+        if (this._dataGrid) this._dataGrid.updateLayout();
     },
 
     // Private
 
-    _populate: function()
-    {
-        this.representedObject.getEntries(function(error, entries) {
-            if (error)
-                return;
+    _populate: function _populate() {
+        this.representedObject.getEntries((function (error, entries) {
+            if (error) return;
 
             var nodes = [];
-            for (var entry of entries) {
-                if (!entry[0] || !entry[1])
-                    continue;
-                var data = {key: entry[0], value: entry[1]};
-                var node = new WebInspector.DataGridNode(data, false);
-                this._dataGrid.appendChild(node);
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
+
+            try {
+                for (var _iterator4 = entries[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                    var entry = _step4.value;
+
+                    if (!entry[0] || !entry[1]) continue;
+                    var data = { key: entry[0], value: entry[1] };
+                    var node = new WebInspector.DataGridNode(data, false);
+                    this._dataGrid.appendChild(node);
+                }
+            } catch (err) {
+                _didIteratorError4 = true;
+                _iteratorError4 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion4 && _iterator4["return"]) {
+                        _iterator4["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError4) {
+                        throw _iteratorError4;
+                    }
+                }
             }
 
             this._sortDataGrid();
             this._dataGrid.addPlaceholderNode();
             this._dataGrid.updateLayout();
-        }.bind(this));
+        }).bind(this));
     },
 
-    _sortDataGrid: function()
-    {
+    _sortDataGrid: function _sortDataGrid() {
         var sortColumnIdentifier = this._dataGrid.sortColumnIdentifier || "key";
 
-        function comparator(a, b)
-        {
+        function comparator(a, b) {
             return a.data[sortColumnIdentifier].localeCompare(b.data[sortColumnIdentifier]);
         }
 
         this._dataGrid.sortNodesImmediately(comparator);
     },
 
-    _deleteCallback: function(node)
-    {
-        if (!node || node.isPlaceholderNode)
-            return;
+    _deleteCallback: function _deleteCallback(node) {
+        if (!node || node.isPlaceholderNode) return;
 
         this._dataGrid.removeChild(node);
         this.representedObject.removeItem(node.data["key"]);
     },
 
-    _editingCallback: function(editingNode, columnIdentifier, oldText, newText, moveDirection)
-    {
+    _editingCallback: function _editingCallback(editingNode, columnIdentifier, oldText, newText, moveDirection) {
         var key = editingNode.data["key"].trim().removeWordBreakCharacters();
         var value = editingNode.data["value"].trim().removeWordBreakCharacters();
         var previousValue = oldText.trim().removeWordBreakCharacters();
@@ -190,8 +249,7 @@ WebInspector.DOMStorageContentView.prototype = {
         var domStorage = this.representedObject;
 
         // Nothing changed, just bail.
-        if (!hasChange && !hasUncommittedEdits)
-            return;
+        if (!hasChange && !hasUncommittedEdits) return;
 
         // Something changed, save the original key/value and enter uncommitted state.
         if (hasChange && !editingNode.__hasUncommittedEdits) {
@@ -200,8 +258,7 @@ WebInspector.DOMStorageContentView.prototype = {
             editingNode.__originalValue = isEditingValue ? previousValue : value;
         }
 
-        function cleanup()
-        {
+        function cleanup() {
             editingNode.element.classList.remove(WebInspector.DOMStorageContentView.MissingKeyStyleClassName);
             editingNode.element.classList.remove(WebInspector.DOMStorageContentView.MissingValueStyleClassName);
             editingNode.element.classList.remove(WebInspector.DOMStorageContentView.DuplicateKeyStyleClassName);
@@ -210,8 +267,7 @@ WebInspector.DOMStorageContentView.prototype = {
             editingNode.__originalValue = undefined;
         }
 
-        function restoreOriginalValues()
-        {
+        function restoreOriginalValues() {
             editingNode.data.key = editingNode.__originalKey;
             editingNode.data.value = editingNode.__originalValue;
             editingNode.refresh();
@@ -220,24 +276,15 @@ WebInspector.DOMStorageContentView.prototype = {
 
         // If the key/value field was cleared, add "missing" style.
         if (isEditingKey) {
-            if (key.length)
-                editingNode.element.classList.remove(WebInspector.DOMStorageContentView.MissingKeyStyleClassName);
-            else
-                editingNode.element.classList.add(WebInspector.DOMStorageContentView.MissingKeyStyleClassName);
+            if (key.length) editingNode.element.classList.remove(WebInspector.DOMStorageContentView.MissingKeyStyleClassName);else editingNode.element.classList.add(WebInspector.DOMStorageContentView.MissingKeyStyleClassName);
         } else if (isEditingValue) {
-            if (value.length)
-                editingNode.element.classList.remove(WebInspector.DOMStorageContentView.MissingValueStyleClassName);
-            else
-                editingNode.element.classList.add(WebInspector.DOMStorageContentView.MissingValueStyleClassName);
+            if (value.length) editingNode.element.classList.remove(WebInspector.DOMStorageContentView.MissingValueStyleClassName);else editingNode.element.classList.add(WebInspector.DOMStorageContentView.MissingValueStyleClassName);
         }
 
         // Check for key duplicates. If this is a new row, or an existing row that changed key.
         var keyChanged = key !== editingNode.__originalKey;
         if (keyChanged) {
-            if (domStorage.entries.has(key))
-                editingNode.element.classList.add(WebInspector.DOMStorageContentView.DuplicateKeyStyleClassName);
-            else
-                editingNode.element.classList.remove(WebInspector.DOMStorageContentView.DuplicateKeyStyleClassName);
+            if (domStorage.entries.has(key)) editingNode.element.classList.add(WebInspector.DOMStorageContentView.DuplicateKeyStyleClassName);else editingNode.element.classList.remove(WebInspector.DOMStorageContentView.DuplicateKeyStyleClassName);
         }
 
         // See if we are done editing this row or not.
@@ -247,27 +294,32 @@ WebInspector.DOMStorageContentView.prototype = {
         var doneEditing = mayMoveToNextRow || mayMoveToPreviousRow || !moveDirection;
 
         // Expecting more edits on this row.
-        if (!doneEditing)
-            return;
+        if (!doneEditing) return;
 
         // Key and value were cleared, remove the row.
         if (!key.length && !value.length && !editingNode.isPlaceholderNode) {
             this._dataGrid.removeChild(editingNode);
             domStorage.removeItem(editingNode.__originalKey);
-            return;                
+            return;
         }
 
         // Done editing but leaving the row in an invalid state. Leave in uncommitted state.
         var isDuplicate = editingNode.element.classList.contains(WebInspector.DOMStorageContentView.DuplicateKeyStyleClassName);
-        if (!key.length || !value.length || isDuplicate)
-            return;
+        if (!key.length || !value.length || isDuplicate) return;
 
         // Commit.
-        if (keyChanged && !editingNode.isPlaceholderNode)
-            domStorage.removeItem(editingNode.__originalKey);
-        if (editingNode.isPlaceholderNode)
-            this._dataGrid.addPlaceholderNode();
+        if (keyChanged && !editingNode.isPlaceholderNode) domStorage.removeItem(editingNode.__originalKey);
+        if (editingNode.isPlaceholderNode) this._dataGrid.addPlaceholderNode();
         cleanup();
         domStorage.setItem(key, value);
     }
-};
+}, {
+    scrollableElements: {
+        get: function () {
+            if (!this._dataGrid) return [];
+            return [this._dataGrid.scrollContainer];
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

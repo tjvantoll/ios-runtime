@@ -24,12 +24,12 @@
  */
 
 // Bump this version when making changes that affect the storage format.
-const _imageStorageFormatVersion = 1;
+var _imageStorageFormatVersion = 1;
 
 // Use as a default where an image version is not otherwise specified.
 // Bump the base version when making changes that affect the result image.
-const baseDefaultImageVersion = 7;
-const defaultImageVersion = baseDefaultImageVersion + 0.01 * WebInspector.Platform.version.base + 0.0001 * WebInspector.Platform.version.release;
+var baseDefaultImageVersion = 7;
+var defaultImageVersion = baseDefaultImageVersion + 0.01 * WebInspector.Platform.version.base + 0.0001 * WebInspector.Platform.version.release;
 
 try {
     var _generatedImageCacheDatabase = openDatabase("com.apple.WebInspector", 1, "Web Inspector Storage Database", 5 * 1024 * 1024);
@@ -49,41 +49,33 @@ _prefetchCachedImagesAndUpdate();
 // Updates each image when the device pixel ratio changes to redraw at the new resolution.
 window.matchMedia("(-webkit-device-pixel-ratio: 1)").addListener(_devicePixelRatioChanged);
 
-function _devicePixelRatioChanged()
-{
+function _devicePixelRatioChanged() {
     _prefetchCachedImagesAndUpdate();
 }
 
-function _registerGeneratedImageUpdateFunction(update)
-{
+function _registerGeneratedImageUpdateFunction(update) {
     console.assert(typeof update === "function");
 
     _generatedImageUpdateFunctions.push(update);
 
-    if (_initialPrefetchComplete)
-        update();
+    if (_initialPrefetchComplete) update();
 }
 
-function _logSQLError(tx, error)
-{
+function _logSQLError(tx, error) {
     console.error(error.code, error.message);
 }
 
-function _logSQLTransactionError(error)
-{
+function _logSQLTransactionError(error) {
     console.error(error.code, error.message);
 }
 
-function _prefetchCachedImagesAndUpdate()
-{
+function _prefetchCachedImagesAndUpdate() {
     _fetchedCachedImages = {};
 
-    function complete()
-    {
+    function complete() {
         _initialPrefetchComplete = true;
 
-        for (var i = 0; i < _generatedImageUpdateFunctions.length; ++i)
-            _generatedImageUpdateFunctions[i]();
+        for (var i = 0; i < _generatedImageUpdateFunctions.length; ++i) _generatedImageUpdateFunctions[i]();
     }
 
     if (!_generatedImageCacheDatabase) {
@@ -91,15 +83,15 @@ function _prefetchCachedImagesAndUpdate()
         return;
     }
 
-    _generatedImageCacheDatabase.transaction(function(tx) {
-        tx.executeSql("SELECT key, imageVersion, data FROM CachedImages WHERE pixelRatio = ? AND formatVersion = ?", [window.devicePixelRatio, _imageStorageFormatVersion], function(tx, result) {
+    _generatedImageCacheDatabase.transaction(function (tx) {
+        tx.executeSql("SELECT key, imageVersion, data FROM CachedImages WHERE pixelRatio = ? AND formatVersion = ?", [window.devicePixelRatio, _imageStorageFormatVersion], function (tx, result) {
             for (var i = 0; i < result.rows.length; ++i) {
                 var row = result.rows.item(i);
-                _fetchedCachedImages[row.key] = {data: row.data, imageVersion: row.imageVersion};
+                _fetchedCachedImages[row.key] = { data: row.data, imageVersion: row.imageVersion };
             }
 
             complete();
-        }, function(tx, error) {
+        }, function (tx, error) {
             // The select failed. That could be because the schema changed or this is the first time.
             // Drop the table and recreate it fresh.
 
@@ -111,31 +103,27 @@ function _prefetchCachedImagesAndUpdate()
     }, _logSQLTransactionError);
 }
 
-function saveImageToStorage(storageKey, context, width, height, imageVersion)
-{
+function saveImageToStorage(storageKey, context, width, height, imageVersion) {
     console.assert(storageKey);
     console.assert(context);
     console.assert(typeof width === "number");
     console.assert(typeof height === "number");
     console.assert(typeof imageVersion === "number");
 
-    if (!_generatedImageCacheDatabase)
-        return;
+    if (!_generatedImageCacheDatabase) return;
 
     var imageData = context.getImageData(0, 0, width, height);
     var imageDataPixels = new Uint32Array(imageData.data.buffer);
 
     var imageDataString = "";
-    for (var i = 0; i < imageDataPixels.length; ++i)
-        imageDataString += (i ? ":" : "") + (imageDataPixels[i] ? imageDataPixels[i].toString(36) : "");
+    for (var i = 0; i < imageDataPixels.length; ++i) imageDataString += (i ? ":" : "") + (imageDataPixels[i] ? imageDataPixels[i].toString(36) : "");
 
-    _generatedImageCacheDatabase.transaction(function(tx) {
+    _generatedImageCacheDatabase.transaction(function (tx) {
         tx.executeSql("INSERT OR REPLACE INTO CachedImages (key, pixelRatio, imageVersion, formatVersion, data) VALUES (?, ?, ?, ?, ?)", [storageKey, window.devicePixelRatio, imageVersion, _imageStorageFormatVersion, imageDataString], null, _logSQLError);
     }, _logSQLTransactionError);
 }
 
-function restoreImageFromStorage(storageKey, context, width, height, imageVersion, generateCallback)
-{
+function restoreImageFromStorage(storageKey, context, width, height, imageVersion, generateCallback) {
     console.assert(storageKey);
     console.assert(context);
     console.assert(typeof width === "number");
@@ -167,8 +155,8 @@ function restoreImageFromStorage(storageKey, context, width, height, imageVersio
         restoreImageData(imageInfo.data);
     } else {
         // Try fetching the image data from the database.
-        _generatedImageCacheDatabase.readTransaction(function(tx) {
-            tx.executeSql("SELECT data FROM CachedImages WHERE key = ? AND pixelRatio = ? AND imageVersion = ? AND formatVersion = ?", [storageKey, window.devicePixelRatio, imageVersion, _imageStorageFormatVersion], function(tx, result) {
+        _generatedImageCacheDatabase.readTransaction(function (tx) {
+            tx.executeSql("SELECT data FROM CachedImages WHERE key = ? AND pixelRatio = ? AND imageVersion = ? AND formatVersion = ?", [storageKey, window.devicePixelRatio, imageVersion, _imageStorageFormatVersion], function (tx, result) {
                 if (!result.rows.length) {
                     generateCallback();
                     return;
@@ -177,7 +165,7 @@ function restoreImageFromStorage(storageKey, context, width, height, imageVersio
                 console.assert(result.rows.length === 1);
 
                 restoreImageData(result.rows.item(0).data);
-            }, function(tx, error) {
+            }, function (tx, error) {
                 _logSQLError(tx, error);
 
                 generateCallback();
@@ -185,8 +173,7 @@ function restoreImageFromStorage(storageKey, context, width, height, imageVersio
         }, _logSQLTransactionError);
     }
 
-    function restoreImageData(imageDataString)
-    {
+    function restoreImageData(imageDataString) {
         var imageData = context.createImageData(width, height);
         var imageDataPixels = new Uint32Array(imageData.data.buffer);
 
@@ -205,18 +192,14 @@ function restoreImageFromStorage(storageKey, context, width, height, imageVersio
     }
 }
 
-function generateColoredImage(inputImage, red, green, blue, alpha, width, height)
-{
+function generateColoredImage(inputImage, red, green, blue, alpha, width, height) {
     console.assert(inputImage);
 
-    if (alpha === undefined)
-        alpha = 1;
+    if (alpha === undefined) alpha = 1;
 
-    if (width === undefined)
-        width = inputImage.width;
+    if (width === undefined) width = inputImage.width;
 
-    if (height === undefined)
-        height = inputImage.height;
+    if (height === undefined) height = inputImage.height;
 
     if (inputImage instanceof HTMLCanvasElement) {
         // The input is already a canvas, so we can use its context directly.
@@ -242,10 +225,10 @@ function generateColoredImage(inputImage, red, green, blue, alpha, width, height
     // Loop over the image data and set the color channels while preserving the alpha.
     for (var i = 0; i < imageDataPixels.length; ++i) {
         if (isLittleEndian) {
-            var existingAlpha = 0xff & (imageDataPixels[i] >> 24);
-            imageDataPixels[i] = red | green << 8 | blue << 16 | (existingAlpha * alpha) << 24;
+            var existingAlpha = 255 & imageDataPixels[i] >> 24;
+            imageDataPixels[i] = red | green << 8 | blue << 16 | existingAlpha * alpha << 24;
         } else {
-            var existingAlpha = 0xff & imageDataPixels[i];
+            var existingAlpha = 255 & imageDataPixels[i];
             imageDataPixels[i] = red << 24 | green << 16 | blue << 8 | existingAlpha * alpha;
         }
     }
@@ -262,8 +245,7 @@ function generateColoredImage(inputImage, red, green, blue, alpha, width, height
     return resultCanvas;
 }
 
-function generateColoredImagesForCSS(imagePath, specifications, width, height, canvasIdentifierPrefix)
-{
+function generateColoredImagesForCSS(imagePath, specifications, width, height, canvasIdentifierPrefix) {
     console.assert(imagePath);
     console.assert(specifications);
     console.assert(typeof width === "number");
@@ -275,24 +257,21 @@ function generateColoredImagesForCSS(imagePath, specifications, width, height, c
 
     canvasIdentifierPrefix = canvasIdentifierPrefix || "";
 
-    const storageKeyPrefix = "generated-colored-image-";
+    var storageKeyPrefix = "generated-colored-image-";
 
     var imageElement = null;
     var pendingImageLoadCallbacks = [];
 
     _registerGeneratedImageUpdateFunction(update);
 
-    function imageLoaded()
-    {
+    function imageLoaded() {
         console.assert(imageElement);
         console.assert(imageElement.complete);
-        for (var i = 0; i < pendingImageLoadCallbacks.length; ++i)
-            pendingImageLoadCallbacks[i]();
+        for (var i = 0; i < pendingImageLoadCallbacks.length; ++i) pendingImageLoadCallbacks[i]();
         pendingImageLoadCallbacks = null;
     }
 
-    function ensureImageIsLoaded(callback)
-    {
+    function ensureImageIsLoaded(callback) {
         if (imageElement && imageElement.complete) {
             callback();
             return;
@@ -301,8 +280,7 @@ function generateColoredImagesForCSS(imagePath, specifications, width, height, c
         console.assert(pendingImageLoadCallbacks);
         pendingImageLoadCallbacks.push(callback);
 
-        if (imageElement)
-            return;
+        if (imageElement) return;
 
         imageElement = document.createElement("img");
         imageElement.addEventListener("load", imageLoaded);
@@ -311,23 +289,19 @@ function generateColoredImagesForCSS(imagePath, specifications, width, height, c
         imageElement.src = imagePath;
     }
 
-    function restoreImages()
-    {
+    function restoreImages() {
         for (var canvasIdentifier in specifications) {
             // Don't restore active images yet.
-            if (canvasIdentifier.indexOf("active") !== -1)
-                continue;
+            if (canvasIdentifier.indexOf("active") !== -1) continue;
 
             var specification = specifications[canvasIdentifier];
             restoreImage(canvasIdentifier, specification);
         }
 
-        function restoreActiveImages()
-        {
+        function restoreActiveImages() {
             for (var canvasIdentifier in specifications) {
                 // Only restore active images here.
-                if (canvasIdentifier.indexOf("active") === -1)
-                    continue;
+                if (canvasIdentifier.indexOf("active") === -1) continue;
 
                 var specification = specifications[canvasIdentifier];
                 restoreImage(canvasIdentifier, specification);
@@ -338,26 +312,23 @@ function generateColoredImagesForCSS(imagePath, specifications, width, height, c
         setTimeout(restoreActiveImages, 500);
     }
 
-    function restoreImage(canvasIdentifier, specification)
-    {
-        const storageKey = storageKeyPrefix + canvasIdentifierPrefix + canvasIdentifier;
-        const context = document.getCSSCanvasContext("2d", canvasIdentifierPrefix + canvasIdentifier, scaledWidth, scaledHeight);
-        restoreImageFromStorage(storageKey, context, scaledWidth, scaledHeight, specification.imageVersion || defaultImageVersion, function() {
+    function restoreImage(canvasIdentifier, specification) {
+        var storageKey = storageKeyPrefix + canvasIdentifierPrefix + canvasIdentifier;
+        var context = document.getCSSCanvasContext("2d", canvasIdentifierPrefix + canvasIdentifier, scaledWidth, scaledHeight);
+        restoreImageFromStorage(storageKey, context, scaledWidth, scaledHeight, specification.imageVersion || defaultImageVersion, function () {
             ensureImageIsLoaded(generateImage.bind(null, canvasIdentifier, specification));
         });
     }
 
-    function update()
-    {
+    function update() {
         restoreImages();
     }
 
-    function generateImage(canvasIdentifier, specification)
-    {
+    function generateImage(canvasIdentifier, specification) {
         console.assert(specification.fillColor instanceof Array);
         console.assert(specification.fillColor.length === 3 || specification.fillColor.length === 4);
 
-        const context = document.getCSSCanvasContext("2d", canvasIdentifierPrefix + canvasIdentifier, scaledWidth, scaledHeight);
+        var context = document.getCSSCanvasContext("2d", canvasIdentifierPrefix + canvasIdentifier, scaledWidth, scaledHeight);
         context.save();
         context.scale(scaleFactor, scaleFactor);
 
@@ -367,25 +338,20 @@ function generateColoredImagesForCSS(imagePath, specifications, width, height, c
             context.shadowBlur = specification.shadowBlur || 0;
 
             if (specification.shadowColor instanceof Array) {
-                if (specification.shadowColor.length === 3)
-                    context.shadowColor = "rgb(" + specification.shadowColor.join(", ") + ")";
-                else if (specification.shadowColor.length === 4)
-                    context.shadowColor = "rgba(" + specification.shadowColor.join(", ") + ")";
-            } else
-                context.shadowColor = specification.shadowColor;
+                if (specification.shadowColor.length === 3) context.shadowColor = "rgb(" + specification.shadowColor.join(", ") + ")";else if (specification.shadowColor.length === 4) context.shadowColor = "rgba(" + specification.shadowColor.join(", ") + ")";
+            } else context.shadowColor = specification.shadowColor;
         }
 
         var coloredImage = generateColoredImage(imageElement, specification.fillColor[0], specification.fillColor[1], specification.fillColor[2], specification.fillColor[3], scaledWidth, scaledHeight);
         context.drawImage(coloredImage, 0, 0, width, height);
 
-        const storageKey = storageKeyPrefix + canvasIdentifierPrefix + canvasIdentifier;
+        var storageKey = storageKeyPrefix + canvasIdentifierPrefix + canvasIdentifier;
         saveImageToStorage(storageKey, context, scaledWidth, scaledHeight, specification.imageVersion || defaultImageVersion);
         context.restore();
     }
 }
 
-function generateEmbossedImages(src, width, height, states, canvasIdentifierCallback, ignoreCache)
-{
+function generateEmbossedImages(src, width, height, states, canvasIdentifierCallback, ignoreCache) {
     console.assert(src);
     console.assert(typeof width === "number");
     console.assert(typeof height === "number");
@@ -398,26 +364,23 @@ function generateEmbossedImages(src, width, height, states, canvasIdentifierCall
     var scaledWidth = width * scaleFactor;
     var scaledHeight = height * scaleFactor;
 
-    const imageVersion = defaultImageVersion;
+    var imageVersion = defaultImageVersion;
 
-    const storageKeyPrefix = "generated-embossed-image-";
+    var storageKeyPrefix = "generated-embossed-image-";
 
     var image = null;
     var pendingImageLoadCallbacks = [];
 
     _registerGeneratedImageUpdateFunction(update);
 
-    function imageLoaded()
-    {
+    function imageLoaded() {
         console.assert(image);
         console.assert(image.complete);
-        for (var i = 0; i < pendingImageLoadCallbacks.length; ++i)
-            pendingImageLoadCallbacks[i]();
+        for (var i = 0; i < pendingImageLoadCallbacks.length; ++i) pendingImageLoadCallbacks[i]();
         pendingImageLoadCallbacks = null;
     }
 
-    function ensureImageIsLoaded(callback)
-    {
+    function ensureImageIsLoaded(callback) {
         if (image && image.complete) {
             callback();
             return;
@@ -426,8 +389,7 @@ function generateEmbossedImages(src, width, height, states, canvasIdentifierCall
         console.assert(pendingImageLoadCallbacks);
         pendingImageLoadCallbacks.push(callback);
 
-        if (image)
-            return;
+        if (image) return;
 
         image = document.createElement("img");
         image.addEventListener("load", imageLoaded);
@@ -436,62 +398,48 @@ function generateEmbossedImages(src, width, height, states, canvasIdentifierCall
         image.src = src;
     }
 
-    function restoreImages()
-    {
+    function restoreImages() {
         restoreImage(states.Normal);
-        if (states.Focus)
-            restoreImage(states.Focus);
+        if (states.Focus) restoreImage(states.Focus);
 
-        function restoreActiveImages()
-        {
+        function restoreActiveImages() {
             restoreImage(states.Active);
-            if (states.ActiveFocus)
-                restoreImage(states.ActiveFocus);
+            if (states.ActiveFocus) restoreImage(states.ActiveFocus);
         }
 
         // Delay restoring the active states until later to improve the initial page load time.
         setTimeout(restoreActiveImages, 500);
     }
 
-    function restoreImage(state)
-    {
-        const storageKey = storageKeyPrefix + canvasIdentifierCallback(state);
-        const context = document.getCSSCanvasContext("2d", canvasIdentifierCallback(state), scaledWidth, scaledHeight);
-        restoreImageFromStorage(storageKey, context, scaledWidth, scaledHeight, imageVersion, function() {
+    function restoreImage(state) {
+        var storageKey = storageKeyPrefix + canvasIdentifierCallback(state);
+        var context = document.getCSSCanvasContext("2d", canvasIdentifierCallback(state), scaledWidth, scaledHeight);
+        restoreImageFromStorage(storageKey, context, scaledWidth, scaledHeight, imageVersion, function () {
             ensureImageIsLoaded(generateImage.bind(null, state));
         });
     }
 
-    function update()
-    {
-        if (ignoreCache)
-            generateImages();
-        else
-            restoreImages();
+    function update() {
+        if (ignoreCache) generateImages();else restoreImages();
     }
 
-    function generateImages()
-    {
+    function generateImages() {
         ensureImageIsLoaded(generateImage.bind(null, states.Normal));
 
-        if (states.Focus)
-            ensureImageIsLoaded(generateImage.bind(null, states.Focus));
+        if (states.Focus) ensureImageIsLoaded(generateImage.bind(null, states.Focus));
 
-        function generateActiveImages()
-        {
+        function generateActiveImages() {
             ensureImageIsLoaded(generateImage.bind(null, states.Active));
 
-            if (states.ActiveFocus)
-                ensureImageIsLoaded(generateImage.bind(null, states.ActiveFocus));
+            if (states.ActiveFocus) ensureImageIsLoaded(generateImage.bind(null, states.ActiveFocus));
         }
 
         // Delay generating the active states until later to improve the initial page load time.
         setTimeout(generateActiveImages, 500);
     }
 
-    function generateImage(state)
-    {
-        const context = document.getCSSCanvasContext("2d", canvasIdentifierCallback(state), scaledWidth, scaledHeight);
+    function generateImage(state) {
+        var context = document.getCSSCanvasContext("2d", canvasIdentifierCallback(state), scaledWidth, scaledHeight);
         context.save();
         context.scale(scaleFactor, scaleFactor);
 
@@ -519,7 +467,7 @@ function generateEmbossedImages(src, width, height, states, canvasIdentifierCall
         _applyImageMask(context, image);
 
         if (!ignoreCache) {
-            const storageKey = storageKeyPrefix + canvasIdentifierCallback(state);
+            var storageKey = storageKeyPrefix + canvasIdentifierCallback(state);
             saveImageToStorage(storageKey, context, scaledWidth, scaledHeight, imageVersion);
         }
 
@@ -559,10 +507,10 @@ function generateEmbossedImages(src, width, height, states, canvasIdentifierCall
 
         for (var i = 0; i < imageDataPixels.length; ++i) {
             if (isLittleEndian) {
-                var existingAlpha = 0xff & (imageDataPixels[i] >> 24);
-                imageDataPixels[i] = red | green << 8 | blue << 16 | (255 - existingAlpha) << 24;
+                var existingAlpha = 255 & imageDataPixels[i] >> 24;
+                imageDataPixels[i] = red | green << 8 | blue << 16 | 255 - existingAlpha << 24;
             } else {
-                var existingAlpha = 0xff & imageDataPixels[i];
+                var existingAlpha = 255 & imageDataPixels[i];
                 imageDataPixels[i] = red << 24 | green << 16 | blue << 8 | 255 - existingAlpha;
             }
         }
@@ -586,8 +534,7 @@ function generateEmbossedImages(src, width, height, states, canvasIdentifierCall
 
         var maskImageDataPixels = mask.getImageData(0, 0, scaledWidth, scaledHeight).data;
 
-        for (var i = 3; i < imageDataPixels.length; i += 4)
-            imageDataPixels[i] = maskImageDataPixels[i] * (imageDataPixels[i] / 255);
+        for (var i = 3; i < imageDataPixels.length; i += 4) imageDataPixels[i] = maskImageDataPixels[i] * (imageDataPixels[i] / 255);
 
         context.putImageData(imageData, 0, 0);
     }
@@ -595,10 +542,9 @@ function generateEmbossedImages(src, width, height, states, canvasIdentifierCall
 
 var svgImageCache = {};
 
-function loadSVGImageDocumentElement(url, callback)
-{
+function loadSVGImageDocumentElement(url, callback) {
     function invokeCallbackWithDocument(svgText) {
-        var parser = new DOMParser;
+        var parser = new DOMParser();
         var doc = parser.parseFromString(svgText, "image/svg+xml");
         callback(doc.documentElement);
     }
@@ -625,26 +571,23 @@ function loadSVGImageDocumentElement(url, callback)
         return;
     }
 
-    var xhr = new XMLHttpRequest;
+    var xhr = new XMLHttpRequest();
     xhr.open("GET", url, true);
     xhr.addEventListener("load", imageLoad);
     xhr.addEventListener("error", imageError);
     xhr.send();
 }
 
-function wrappedSVGDocument(url, className, title, callback)
-{
-    loadSVGImageDocumentElement(url, function(svgDocument) {
+function wrappedSVGDocument(url, className, title, callback) {
+    loadSVGImageDocumentElement(url, function (svgDocument) {
         if (!svgDocument) {
             callback(null);
             return;
         }
 
         var wrapper = document.createElement("div");
-        if (className)
-            wrapper.className = className;
-        if (title)
-            wrapper.title = title;
+        if (className) wrapper.className = className;
+        if (title) wrapper.title = title;
         wrapper.appendChild(svgDocument);
 
         callback(wrapper);

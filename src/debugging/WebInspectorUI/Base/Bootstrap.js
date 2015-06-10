@@ -23,10 +23,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.runBootstrapOperations = function() {
-    // This function is invoked after the inspector has loaded.
-    // Modify it during development to hard-wire setup operations,
-    // rather than manually clicking through the user interface.
+WebInspector.runBootstrapOperations = function () {};
 
-    // If a model object or UI component is not easy to script, then file a bug!
-}
+// This function is invoked after the inspector has loaded.
+// Modify it during development to hard-wire setup operations,
+// rather than manually clicking through the user interface.
+
+// If a model object or UI component is not easy to script, then file a bug!

@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  * Copyright (C) 2013 Samsung Electronics. All rights reserved.
@@ -24,39 +28,48 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMStorageObserver = class DOMStorageObserver
-{
-    // Events defined by the "DOMStorage" domain.
-
-    // COMPATIBILITY (iOS 6): This event no longer exists. It is still needed and called on iOS 6.
-    addDOMStorage(storage)
-    {
-        WebInspector.storageManager.domStorageWasAdded(storage.id, storage.host, storage.isLocalStorage);
+WebInspector.DOMStorageObserver = (function () {
+    function DOMStorageObserver() {
+        _classCallCheck(this, DOMStorageObserver);
     }
 
-    // COMPATIBILITY (iOS 6): This event was split into the granular events below.
-    updateDOMStorage(storageId)
-    {
-        WebInspector.storageManager.domStorageWasUpdated(storageId);
-    }
+    _createClass(DOMStorageObserver, [{
+        key: "addDOMStorage",
 
-    domStorageItemsCleared(storageId)
-    {
-        WebInspector.storageManager.itemsCleared(storageId);
-    }
+        // Events defined by the "DOMStorage" domain.
 
-    domStorageItemRemoved(storageId, key)
-    {
-        WebInspector.storageManager.itemRemoved(storageId, key);
-    }
+        // COMPATIBILITY (iOS 6): This event no longer exists. It is still needed and called on iOS 6.
+        value: function addDOMStorage(storage) {
+            WebInspector.storageManager.domStorageWasAdded(storage.id, storage.host, storage.isLocalStorage);
+        }
+    }, {
+        key: "updateDOMStorage",
 
-    domStorageItemAdded(storageId, key, value)
-    {
-        WebInspector.storageManager.itemAdded(storageId, key, value);
-    }
+        // COMPATIBILITY (iOS 6): This event was split into the granular events below.
+        value: function updateDOMStorage(storageId) {
+            WebInspector.storageManager.domStorageWasUpdated(storageId);
+        }
+    }, {
+        key: "domStorageItemsCleared",
+        value: function domStorageItemsCleared(storageId) {
+            WebInspector.storageManager.itemsCleared(storageId);
+        }
+    }, {
+        key: "domStorageItemRemoved",
+        value: function domStorageItemRemoved(storageId, key) {
+            WebInspector.storageManager.itemRemoved(storageId, key);
+        }
+    }, {
+        key: "domStorageItemAdded",
+        value: function domStorageItemAdded(storageId, key, value) {
+            WebInspector.storageManager.itemAdded(storageId, key, value);
+        }
+    }, {
+        key: "domStorageItemUpdated",
+        value: function domStorageItemUpdated(storageId, key, oldValue, value) {
+            WebInspector.storageManager.itemUpdated(storageId, key, oldValue, value);
+        }
+    }]);
 
-    domStorageItemUpdated(storageId, key, oldValue, value)
-    {
-        WebInspector.storageManager.itemUpdated(storageId, key, oldValue, value);
-    }
-};
+    return DOMStorageObserver;
+})();

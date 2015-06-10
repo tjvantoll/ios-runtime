@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,18 +31,17 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TabBarItem = class TabBarItem extends WebInspector.Object
-{
-    constructor(image, title, pinned, representedObject)
-    {
-        super();
+WebInspector.TabBarItem = (function (_WebInspector$Object) {
+    function TabBarItem(image, title, pinned, representedObject) {
+        _classCallCheck(this, TabBarItem);
+
+        _get(Object.getPrototypeOf(TabBarItem.prototype), "constructor", this).call(this);
 
         this._parentTabBar = null;
 
         this._element = document.createElement("div");
         this._element.classList.add(WebInspector.TabBarItem.StyleClassName);
-        if (pinned)
-            this._element.classList.add("pinned");
+        if (pinned) this._element.classList.add("pinned");
         this._element[WebInspector.TabBarItem.ElementReferenceSymbol] = this;
 
         if (!pinned) {
@@ -63,107 +70,99 @@ WebInspector.TabBarItem = class TabBarItem extends WebInspector.Object
         this.representedObject = representedObject;
     }
 
-    // Public
+    _inherits(TabBarItem, _WebInspector$Object);
 
-    get element()
-    {
-        return this._element;
-    }
+    _createClass(TabBarItem, [{
+        key: "element",
 
-    get representedObject()
-    {
-        return this._representedObject;
-    }
+        // Public
 
-    set representedObject(representedObject)
-    {
-        this._representedObject = representedObject || null;
-    }
-
-    get parentTabBar()
-    {
-        return this._parentTabBar;
-    }
-
-    set parentTabBar(tabBar)
-    {
-        this._parentTabBar = tabBar || null;
-    }
-
-    get selected()
-    {
-        return this._element.classList.contains("selected");
-    }
-
-    set selected(selected)
-    {
-        this._element.classList.toggle("selected", selected);
-    }
-
-    get disabled()
-    {
-        return this._element.classList.contains("disabled");
-    }
-
-    set disabled(disabled)
-    {
-        this._element.classList.toggle("disabled", disabled);
-    }
-
-    get hideCloseButton()
-    {
-        return this._element.classList.contains("hide-close-button");
-    }
-
-    set hideCloseButton(hide)
-    {
-        this._element.classList.toggle("hide-close-button", hide);
-    }
-
-    get pinned()
-    {
-        return this._element.classList.contains("pinned");
-    }
-
-    get image()
-    {
-        return this._iconElement.src;
-    }
-
-    set image(url)
-    {
-        this._iconElement.src = url || "";
-    }
-
-    get title()
-    {
-        return this._element.title || "";
-    }
-
-    set title(title)
-    {
-        if (title && !this.pinned) {
-            this._titleElement = document.createElement("span");
-            this._titleElement.classList.add("title");
-
-            this._titleContentElement = document.createElement("span");
-            this._titleContentElement.classList.add("content");
-            this._titleElement.appendChild(this._titleContentElement);
-
-            this._titleContentElement.textContent = title;
-
-            this._element.insertBefore(this._titleElement, this._element.lastChild);
-        } else {
-            if (this._titleElement)
-                this._titleElement.remove();
-
-            this._titleContentElement = null;
-            this._titleElement = null;
+        get: function () {
+            return this._element;
         }
+    }, {
+        key: "representedObject",
+        get: function () {
+            return this._representedObject;
+        },
+        set: function (representedObject) {
+            this._representedObject = representedObject || null;
+        }
+    }, {
+        key: "parentTabBar",
+        get: function () {
+            return this._parentTabBar;
+        },
+        set: function (tabBar) {
+            this._parentTabBar = tabBar || null;
+        }
+    }, {
+        key: "selected",
+        get: function () {
+            return this._element.classList.contains("selected");
+        },
+        set: function (selected) {
+            this._element.classList.toggle("selected", selected);
+        }
+    }, {
+        key: "disabled",
+        get: function () {
+            return this._element.classList.contains("disabled");
+        },
+        set: function (disabled) {
+            this._element.classList.toggle("disabled", disabled);
+        }
+    }, {
+        key: "hideCloseButton",
+        get: function () {
+            return this._element.classList.contains("hide-close-button");
+        },
+        set: function (hide) {
+            this._element.classList.toggle("hide-close-button", hide);
+        }
+    }, {
+        key: "pinned",
+        get: function () {
+            return this._element.classList.contains("pinned");
+        }
+    }, {
+        key: "image",
+        get: function () {
+            return this._iconElement.src;
+        },
+        set: function (url) {
+            this._iconElement.src = url || "";
+        }
+    }, {
+        key: "title",
+        get: function () {
+            return this._element.title || "";
+        },
+        set: function (title) {
+            if (title && !this.pinned) {
+                this._titleElement = document.createElement("span");
+                this._titleElement.classList.add("title");
 
-        this._element.title = title || "";
-    }
-};
+                this._titleContentElement = document.createElement("span");
+                this._titleContentElement.classList.add("content");
+                this._titleElement.appendChild(this._titleContentElement);
+
+                this._titleContentElement.textContent = title;
+
+                this._element.insertBefore(this._titleElement, this._element.lastChild);
+            } else {
+                if (this._titleElement) this._titleElement.remove();
+
+                this._titleContentElement = null;
+                this._titleElement = null;
+            }
+
+            this._element.title = title || "";
+        }
+    }]);
+
+    return TabBarItem;
+})(WebInspector.Object);
 
 WebInspector.TabBarItem.StyleClassName = "item";
 WebInspector.TabBarItem.CloseButtonStyleClassName = "close";

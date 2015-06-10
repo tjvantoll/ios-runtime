@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,40 +27,46 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DatabaseObserver = class DatabaseObserver
-{
-    // Events defined by the "Database" domain.
-
-    addDatabase(database)
-    {
-        WebInspector.storageManager.databaseWasAdded(database.id, database.domain, database.name, database.version);
+WebInspector.DatabaseObserver = (function () {
+    function DatabaseObserver() {
+        _classCallCheck(this, DatabaseObserver);
     }
 
-    // COMPATIBILITY (iOS 6): This event was removed in favor of a more async DatabaseAgent.executeSQL.
-    sqlTransactionSucceeded(transactionId, columnNames, values)
-    {
-        if (!WebInspector.DatabaseObserver._callbacks[transactionId])
-            return;
+    _createClass(DatabaseObserver, [{
+        key: "addDatabase",
 
-        var callback = WebInspector.DatabaseObserver._callbacks[transactionId];
-        delete WebInspector.DatabaseObserver._callbacks[transactionId];
+        // Events defined by the "Database" domain.
 
-        if (callback)
-            callback(columnNames, values, null);
-    }
+        value: function addDatabase(database) {
+            WebInspector.storageManager.databaseWasAdded(database.id, database.domain, database.name, database.version);
+        }
+    }, {
+        key: "sqlTransactionSucceeded",
 
-    // COMPATIBILITY (iOS 6): This event was removed in favor of a more async DatabaseAgent.executeSQL.
-    sqlTransactionFailed(transactionId, sqlError)
-    {
-        if (!WebInspector.DatabaseObserver._callbacks[transactionId])
-            return;
+        // COMPATIBILITY (iOS 6): This event was removed in favor of a more async DatabaseAgent.executeSQL.
+        value: function sqlTransactionSucceeded(transactionId, columnNames, values) {
+            if (!WebInspector.DatabaseObserver._callbacks[transactionId]) return;
 
-        var callback = WebInspector.DatabaseObserver._callbacks[transactionId];
-        delete WebInspector.DatabaseObserver._callbacks[transactionId];
+            var callback = WebInspector.DatabaseObserver._callbacks[transactionId];
+            delete WebInspector.DatabaseObserver._callbacks[transactionId];
 
-        if (callback)
-            callback(null, null, sqlError);
-    }
-};
+            if (callback) callback(columnNames, values, null);
+        }
+    }, {
+        key: "sqlTransactionFailed",
+
+        // COMPATIBILITY (iOS 6): This event was removed in favor of a more async DatabaseAgent.executeSQL.
+        value: function sqlTransactionFailed(transactionId, sqlError) {
+            if (!WebInspector.DatabaseObserver._callbacks[transactionId]) return;
+
+            var callback = WebInspector.DatabaseObserver._callbacks[transactionId];
+            delete WebInspector.DatabaseObserver._callbacks[transactionId];
+
+            if (callback) callback(null, null, sqlError);
+        }
+    }]);
+
+    return DatabaseObserver;
+})();
 
 WebInspector.DatabaseObserver._callbacks = {};

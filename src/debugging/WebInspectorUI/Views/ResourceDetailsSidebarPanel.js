@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ResourceDetailsSidebarPanel = class ResourceDetailsSidebarPanel extends WebInspector.DetailsSidebarPanel
-{
-    constructor()
-    {
-        super("resource-details", WebInspector.UIString("Resource"), WebInspector.UIString("Resource"));
+WebInspector.ResourceDetailsSidebarPanel = (function (_WebInspector$DetailsSidebarPanel) {
+    function ResourceDetailsSidebarPanel() {
+        _classCallCheck(this, ResourceDetailsSidebarPanel);
+
+        _get(Object.getPrototypeOf(ResourceDetailsSidebarPanel.prototype), "constructor", this).call(this, "resource-details", WebInspector.UIString("Resource"), WebInspector.UIString("Resource"));
 
         this.element.classList.add("resource");
 
@@ -50,8 +58,7 @@ WebInspector.ResourceDetailsSidebarPanel = class ResourceDetailsSidebarPanel ext
         this._initiatorRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("Initiator"));
 
         var firstGroup = [this._locationFullURLRow];
-        var secondGroup = [this._locationSchemeRow, this._locationHostRow, this._locationPortRow, this._locationPathRow,
-            this._locationQueryStringRow, this._locationFragmentRow, this._locationFilenameRow];
+        var secondGroup = [this._locationSchemeRow, this._locationHostRow, this._locationPortRow, this._locationPathRow, this._locationQueryStringRow, this._locationFragmentRow, this._locationFilenameRow];
         var thirdGroup = [this._initiatorRow];
 
         this._fullURLGroup = new WebInspector.DetailsSectionGroup(firstGroup);
@@ -109,365 +116,343 @@ WebInspector.ResourceDetailsSidebarPanel = class ResourceDetailsSidebarPanel ext
         this.contentElement.appendChild(this._responseHeadersSection.element);
     }
 
-    // Public
+    _inherits(ResourceDetailsSidebarPanel, _WebInspector$DetailsSidebarPanel);
 
-    inspect(objects)
-    {
-        // Convert to a single item array if needed.
-        if (!(objects instanceof Array))
-            objects = [objects];
+    _createClass(ResourceDetailsSidebarPanel, [{
+        key: "inspect",
 
-        var resourceToInspect = null;
+        // Public
 
-        // Iterate over the objects to find a WebInspector.Resource to inspect.
-        for (var i = 0; i < objects.length; ++i) {
-            if (objects[i] instanceof WebInspector.Resource) {
-                resourceToInspect = objects[i];
-                break;
+        value: function inspect(objects) {
+            // Convert to a single item array if needed.
+            if (!(objects instanceof Array)) objects = [objects];
+
+            var resourceToInspect = null;
+
+            // Iterate over the objects to find a WebInspector.Resource to inspect.
+            for (var i = 0; i < objects.length; ++i) {
+                if (objects[i] instanceof WebInspector.Resource) {
+                    resourceToInspect = objects[i];
+                    break;
+                }
+
+                if (objects[i] instanceof WebInspector.Frame) {
+                    resourceToInspect = objects[i].mainResource;
+                    break;
+                }
             }
 
-            if (objects[i] instanceof WebInspector.Frame) {
-                resourceToInspect = objects[i].mainResource;
-                break;
-            }
+            this.resource = resourceToInspect;
+
+            return !!this._resource;
         }
+    }, {
+        key: "refresh",
+        value: function refresh() {
+            if (!this._resource) return;
 
-        this.resource = resourceToInspect;
-
-        return !!this._resource;
-    }
-
-    get resource()
-    {
-        return this._resource;
-    }
-
-    set resource(resource)
-    {
-        if (resource === this._resource)
-            return;
-
-        if (this._resource) {
-            this._resource.removeEventListener(WebInspector.Resource.Event.URLDidChange, this._refreshURL, this);
-            this._resource.removeEventListener(WebInspector.Resource.Event.MIMETypeDidChange, this._refreshMIMEType, this);
-            this._resource.removeEventListener(WebInspector.Resource.Event.TypeDidChange, this._refreshResourceType, this);
-            this._resource.removeEventListener(WebInspector.Resource.Event.RequestHeadersDidChange, this._refreshRequestHeaders, this);
-            this._resource.removeEventListener(WebInspector.Resource.Event.ResponseReceived, this._refreshRequestAndResponse, this);
-            this._resource.removeEventListener(WebInspector.Resource.Event.CacheStatusDidChange, this._refreshRequestAndResponse, this);
-            this._resource.removeEventListener(WebInspector.Resource.Event.SizeDidChange, this._refreshDecodedSize, this);
-            this._resource.removeEventListener(WebInspector.Resource.Event.TransferSizeDidChange, this._refreshTransferSize, this);
+            this._refreshURL();
+            this._refreshMIMEType();
+            this._refreshResourceType();
+            this._refreshRequestAndResponse();
+            this._refreshDecodedSize();
+            this._refreshTransferSize();
+            this._refreshRequestHeaders();
+            this._refreshImageSizeSection();
+            this._refreshRequestDataSection();
         }
+    }, {
+        key: "_refreshURL",
 
-        this._resource = resource;
+        // Private
 
-        if (this._resource) {
-            this._resource.addEventListener(WebInspector.Resource.Event.URLDidChange, this._refreshURL, this);
-            this._resource.addEventListener(WebInspector.Resource.Event.MIMETypeDidChange, this._refreshMIMEType, this);
-            this._resource.addEventListener(WebInspector.Resource.Event.TypeDidChange, this._refreshResourceType, this);
-            this._resource.addEventListener(WebInspector.Resource.Event.RequestHeadersDidChange, this._refreshRequestHeaders, this);
-            this._resource.addEventListener(WebInspector.Resource.Event.ResponseReceived, this._refreshRequestAndResponse, this);
-            this._resource.addEventListener(WebInspector.Resource.Event.CacheStatusDidChange, this._refreshRequestAndResponse, this);
-            this._resource.addEventListener(WebInspector.Resource.Event.SizeDidChange, this._refreshDecodedSize, this);
-            this._resource.addEventListener(WebInspector.Resource.Event.TransferSizeDidChange, this._refreshTransferSize, this);
-        }
+        value: function _refreshURL() {
+            if (!this._resource) return;
 
-        this.needsRefresh();
-    }
+            this._locationFullURLRow.value = this._resource.url.insertWordBreakCharacters();
 
-    refresh()
-    {
-        if (!this._resource)
-            return;
+            var urlComponents = this._resource.urlComponents;
+            if (urlComponents.scheme) {
+                if (this._resource.initiatorSourceCodeLocation) this._locationSection.groups = [this._fullURLGroup, this._locationURLComponentsGroup, this._initiatorGroup];else this._locationSection.groups = [this._fullURLGroup, this._locationURLComponentsGroup];
 
-        this._refreshURL();
-        this._refreshMIMEType();
-        this._refreshResourceType();
-        this._refreshRequestAndResponse();
-        this._refreshDecodedSize();
-        this._refreshTransferSize();
-        this._refreshRequestHeaders();
-        this._refreshImageSizeSection();
-        this._refreshRequestDataSection();
-    }
-
-    // Private
-
-    _refreshURL()
-    {
-        if (!this._resource)
-            return;
-
-        this._locationFullURLRow.value = this._resource.url.insertWordBreakCharacters();
-
-        var urlComponents = this._resource.urlComponents;
-        if (urlComponents.scheme) {
-            if (this._resource.initiatorSourceCodeLocation)
-                this._locationSection.groups = [this._fullURLGroup, this._locationURLComponentsGroup, this._initiatorGroup];
-            else
-                this._locationSection.groups = [this._fullURLGroup, this._locationURLComponentsGroup];
-
-            this._locationSchemeRow.value = urlComponents.scheme ? urlComponents.scheme : null;
-            this._locationHostRow.value = urlComponents.host ? urlComponents.host : null;
-            this._locationPortRow.value = urlComponents.port ? urlComponents.port : null;
-            this._locationPathRow.value = urlComponents.path ? urlComponents.path.insertWordBreakCharacters() : null;
-            this._locationQueryStringRow.value = urlComponents.queryString ? urlComponents.queryString.insertWordBreakCharacters() : null;
-            this._locationFragmentRow.value = urlComponents.fragment ? urlComponents.fragment.insertWordBreakCharacters() : null;
-            this._locationFilenameRow.value = urlComponents.lastPathComponent ? urlComponents.lastPathComponent.insertWordBreakCharacters() : null;
-        } else {
-            if (this._resource.initiatorSourceCodeLocation)
-                this._locationSection.groups = [this._fullURLGroup, this._initiatorGroup];
-            else
-                this._locationSection.groups = [this._fullURLGroup];
-        }
-
-        if (this._resource.initiatorSourceCodeLocation)
-            this._initiatorRow.value = WebInspector.createSourceCodeLocationLink(this._resource.initiatorSourceCodeLocation, true);
-
-        if (urlComponents.queryString) {
-            // Ensure the "Query Parameters" section is displayed, right after the "Request & Response" section.
-            this.contentElement.insertBefore(this._queryParametersSection.element, this._requestAndResponseSection.element.nextSibling);
-
-            this._queryParametersRow.dataGrid = this._createNameValueDataGrid(parseQueryString(urlComponents.queryString, true));
-        } else {
-            // Hide the "Query Parameters" section if we don't have a query string.
-            var queryParametersSectionElement = this._queryParametersSection.element;
-            if (queryParametersSectionElement.parentNode)
-                queryParametersSectionElement.parentNode.removeChild(queryParametersSectionElement);
-        }
-    }
-
-    _refreshResourceType()
-    {
-        if (!this._resource)
-            return;
-
-        this._typeResourceTypeRow.value = WebInspector.Resource.displayNameForType(this._resource.type);
-    }
-
-    _refreshMIMEType()
-    {
-        if (!this._resource)
-            return;
-
-        this._typeMIMETypeRow.value = this._resource.mimeType;
-    }
-
-    _refreshRequestAndResponse()
-    {
-        var resource = this._resource;
-        if (!resource)
-            return;
-
-        // If we don't have a value, we set an em-dash to keep the row from hiding.
-        // This keeps the UI from shifting around as data comes in.
-        var emDash = "\u2014";
-
-        this._requestMethodRow.value = resource.requestMethod || emDash;
-
-        this._cachedRow.value = resource.cached ? WebInspector.UIString("Yes") : WebInspector.UIString("No");
-
-        this._statusCodeRow.value = resource.statusCode || emDash;
-        this._statusTextRow.value = resource.statusText || emDash;
-
-        this._refreshResponseHeaders();
-        this._refreshCompressed();
-    }
-
-    _valueForSize(size)
-    {
-        // If we don't have a value, we set an em-dash to keep the row from hiding.
-        // This keeps the UI from shifting around as data comes in.
-        var emDash = "\u2014";
-        return size > 0 ? Number.bytesToString(size) : emDash;
-    }
-
-    _refreshCompressed()
-    {
-        this._compressedRow.value = this._resource.compressed ? WebInspector.UIString("Yes") : WebInspector.UIString("No");
-        this._compressionRow.value = this._resource.compressed ? WebInspector.UIString("%.2f\u00d7").format(this._resource.size / this._resource.encodedSize) : null;
-    }
-
-    _refreshDecodedSize()
-    {
-        if (!this._resource)
-            return;
-
-        this._encodedSizeRow.value = this._valueForSize(this._resource.encodedSize);
-        this._decodedSizeRow.value = this._valueForSize(this._resource.size);
-
-        this._refreshCompressed();
-    }
-
-    _refreshTransferSize()
-    {
-        if (!this._resource)
-            return;
-
-        this._encodedSizeRow.value = this._valueForSize(this._resource.encodedSize);
-        this._transferSizeRow.value = this._valueForSize(this._resource.transferSize);
-
-        this._refreshCompressed();
-    }
-
-    _refreshRequestHeaders()
-    {
-        if (!this._resource)
-            return;
-
-        this._requestHeadersRow.dataGrid = this._createNameValueDataGrid(this._resource.requestHeaders);
-    }
-
-    _refreshResponseHeaders()
-    {
-        if (!this._resource)
-            return;
-
-        this._responseHeadersRow.dataGrid = this._createNameValueDataGrid(this._resource.responseHeaders);
-    }
-
-    _createNameValueDataGrid(data)
-    {
-        if (!data || data instanceof Array ? !data.length : isEmptyObject(data))
-            return null;
-
-        var dataGrid = new WebInspector.DataGrid({
-            name: {title: WebInspector.UIString("Name"), width: "30%", sortable: true},
-            value: {title: WebInspector.UIString("Value"), sortable: true}
-        });
-
-        function addDataGridNode(nodeValue)
-        {
-            console.assert(typeof nodeValue.name === "string");
-            console.assert(!nodeValue.value || typeof nodeValue.value === "string");
-
-            var node = new WebInspector.DataGridNode({name: nodeValue.name, value: nodeValue.value || ""}, false);
-            dataGrid.appendChild(node);
-        }
-
-        if (data instanceof Array) {
-            for (var i = 0; i < data.length; ++i)
-                addDataGridNode(data[i]);
-        } else {
-            for (var name in data)
-                addDataGridNode({name, value: data[name] || ""});
-        }
-
-        dataGrid.addEventListener(WebInspector.DataGrid.Event.SortChanged, sortDataGrid, this);
-
-        function sortDataGrid()
-        {
-            var sortColumnIdentifier = dataGrid.sortColumnIdentifier;
-
-            function comparator(a, b)
-            {
-                var item1 = a.data[sortColumnIdentifier];
-                var item2 = b.data[sortColumnIdentifier];
-                return item1.localeCompare(item2);
+                this._locationSchemeRow.value = urlComponents.scheme ? urlComponents.scheme : null;
+                this._locationHostRow.value = urlComponents.host ? urlComponents.host : null;
+                this._locationPortRow.value = urlComponents.port ? urlComponents.port : null;
+                this._locationPathRow.value = urlComponents.path ? urlComponents.path.insertWordBreakCharacters() : null;
+                this._locationQueryStringRow.value = urlComponents.queryString ? urlComponents.queryString.insertWordBreakCharacters() : null;
+                this._locationFragmentRow.value = urlComponents.fragment ? urlComponents.fragment.insertWordBreakCharacters() : null;
+                this._locationFilenameRow.value = urlComponents.lastPathComponent ? urlComponents.lastPathComponent.insertWordBreakCharacters() : null;
+            } else {
+                if (this._resource.initiatorSourceCodeLocation) this._locationSection.groups = [this._fullURLGroup, this._initiatorGroup];else this._locationSection.groups = [this._fullURLGroup];
             }
 
-            dataGrid.sortNodes(comparator);
+            if (this._resource.initiatorSourceCodeLocation) this._initiatorRow.value = WebInspector.createSourceCodeLocationLink(this._resource.initiatorSourceCodeLocation, true);
+
+            if (urlComponents.queryString) {
+                // Ensure the "Query Parameters" section is displayed, right after the "Request & Response" section.
+                this.contentElement.insertBefore(this._queryParametersSection.element, this._requestAndResponseSection.element.nextSibling);
+
+                this._queryParametersRow.dataGrid = this._createNameValueDataGrid(parseQueryString(urlComponents.queryString, true));
+            } else {
+                // Hide the "Query Parameters" section if we don't have a query string.
+                var queryParametersSectionElement = this._queryParametersSection.element;
+                if (queryParametersSectionElement.parentNode) queryParametersSectionElement.parentNode.removeChild(queryParametersSectionElement);
+            }
         }
+    }, {
+        key: "_refreshResourceType",
+        value: function _refreshResourceType() {
+            if (!this._resource) return;
 
-        return dataGrid;
-    }
-
-    _refreshImageSizeSection()
-    {
-        var resource = this._resource;
-
-        if (!resource)
-            return;
-
-        // Hide the section if we're not dealing with an image or if the load failed.
-        if (resource.type !== WebInspector.Resource.Type.Image || resource.failed) {
-            var imageSectionElement = this._imageSizeSection.element;
-            if (imageSectionElement.parentNode)
-                this.contentElement.removeChild(imageSectionElement);
-            return;
+            this._typeResourceTypeRow.value = WebInspector.Resource.displayNameForType(this._resource.type);
         }
+    }, {
+        key: "_refreshMIMEType",
+        value: function _refreshMIMEType() {
+            if (!this._resource) return;
 
-        // Ensure the section is displayed, right before the "Location" section.
-        this.contentElement.insertBefore(this._imageSizeSection.element, this._locationSection.element);
-
-        // Get the metrics for this resource and fill in the metrics rows with that information.
-        resource.getImageSize(function(size) {
-            this._imageWidthRow.value = WebInspector.UIString("%fpx").format(size.width);
-            this._imageHeightRow.value = WebInspector.UIString("%fpx").format(size.height);
-        }.bind(this));
-    }
-
-    _goToRequestDataClicked()
-    {
-        WebInspector.showResourceRequest(this._resource);
-    }
-
-    _refreshRequestDataSection()
-    {
-        var resource = this._resource;
-
-        if (!resource)
-            return;
-
-        // Hide the section if we're not dealing with a request with data.
-        var requestData = resource.requestData;
-        if (!requestData) {
-            this._requestDataSection.element.remove();
-            return;
+            this._typeMIMETypeRow.value = this._resource.mimeType;
         }
+    }, {
+        key: "_refreshRequestAndResponse",
+        value: function _refreshRequestAndResponse() {
+            var resource = this._resource;
+            if (!resource) return;
 
-        // Ensure the section is displayed, right before the "Request Headers" section.
-        this.contentElement.insertBefore(this._requestDataSection.element, this._requestHeadersSection.element);
+            // If we don't have a value, we set an em-dash to keep the row from hiding.
+            // This keeps the UI from shifting around as data comes in.
+            var emDash = "—";
 
-        var requestDataContentType = resource.requestDataContentType || "";
-        if (requestDataContentType && requestDataContentType.match(/^application\/x-www-form-urlencoded\s*(;.*)?$/i)) {
-            // Simple form data that should be parsable like a query string.
-            var parametersRow = new WebInspector.DetailsSectionDataGridRow(null, WebInspector.UIString("No Parameters"));
-            parametersRow.dataGrid = this._createNameValueDataGrid(parseQueryString(requestData, true));
+            this._requestMethodRow.value = resource.requestMethod || emDash;
 
-            this._requestDataSection.groups = [new WebInspector.DetailsSectionGroup([parametersRow])];
-            return;
+            this._cachedRow.value = resource.cached ? WebInspector.UIString("Yes") : WebInspector.UIString("No");
+
+            this._statusCodeRow.value = resource.statusCode || emDash;
+            this._statusTextRow.value = resource.statusText || emDash;
+
+            this._refreshResponseHeaders();
+            this._refreshCompressed();
         }
-
-        // Not simple form data, so we can really only show the size and type here.
-        // FIXME: Add a go-to arrow here to show the data in the content browser.
-
-        var mimeTypeComponents = parseMIMEType(requestDataContentType);
-
-        var mimeType = mimeTypeComponents.type;
-        var boundary = mimeTypeComponents.boundary;
-        var encoding = mimeTypeComponents.encoding;
-
-        var rows = [];
-
-        var mimeTypeRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("MIME Type"));
-        mimeTypeRow.value = mimeType;
-        rows.push(mimeTypeRow);
-
-        if (boundary) {
-            var boundryRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("Boundary"));
-            boundryRow.value = boundary;
-            rows.push(boundryRow);
+    }, {
+        key: "_valueForSize",
+        value: function _valueForSize(size) {
+            // If we don't have a value, we set an em-dash to keep the row from hiding.
+            // This keeps the UI from shifting around as data comes in.
+            var emDash = "—";
+            return size > 0 ? Number.bytesToString(size) : emDash;
         }
-
-        if (encoding) {
-            var encodingRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("Encoding"));
-            encodingRow.value = encoding;
-            rows.push(encodingRow);
+    }, {
+        key: "_refreshCompressed",
+        value: function _refreshCompressed() {
+            this._compressedRow.value = this._resource.compressed ? WebInspector.UIString("Yes") : WebInspector.UIString("No");
+            this._compressionRow.value = this._resource.compressed ? WebInspector.UIString("%.2f×").format(this._resource.size / this._resource.encodedSize) : null;
         }
+    }, {
+        key: "_refreshDecodedSize",
+        value: function _refreshDecodedSize() {
+            if (!this._resource) return;
 
-        var sizeValue = Number.bytesToString(requestData.length);
+            this._encodedSizeRow.value = this._valueForSize(this._resource.encodedSize);
+            this._decodedSizeRow.value = this._valueForSize(this._resource.size);
 
-        var dataValue = document.createDocumentFragment();
+            this._refreshCompressed();
+        }
+    }, {
+        key: "_refreshTransferSize",
+        value: function _refreshTransferSize() {
+            if (!this._resource) return;
 
-        dataValue.appendChild(document.createTextNode(sizeValue));
+            this._encodedSizeRow.value = this._valueForSize(this._resource.encodedSize);
+            this._transferSizeRow.value = this._valueForSize(this._resource.transferSize);
 
-        var goToButton = dataValue.appendChild(WebInspector.createGoToArrowButton());
-        goToButton.addEventListener("click", this._goToRequestDataClicked.bind(this));
+            this._refreshCompressed();
+        }
+    }, {
+        key: "_refreshRequestHeaders",
+        value: function _refreshRequestHeaders() {
+            if (!this._resource) return;
 
-        var dataRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("Data"));
-        dataRow.value = dataValue;
-        rows.push(dataRow);
+            this._requestHeadersRow.dataGrid = this._createNameValueDataGrid(this._resource.requestHeaders);
+        }
+    }, {
+        key: "_refreshResponseHeaders",
+        value: function _refreshResponseHeaders() {
+            if (!this._resource) return;
 
-        this._requestDataSection.groups = [new WebInspector.DetailsSectionGroup(rows)];
-    }
-};
+            this._responseHeadersRow.dataGrid = this._createNameValueDataGrid(this._resource.responseHeaders);
+        }
+    }, {
+        key: "_createNameValueDataGrid",
+        value: function _createNameValueDataGrid(data) {
+            if (!data || data instanceof Array ? !data.length : isEmptyObject(data)) return null;
+
+            var dataGrid = new WebInspector.DataGrid({
+                name: { title: WebInspector.UIString("Name"), width: "30%", sortable: true },
+                value: { title: WebInspector.UIString("Value"), sortable: true }
+            });
+
+            function addDataGridNode(nodeValue) {
+                console.assert(typeof nodeValue.name === "string");
+                console.assert(!nodeValue.value || typeof nodeValue.value === "string");
+
+                var node = new WebInspector.DataGridNode({ name: nodeValue.name, value: nodeValue.value || "" }, false);
+                dataGrid.appendChild(node);
+            }
+
+            if (data instanceof Array) {
+                for (var i = 0; i < data.length; ++i) addDataGridNode(data[i]);
+            } else {
+                for (var name in data) addDataGridNode({ name: name, value: data[name] || "" });
+            }
+
+            dataGrid.addEventListener(WebInspector.DataGrid.Event.SortChanged, sortDataGrid, this);
+
+            function sortDataGrid() {
+                var sortColumnIdentifier = dataGrid.sortColumnIdentifier;
+
+                function comparator(a, b) {
+                    var item1 = a.data[sortColumnIdentifier];
+                    var item2 = b.data[sortColumnIdentifier];
+                    return item1.localeCompare(item2);
+                }
+
+                dataGrid.sortNodes(comparator);
+            }
+
+            return dataGrid;
+        }
+    }, {
+        key: "_refreshImageSizeSection",
+        value: function _refreshImageSizeSection() {
+            var resource = this._resource;
+
+            if (!resource) return;
+
+            // Hide the section if we're not dealing with an image or if the load failed.
+            if (resource.type !== WebInspector.Resource.Type.Image || resource.failed) {
+                var imageSectionElement = this._imageSizeSection.element;
+                if (imageSectionElement.parentNode) this.contentElement.removeChild(imageSectionElement);
+                return;
+            }
+
+            // Ensure the section is displayed, right before the "Location" section.
+            this.contentElement.insertBefore(this._imageSizeSection.element, this._locationSection.element);
+
+            // Get the metrics for this resource and fill in the metrics rows with that information.
+            resource.getImageSize((function (size) {
+                this._imageWidthRow.value = WebInspector.UIString("%fpx").format(size.width);
+                this._imageHeightRow.value = WebInspector.UIString("%fpx").format(size.height);
+            }).bind(this));
+        }
+    }, {
+        key: "_goToRequestDataClicked",
+        value: function _goToRequestDataClicked() {
+            WebInspector.showResourceRequest(this._resource);
+        }
+    }, {
+        key: "_refreshRequestDataSection",
+        value: function _refreshRequestDataSection() {
+            var resource = this._resource;
+
+            if (!resource) return;
+
+            // Hide the section if we're not dealing with a request with data.
+            var requestData = resource.requestData;
+            if (!requestData) {
+                this._requestDataSection.element.remove();
+                return;
+            }
+
+            // Ensure the section is displayed, right before the "Request Headers" section.
+            this.contentElement.insertBefore(this._requestDataSection.element, this._requestHeadersSection.element);
+
+            var requestDataContentType = resource.requestDataContentType || "";
+            if (requestDataContentType && requestDataContentType.match(/^application\/x-www-form-urlencoded\s*(;.*)?$/i)) {
+                // Simple form data that should be parsable like a query string.
+                var parametersRow = new WebInspector.DetailsSectionDataGridRow(null, WebInspector.UIString("No Parameters"));
+                parametersRow.dataGrid = this._createNameValueDataGrid(parseQueryString(requestData, true));
+
+                this._requestDataSection.groups = [new WebInspector.DetailsSectionGroup([parametersRow])];
+                return;
+            }
+
+            // Not simple form data, so we can really only show the size and type here.
+            // FIXME: Add a go-to arrow here to show the data in the content browser.
+
+            var mimeTypeComponents = parseMIMEType(requestDataContentType);
+
+            var mimeType = mimeTypeComponents.type;
+            var boundary = mimeTypeComponents.boundary;
+            var encoding = mimeTypeComponents.encoding;
+
+            var rows = [];
+
+            var mimeTypeRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("MIME Type"));
+            mimeTypeRow.value = mimeType;
+            rows.push(mimeTypeRow);
+
+            if (boundary) {
+                var boundryRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("Boundary"));
+                boundryRow.value = boundary;
+                rows.push(boundryRow);
+            }
+
+            if (encoding) {
+                var encodingRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("Encoding"));
+                encodingRow.value = encoding;
+                rows.push(encodingRow);
+            }
+
+            var sizeValue = Number.bytesToString(requestData.length);
+
+            var dataValue = document.createDocumentFragment();
+
+            dataValue.appendChild(document.createTextNode(sizeValue));
+
+            var goToButton = dataValue.appendChild(WebInspector.createGoToArrowButton());
+            goToButton.addEventListener("click", this._goToRequestDataClicked.bind(this));
+
+            var dataRow = new WebInspector.DetailsSectionSimpleRow(WebInspector.UIString("Data"));
+            dataRow.value = dataValue;
+            rows.push(dataRow);
+
+            this._requestDataSection.groups = [new WebInspector.DetailsSectionGroup(rows)];
+        }
+    }, {
+        key: "resource",
+        get: function () {
+            return this._resource;
+        },
+        set: function (resource) {
+            if (resource === this._resource) return;
+
+            if (this._resource) {
+                this._resource.removeEventListener(WebInspector.Resource.Event.URLDidChange, this._refreshURL, this);
+                this._resource.removeEventListener(WebInspector.Resource.Event.MIMETypeDidChange, this._refreshMIMEType, this);
+                this._resource.removeEventListener(WebInspector.Resource.Event.TypeDidChange, this._refreshResourceType, this);
+                this._resource.removeEventListener(WebInspector.Resource.Event.RequestHeadersDidChange, this._refreshRequestHeaders, this);
+                this._resource.removeEventListener(WebInspector.Resource.Event.ResponseReceived, this._refreshRequestAndResponse, this);
+                this._resource.removeEventListener(WebInspector.Resource.Event.CacheStatusDidChange, this._refreshRequestAndResponse, this);
+                this._resource.removeEventListener(WebInspector.Resource.Event.SizeDidChange, this._refreshDecodedSize, this);
+                this._resource.removeEventListener(WebInspector.Resource.Event.TransferSizeDidChange, this._refreshTransferSize, this);
+            }
+
+            this._resource = resource;
+
+            if (this._resource) {
+                this._resource.addEventListener(WebInspector.Resource.Event.URLDidChange, this._refreshURL, this);
+                this._resource.addEventListener(WebInspector.Resource.Event.MIMETypeDidChange, this._refreshMIMEType, this);
+                this._resource.addEventListener(WebInspector.Resource.Event.TypeDidChange, this._refreshResourceType, this);
+                this._resource.addEventListener(WebInspector.Resource.Event.RequestHeadersDidChange, this._refreshRequestHeaders, this);
+                this._resource.addEventListener(WebInspector.Resource.Event.ResponseReceived, this._refreshRequestAndResponse, this);
+                this._resource.addEventListener(WebInspector.Resource.Event.CacheStatusDidChange, this._refreshRequestAndResponse, this);
+                this._resource.addEventListener(WebInspector.Resource.Event.SizeDidChange, this._refreshDecodedSize, this);
+                this._resource.addEventListener(WebInspector.Resource.Event.TransferSizeDidChange, this._refreshTransferSize, this);
+            }
+
+            this.needsRefresh();
+        }
+    }]);
+
+    return ResourceDetailsSidebarPanel;
+})(WebInspector.DetailsSidebarPanel);

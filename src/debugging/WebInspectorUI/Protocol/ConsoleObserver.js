@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,37 +27,42 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ConsoleObserver = class ConsoleObserver
-{
-    // Events defined by the "Console" domain.
+WebInspector.ConsoleObserver = (function () {
+    function ConsoleObserver() {
+        _classCallCheck(this, ConsoleObserver);
+    }
 
-    messageAdded(message)
-    {
-        // COMPATIBILITY (iOS 6): Treat Tips like Logs.
-        if (message.type === "tip")
-            message.type = "log";
+    _createClass(ConsoleObserver, [{
+        key: "messageAdded",
 
-        if (message.type === "assert" && !message.text)
-            message.text = WebInspector.UIString("Assertion");
+        // Events defined by the "Console" domain.
 
-        if (message.level === "warning" || message.level === "error") {
-            // FIXME: <https://webkit.org/b/142553> Web Inspector: Merge IssueMessage/ConsoleMessage - both attempt to modify the Console Messages parameter independently
-            WebInspector.issueManager.issueWasAdded(message.source, message.level, message.text, message.url, message.line, message.column || 0);
+        value: function messageAdded(message) {
+            // COMPATIBILITY (iOS 6): Treat Tips like Logs.
+            if (message.type === "tip") message.type = "log";
+
+            if (message.type === "assert" && !message.text) message.text = WebInspector.UIString("Assertion");
+
+            if (message.level === "warning" || message.level === "error") {
+                // FIXME: <https://webkit.org/b/142553> Web Inspector: Merge IssueMessage/ConsoleMessage - both attempt to modify the Console Messages parameter independently
+                WebInspector.issueManager.issueWasAdded(message.source, message.level, message.text, message.url, message.line, message.column || 0);
+            }
+
+            if (message.source === "console-api" && message.type === "clear") return;
+
+            WebInspector.logManager.messageWasAdded(message.source, message.level, message.text, message.type, message.url, message.line, message.column || 0, message.repeatCount, message.parameters, message.stackTrace, message.networkRequestId);
         }
+    }, {
+        key: "messageRepeatCountUpdated",
+        value: function messageRepeatCountUpdated(count) {
+            WebInspector.logManager.messageRepeatCountUpdated(count);
+        }
+    }, {
+        key: "messagesCleared",
+        value: function messagesCleared() {
+            WebInspector.logManager.messagesCleared();
+        }
+    }]);
 
-        if (message.source === "console-api" && message.type === "clear")
-            return;
-
-        WebInspector.logManager.messageWasAdded(message.source, message.level, message.text, message.type, message.url, message.line, message.column || 0, message.repeatCount, message.parameters, message.stackTrace, message.networkRequestId);
-    }
-
-    messageRepeatCountUpdated(count)
-    {
-        WebInspector.logManager.messageRepeatCountUpdated(count);
-    }
-
-    messagesCleared()
-    {
-        WebInspector.logManager.messagesCleared();
-    }
-};
+    return ConsoleObserver;
+})();

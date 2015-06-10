@@ -24,8 +24,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.NetworkTimelineOverviewGraph = function(timeline)
-{
+WebInspector.NetworkTimelineOverviewGraph = function (timeline) {
     WebInspector.TimelineOverviewGraph.call(this, timeline);
 
     this.element.classList.add(WebInspector.NetworkTimelineOverviewGraph.StyleClassName);
@@ -49,75 +48,108 @@ WebInspector.NetworkTimelineOverviewGraph.prototype = {
 
     // Public
 
-    reset: function()
-    {
+    reset: function reset() {
         WebInspector.TimelineOverviewGraph.prototype.reset.call(this);
 
         this._nextDumpRow = 0;
         this._timelineRecordGridRows = [];
 
-        for (var i = 0; i < WebInspector.NetworkTimelineOverviewGraph.MaximumRowCount; ++i)
-            this._timelineRecordGridRows.push([]);
+        for (var i = 0; i < WebInspector.NetworkTimelineOverviewGraph.MaximumRowCount; ++i) this._timelineRecordGridRows.push([]);
 
         this.element.removeChildren();
 
-        for (var rowRecords of this._timelineRecordGridRows) {
-            rowRecords.__element = document.createElement("div");
-            rowRecords.__element.className = WebInspector.NetworkTimelineOverviewGraph.GraphRowStyleClassName;
-            this.element.appendChild(rowRecords.__element);
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-            rowRecords.__recordBars = [];
+        try {
+            for (var _iterator = this._timelineRecordGridRows[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var rowRecords = _step.value;
+
+                rowRecords.__element = document.createElement("div");
+                rowRecords.__element.className = WebInspector.NetworkTimelineOverviewGraph.GraphRowStyleClassName;
+                this.element.appendChild(rowRecords.__element);
+
+                rowRecords.__recordBars = [];
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         WebInspector.TimelineOverviewGraph.prototype.updateLayout.call(this);
 
         var secondsPerPixel = this.timelineOverview.secondsPerPixel;
 
         var recordBarIndex = 0;
 
-        function createBar(rowElement, rowRecordBars, records, renderMode)
-        {
+        function createBar(rowElement, rowRecordBars, records, renderMode) {
             var timelineRecordBar = rowRecordBars[recordBarIndex];
-            if (!timelineRecordBar)
-                timelineRecordBar = rowRecordBars[recordBarIndex] = new WebInspector.TimelineRecordBar(records, renderMode);
-            else {
+            if (!timelineRecordBar) timelineRecordBar = rowRecordBars[recordBarIndex] = new WebInspector.TimelineRecordBar(records, renderMode);else {
                 timelineRecordBar.renderMode = renderMode;
                 timelineRecordBar.records = records;
             }
             timelineRecordBar.refresh(this);
-            if (!timelineRecordBar.element.parentNode)
-                rowElement.appendChild(timelineRecordBar.element);
+            if (!timelineRecordBar.element.parentNode) rowElement.appendChild(timelineRecordBar.element);
             ++recordBarIndex;
         }
 
-        for (var rowRecords of this._timelineRecordGridRows) {
-            var rowElement = rowRecords.__element;
-            var rowRecordBars = rowRecords.__recordBars;
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
 
-            recordBarIndex = 0;
+        try {
+            for (var _iterator2 = this._timelineRecordGridRows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                var rowRecords = _step2.value;
 
-            WebInspector.TimelineRecordBar.createCombinedBars(rowRecords, secondsPerPixel, this, createBar.bind(this, rowElement, rowRecordBars));
+                var rowElement = rowRecords.__element;
+                var rowRecordBars = rowRecords.__recordBars;
 
-            // Remove the remaining unused TimelineRecordBars.
-            for (; recordBarIndex < rowRecordBars.length; ++recordBarIndex) {
-                rowRecordBars[recordBarIndex].records = null;
-                rowRecordBars[recordBarIndex].element.remove();
+                recordBarIndex = 0;
+
+                WebInspector.TimelineRecordBar.createCombinedBars(rowRecords, secondsPerPixel, this, createBar.bind(this, rowElement, rowRecordBars));
+
+                // Remove the remaining unused TimelineRecordBars.
+                for (; recordBarIndex < rowRecordBars.length; ++recordBarIndex) {
+                    rowRecordBars[recordBarIndex].records = null;
+                    rowRecordBars[recordBarIndex].element.remove();
+                }
+            }
+        } catch (err) {
+            _didIteratorError2 = true;
+            _iteratorError2 = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+                    _iterator2["return"]();
+                }
+            } finally {
+                if (_didIteratorError2) {
+                    throw _iteratorError2;
+                }
             }
         }
     },
 
     // Private
 
-    _networkTimelineRecordAdded: function(event)
-    {
+    _networkTimelineRecordAdded: function _networkTimelineRecordAdded(event) {
         var resourceTimelineRecord = event.data.record;
         console.assert(resourceTimelineRecord instanceof WebInspector.ResourceTimelineRecord);
 
-        function compareByStartTime(a, b)
-        {
+        function compareByStartTime(a, b) {
             return a.startTime - b.startTime;
         }
 
@@ -153,8 +185,7 @@ WebInspector.NetworkTimelineOverviewGraph.prototype = {
 
         // We didn't find a empty spot, so dump into the designated dump row.
         if (!foundRowForRecord) {
-            if (this._nextDumpRow >= WebInspector.NetworkTimelineOverviewGraph.MaximumRowCount)
-                this._nextDumpRow = 0;
+            if (this._nextDumpRow >= WebInspector.NetworkTimelineOverviewGraph.MaximumRowCount) this._nextDumpRow = 0;
             insertObjectIntoSortedArray(resourceTimelineRecord, this._timelineRecordGridRows[this._nextDumpRow++], compareByStartTime);
         }
 

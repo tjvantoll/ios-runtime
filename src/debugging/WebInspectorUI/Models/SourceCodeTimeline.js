@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.SourceCodeTimeline = class SourceCodeTimeline extends WebInspector.Timeline
-{
-    constructor(sourceCode, sourceCodeLocation, recordType, recordEventType)
-    {
-        super();
+WebInspector.SourceCodeTimeline = (function (_WebInspector$Timeline) {
+    function SourceCodeTimeline(sourceCode, sourceCodeLocation, recordType, recordEventType) {
+        _classCallCheck(this, SourceCodeTimeline);
+
+        _get(Object.getPrototypeOf(SourceCodeTimeline.prototype), "constructor", this).call(this);
 
         console.assert(sourceCode);
         console.assert(!sourceCodeLocation || sourceCodeLocation.sourceCode === sourceCode);
@@ -39,37 +47,44 @@ WebInspector.SourceCodeTimeline = class SourceCodeTimeline extends WebInspector.
         this._recordEventType = recordEventType || null;
     }
 
-    // Public
+    _inherits(SourceCodeTimeline, _WebInspector$Timeline);
 
-    get sourceCode()
-    {
-        return this._sourceCode;
-    }
+    _createClass(SourceCodeTimeline, [{
+        key: "saveIdentityToCookie",
+        value: function saveIdentityToCookie(cookie) {
+            cookie[WebInspector.SourceCodeTimeline.SourceCodeURLCookieKey] = this._sourceCode.url ? this._sourceCode.url.hash : null;
+            cookie[WebInspector.SourceCodeTimeline.SourceCodeLocationLineCookieKey] = this._sourceCodeLocation ? this._sourceCodeLocation.lineNumber : null;
+            cookie[WebInspector.SourceCodeTimeline.SourceCodeLocationColumnCookieKey] = this._sourceCodeLocation ? this._sourceCodeLocation.columnNumber : null;
+            cookie[WebInspector.SourceCodeTimeline.RecordTypeCookieKey] = this._recordType || null;
+            cookie[WebInspector.SourceCodeTimeline.RecordEventTypeCookieKey] = this._recordEventType || null;
+        }
+    }, {
+        key: "sourceCode",
 
-    get sourceCodeLocation()
-    {
-        return this._sourceCodeLocation;
-    }
+        // Public
 
-    get recordType()
-    {
-        return this._recordType;
-    }
+        get: function () {
+            return this._sourceCode;
+        }
+    }, {
+        key: "sourceCodeLocation",
+        get: function () {
+            return this._sourceCodeLocation;
+        }
+    }, {
+        key: "recordType",
+        get: function () {
+            return this._recordType;
+        }
+    }, {
+        key: "recordEventType",
+        get: function () {
+            return this._recordEventType;
+        }
+    }]);
 
-    get recordEventType()
-    {
-        return this._recordEventType;
-    }
-
-    saveIdentityToCookie(cookie)
-    {
-        cookie[WebInspector.SourceCodeTimeline.SourceCodeURLCookieKey] = this._sourceCode.url ? this._sourceCode.url.hash : null;
-        cookie[WebInspector.SourceCodeTimeline.SourceCodeLocationLineCookieKey] = this._sourceCodeLocation ? this._sourceCodeLocation.lineNumber : null;
-        cookie[WebInspector.SourceCodeTimeline.SourceCodeLocationColumnCookieKey] = this._sourceCodeLocation ? this._sourceCodeLocation.columnNumber : null;
-        cookie[WebInspector.SourceCodeTimeline.RecordTypeCookieKey] = this._recordType || null;
-        cookie[WebInspector.SourceCodeTimeline.RecordEventTypeCookieKey] = this._recordEventType || null;
-    }
-};
+    return SourceCodeTimeline;
+})(WebInspector.Timeline);
 
 WebInspector.SourceCodeTimeline.TypeIdentifier = "source-code-timeline";
 WebInspector.SourceCodeTimeline.SourceCodeURLCookieKey = "source-code-timeline-source-code-url";

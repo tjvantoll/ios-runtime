@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2007, 2013, 2015 Apple Inc.  All rights reserved.
  *
@@ -26,11 +34,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TreeOutline = class TreeOutline extends WebInspector.Object
-{
-    constructor(listNode)
-    {
-        super();
+WebInspector.TreeOutline = (function (_WebInspector$Object) {
+    function TreeOutline(listNode) {
+        _classCallCheck(this, TreeOutline);
+
+        _get(Object.getPrototypeOf(TreeOutline.prototype), "constructor", this).call(this);
 
         this.element = listNode;
 
@@ -52,162 +60,107 @@ WebInspector.TreeOutline = class TreeOutline extends WebInspector.Object
         this._childrenListNode.addEventListener("keydown", this._treeKeyDown.bind(this), true);
     }
 
-    // Methods
+    _inherits(TreeOutline, _WebInspector$Object);
 
-    appendChild(child)
-    {
-        if (!child)
-            throw "child can't be undefined or null";
+    _createClass(TreeOutline, [{
+        key: "appendChild",
 
-        var lastChild = this.children[this.children.length - 1];
-        if (lastChild) {
-            lastChild.nextSibling = child;
-            child.previousSibling = lastChild;
-        } else {
-            child.previousSibling = null;
-            child.nextSibling = null;
+        // Methods
+
+        value: function appendChild(child) {
+            if (!child) throw "child can't be undefined or null";
+
+            var lastChild = this.children[this.children.length - 1];
+            if (lastChild) {
+                lastChild.nextSibling = child;
+                child.previousSibling = lastChild;
+            } else {
+                child.previousSibling = null;
+                child.nextSibling = null;
+            }
+
+            var isFirstChild = !this.children.length;
+
+            this.children.push(child);
+            this.hasChildren = true;
+            child.parent = this;
+            child.treeOutline = this.treeOutline;
+            child.treeOutline._rememberTreeElement(child);
+
+            var current = child.children[0];
+            while (current) {
+                current.treeOutline = this.treeOutline;
+                current.treeOutline._rememberTreeElement(current);
+                current = current.traverseNextTreeElement(false, child, true);
+            }
+
+            if (child.hasChildren && child.treeOutline._treeElementsExpandedState[child.identifier] !== undefined) child.expanded = child.treeOutline._treeElementsExpandedState[child.identifier];
+
+            if (this._childrenListNode) child._attach();
+
+            if (this.treeOutline.onadd) this.treeOutline.onadd(child);
+
+            if (isFirstChild && this.expanded) this.expand();
         }
+    }, {
+        key: "insertChild",
+        value: function insertChild(child, index) {
+            if (!child) throw "child can't be undefined or null";
 
-        var isFirstChild = !this.children.length;
+            var previousChild = index > 0 ? this.children[index - 1] : null;
+            if (previousChild) {
+                previousChild.nextSibling = child;
+                child.previousSibling = previousChild;
+            } else {
+                child.previousSibling = null;
+            }
 
-        this.children.push(child);
-        this.hasChildren = true;
-        child.parent = this;
-        child.treeOutline = this.treeOutline;
-        child.treeOutline._rememberTreeElement(child);
+            var nextChild = this.children[index];
+            if (nextChild) {
+                nextChild.previousSibling = child;
+                child.nextSibling = nextChild;
+            } else {
+                child.nextSibling = null;
+            }
 
-        var current = child.children[0];
-        while (current) {
-            current.treeOutline = this.treeOutline;
-            current.treeOutline._rememberTreeElement(current);
-            current = current.traverseNextTreeElement(false, child, true);
+            var isFirstChild = !this.children.length;
+
+            this.children.splice(index, 0, child);
+            this.hasChildren = true;
+            child.parent = this;
+            child.treeOutline = this.treeOutline;
+            child.treeOutline._rememberTreeElement(child);
+
+            var current = child.children[0];
+            while (current) {
+                current.treeOutline = this.treeOutline;
+                current.treeOutline._rememberTreeElement(current);
+                current = current.traverseNextTreeElement(false, child, true);
+            }
+
+            if (child.hasChildren && child.treeOutline._treeElementsExpandedState[child.identifier] !== undefined) child.expanded = child.treeOutline._treeElementsExpandedState[child.identifier];
+
+            if (this._childrenListNode) child._attach();
+
+            if (this.treeOutline.onadd) this.treeOutline.onadd(child);
+
+            if (isFirstChild && this.expanded) this.expand();
         }
+    }, {
+        key: "removeChildAtIndex",
+        value: function removeChildAtIndex(childIndex, suppressOnDeselect, suppressSelectSibling) {
+            if (childIndex < 0 || childIndex >= this.children.length) throw "childIndex out of range";
 
-        if (child.hasChildren && child.treeOutline._treeElementsExpandedState[child.identifier] !== undefined)
-            child.expanded = child.treeOutline._treeElementsExpandedState[child.identifier];
+            var child = this.children[childIndex];
+            this.children.splice(childIndex, 1);
 
-        if (this._childrenListNode)
-            child._attach();
+            var parent = child.parent;
+            if (child.deselect(suppressOnDeselect)) {
+                if (child.previousSibling && !suppressSelectSibling) child.previousSibling.select(true, false);else if (child.nextSibling && !suppressSelectSibling) child.nextSibling.select(true, false);else if (!suppressSelectSibling) parent.select(true, false);
+            }
 
-        if (this.treeOutline.onadd)
-            this.treeOutline.onadd(child);
-
-        if (isFirstChild && this.expanded)
-            this.expand();
-    }
-
-    insertChild(child, index)
-    {
-        if (!child)
-            throw "child can't be undefined or null";
-
-        var previousChild = (index > 0 ? this.children[index - 1] : null);
-        if (previousChild) {
-            previousChild.nextSibling = child;
-            child.previousSibling = previousChild;
-        } else {
-            child.previousSibling = null;
-        }
-
-        var nextChild = this.children[index];
-        if (nextChild) {
-            nextChild.previousSibling = child;
-            child.nextSibling = nextChild;
-        } else {
-            child.nextSibling = null;
-        }
-
-        var isFirstChild = !this.children.length;
-
-        this.children.splice(index, 0, child);
-        this.hasChildren = true;
-        child.parent = this;
-        child.treeOutline = this.treeOutline;
-        child.treeOutline._rememberTreeElement(child);
-
-        var current = child.children[0];
-        while (current) {
-            current.treeOutline = this.treeOutline;
-            current.treeOutline._rememberTreeElement(current);
-            current = current.traverseNextTreeElement(false, child, true);
-        }
-
-        if (child.hasChildren && child.treeOutline._treeElementsExpandedState[child.identifier] !== undefined)
-            child.expanded = child.treeOutline._treeElementsExpandedState[child.identifier];
-
-        if (this._childrenListNode)
-            child._attach();
-
-        if (this.treeOutline.onadd)
-            this.treeOutline.onadd(child);
-
-        if (isFirstChild && this.expanded)
-            this.expand();
-    }
-
-    removeChildAtIndex(childIndex, suppressOnDeselect, suppressSelectSibling)
-    {
-        if (childIndex < 0 || childIndex >= this.children.length)
-            throw "childIndex out of range";
-
-        var child = this.children[childIndex];
-        this.children.splice(childIndex, 1);
-
-        var parent = child.parent;
-        if (child.deselect(suppressOnDeselect)) {
-            if (child.previousSibling && !suppressSelectSibling)
-                child.previousSibling.select(true, false);
-            else if (child.nextSibling && !suppressSelectSibling)
-                child.nextSibling.select(true, false);
-            else if (!suppressSelectSibling)
-                parent.select(true, false);
-        }
-
-        if (child.previousSibling)
-            child.previousSibling.nextSibling = child.nextSibling;
-        if (child.nextSibling)
-            child.nextSibling.previousSibling = child.previousSibling;
-
-        if (child.treeOutline) {
-            child.treeOutline._forgetTreeElement(child);
-            child.treeOutline._forgetChildrenRecursive(child);
-        }
-
-        child._detach();
-        child.treeOutline = null;
-        child.parent = null;
-        child.nextSibling = null;
-        child.previousSibling = null;
-
-        if (this.treeOutline && this.treeOutline.onremove)
-            this.treeOutline.onremove(child);
-    }
-
-    removeChild(child, suppressOnDeselect, suppressSelectSibling)
-    {
-        if (!child)
-            throw "child can't be undefined or null";
-
-        var childIndex = this.children.indexOf(child);
-        if (childIndex === -1)
-            throw "child not found in this node's children";
-
-        this.removeChildAtIndex(childIndex, suppressOnDeselect, suppressSelectSibling);
-
-        if (!this.children.length) {
-            if (this._listItemNode)
-                this._listItemNode.classList.remove("parent");
-            this.hasChildren = false;
-        }
-    }
-
-    removeChildren(suppressOnDeselect)
-    {
-        var treeOutline = this.treeOutline;
-
-        for (var i = 0; i < this.children.length; ++i) {
-            var child = this.children[i];
-            child.deselect(suppressOnDeselect);
+            if (child.previousSibling) child.previousSibling.nextSibling = child.nextSibling;
+            if (child.nextSibling) child.nextSibling.previousSibling = child.previousSibling;
 
             if (child.treeOutline) {
                 child.treeOutline._forgetTreeElement(child);
@@ -220,302 +173,290 @@ WebInspector.TreeOutline = class TreeOutline extends WebInspector.Object
             child.nextSibling = null;
             child.previousSibling = null;
 
-            if (treeOutline && treeOutline.onremove)
-                treeOutline.onremove(child);
+            if (this.treeOutline && this.treeOutline.onremove) this.treeOutline.onremove(child);
         }
+    }, {
+        key: "removeChild",
+        value: function removeChild(child, suppressOnDeselect, suppressSelectSibling) {
+            if (!child) throw "child can't be undefined or null";
 
-        this.children = [];
-    }
+            var childIndex = this.children.indexOf(child);
+            if (childIndex === -1) throw "child not found in this node's children";
 
-    removeChildrenRecursive(suppressOnDeselect)
-    {
-        var childrenToRemove = this.children;
+            this.removeChildAtIndex(childIndex, suppressOnDeselect, suppressSelectSibling);
 
-        var treeOutline = this.treeOutline;
-
-        var child = this.children[0];
-        while (child) {
-            if (child.children.length)
-                childrenToRemove = childrenToRemove.concat(child.children);
-            child = child.traverseNextTreeElement(false, this, true);
-        }
-
-        for (var i = 0; i < childrenToRemove.length; ++i) {
-            child = childrenToRemove[i];
-            child.deselect(suppressOnDeselect);
-
-            if (child.treeOutline)
-                child.treeOutline._forgetTreeElement(child);
-
-            child._detach();
-            child.children = [];
-            child.treeOutline = null;
-            child.parent = null;
-            child.nextSibling = null;
-            child.previousSibling = null;
-
-            if (treeOutline && treeOutline.onremove)
-                treeOutline.onremove(child);
-        }
-
-        this.children = [];
-    }
-
-    _rememberTreeElement(element)
-    {
-        if (!this._knownTreeElements[element.identifier])
-            this._knownTreeElements[element.identifier] = [];
-
-        // check if the element is already known
-        var elements = this._knownTreeElements[element.identifier];
-        if (elements.indexOf(element) !== -1)
-            return;
-
-        // add the element
-        elements.push(element);
-    }
-
-    _forgetTreeElement(element)
-    {
-        if (this.selectedTreeElement === element)
-            this.selectedTreeElement = null;
-        if (this._knownTreeElements[element.identifier])
-            this._knownTreeElements[element.identifier].remove(element, true);
-    }
-
-    _forgetChildrenRecursive(parentElement)
-    {
-        var child = parentElement.children[0];
-        while (child) {
-            this._forgetTreeElement(child);
-            child = child.traverseNextTreeElement(false, parentElement, true);
-        }
-    }
-
-    getCachedTreeElement(representedObject)
-    {
-        if (!representedObject)
-            return null;
-
-        if (representedObject.__treeElementIdentifier) {
-            // If this representedObject has a tree element identifier, and it is a known TreeElement
-            // in our tree we can just return that tree element.
-            var elements = this._knownTreeElements[representedObject.__treeElementIdentifier];
-            if (elements) {
-                for (var i = 0; i < elements.length; ++i)
-                    if (elements[i].representedObject === representedObject)
-                        return elements[i];
+            if (!this.children.length) {
+                if (this._listItemNode) this._listItemNode.classList.remove("parent");
+                this.hasChildren = false;
             }
         }
-        return null;
-    }
+    }, {
+        key: "removeChildren",
+        value: function removeChildren(suppressOnDeselect) {
+            var treeOutline = this.treeOutline;
 
-    findTreeElement(representedObject, isAncestor, getParent)
-    {
-        if (!representedObject)
-            return null;
+            for (var i = 0; i < this.children.length; ++i) {
+                var child = this.children[i];
+                child.deselect(suppressOnDeselect);
 
-        var cachedElement = this.getCachedTreeElement(representedObject);
-        if (cachedElement)
-            return cachedElement;
+                if (child.treeOutline) {
+                    child.treeOutline._forgetTreeElement(child);
+                    child.treeOutline._forgetChildrenRecursive(child);
+                }
 
-        // The representedObject isn't known, so we start at the top of the tree and work down to find the first
-        // tree element that represents representedObject or one of its ancestors.
-        var item;
-        var found = false;
-        for (var i = 0; i < this.children.length; ++i) {
-            item = this.children[i];
-            if (item.representedObject === representedObject || (isAncestor && isAncestor(item.representedObject, representedObject))) {
-                found = true;
-                break;
+                child._detach();
+                child.treeOutline = null;
+                child.parent = null;
+                child.nextSibling = null;
+                child.previousSibling = null;
+
+                if (treeOutline && treeOutline.onremove) treeOutline.onremove(child);
+            }
+
+            this.children = [];
+        }
+    }, {
+        key: "removeChildrenRecursive",
+        value: function removeChildrenRecursive(suppressOnDeselect) {
+            var childrenToRemove = this.children;
+
+            var treeOutline = this.treeOutline;
+
+            var child = this.children[0];
+            while (child) {
+                if (child.children.length) childrenToRemove = childrenToRemove.concat(child.children);
+                child = child.traverseNextTreeElement(false, this, true);
+            }
+
+            for (var i = 0; i < childrenToRemove.length; ++i) {
+                child = childrenToRemove[i];
+                child.deselect(suppressOnDeselect);
+
+                if (child.treeOutline) child.treeOutline._forgetTreeElement(child);
+
+                child._detach();
+                child.children = [];
+                child.treeOutline = null;
+                child.parent = null;
+                child.nextSibling = null;
+                child.previousSibling = null;
+
+                if (treeOutline && treeOutline.onremove) treeOutline.onremove(child);
+            }
+
+            this.children = [];
+        }
+    }, {
+        key: "_rememberTreeElement",
+        value: function _rememberTreeElement(element) {
+            if (!this._knownTreeElements[element.identifier]) this._knownTreeElements[element.identifier] = [];
+
+            // check if the element is already known
+            var elements = this._knownTreeElements[element.identifier];
+            if (elements.indexOf(element) !== -1) return;
+
+            // add the element
+            elements.push(element);
+        }
+    }, {
+        key: "_forgetTreeElement",
+        value: function _forgetTreeElement(element) {
+            if (this.selectedTreeElement === element) this.selectedTreeElement = null;
+            if (this._knownTreeElements[element.identifier]) this._knownTreeElements[element.identifier].remove(element, true);
+        }
+    }, {
+        key: "_forgetChildrenRecursive",
+        value: function _forgetChildrenRecursive(parentElement) {
+            var child = parentElement.children[0];
+            while (child) {
+                this._forgetTreeElement(child);
+                child = child.traverseNextTreeElement(false, parentElement, true);
             }
         }
+    }, {
+        key: "getCachedTreeElement",
+        value: function getCachedTreeElement(representedObject) {
+            if (!representedObject) return null;
 
-        if (!found)
-            return null;
-
-        // Make sure the item that we found is connected to the root of the tree.
-        // Build up a list of representedObject's ancestors that aren't already in our tree.
-        var ancestors = [];
-        var currentObject = representedObject;
-        while (currentObject) {
-            ancestors.unshift(currentObject);
-            if (currentObject === item.representedObject)
-                break;
-            currentObject = getParent(currentObject);
-        }
-
-        // For each of those ancestors we populate them to fill in the tree.
-        for (var i = 0; i < ancestors.length; ++i) {
-            // Make sure we don't call findTreeElement with the same representedObject
-            // again, to prevent infinite recursion.
-            if (ancestors[i] === representedObject)
-                continue;
-
-            // FIXME: we could do something faster than findTreeElement since we will know the next
-            // ancestor exists in the tree.
-            item = this.findTreeElement(ancestors[i], isAncestor, getParent);
-            if (item)
-                item.onpopulate();
-        }
-
-        return this.getCachedTreeElement(representedObject);
-    }
-
-    _treeElementDidChange(treeElement)
-    {
-        if (treeElement.treeOutline !== this)
-            return;
-
-        if (this.onchange)
-            this.onchange(treeElement);
-    }
-
-    treeElementFromNode(node)
-    {
-        var listNode = node.enclosingNodeOrSelfWithNodeNameInArray(["ol", "li"]);
-        if (listNode)
-            return listNode.parentTreeElement || listNode.treeElement;
-        return null;
-    }
-
-    treeElementFromPoint(x, y)
-    {
-        var node = this._childrenListNode.ownerDocument.elementFromPoint(x, y);
-        if (!node)
-            return null;
-
-        return this.treeElementFromNode(node);
-    }
-
-    _treeKeyDown(event)
-    {
-        if (event.target !== this._childrenListNode)
-            return;
-
-        if (!this.selectedTreeElement || event.shiftKey || event.metaKey || event.ctrlKey)
-            return;
-
-        var handled = false;
-        var nextSelectedElement;
-        if (event.keyIdentifier === "Up" && !event.altKey) {
-            nextSelectedElement = this.selectedTreeElement.traversePreviousTreeElement(true);
-            while (nextSelectedElement && !nextSelectedElement.selectable)
-                nextSelectedElement = nextSelectedElement.traversePreviousTreeElement(!this.expandTreeElementsWhenArrowing);
-            handled = nextSelectedElement ? true : false;
-        } else if (event.keyIdentifier === "Down" && !event.altKey) {
-            nextSelectedElement = this.selectedTreeElement.traverseNextTreeElement(true);
-            while (nextSelectedElement && !nextSelectedElement.selectable)
-                nextSelectedElement = nextSelectedElement.traverseNextTreeElement(!this.expandTreeElementsWhenArrowing);
-            handled = nextSelectedElement ? true : false;
-        } else if (event.keyIdentifier === "Left") {
-            if (this.selectedTreeElement.expanded) {
-                if (event.altKey)
-                    this.selectedTreeElement.collapseRecursively();
-                else
-                    this.selectedTreeElement.collapse();
-                handled = true;
-            } else if (this.selectedTreeElement.parent && !this.selectedTreeElement.parent.root) {
-                handled = true;
-                if (this.selectedTreeElement.parent.selectable) {
-                    nextSelectedElement = this.selectedTreeElement.parent;
-                    while (nextSelectedElement && !nextSelectedElement.selectable)
-                        nextSelectedElement = nextSelectedElement.parent;
-                    handled = nextSelectedElement ? true : false;
-                } else if (this.selectedTreeElement.parent)
-                    this.selectedTreeElement.parent.collapse();
-            }
-        } else if (event.keyIdentifier === "Right") {
-            if (!this.selectedTreeElement.revealed()) {
-                this.selectedTreeElement.reveal();
-                handled = true;
-            } else if (this.selectedTreeElement.hasChildren) {
-                handled = true;
-                if (this.selectedTreeElement.expanded) {
-                    nextSelectedElement = this.selectedTreeElement.children[0];
-                    while (nextSelectedElement && !nextSelectedElement.selectable)
-                        nextSelectedElement = nextSelectedElement.nextSibling;
-                    handled = nextSelectedElement ? true : false;
-                } else {
-                    if (event.altKey)
-                        this.selectedTreeElement.expandRecursively();
-                    else
-                        this.selectedTreeElement.expand();
+            if (representedObject.__treeElementIdentifier) {
+                // If this representedObject has a tree element identifier, and it is a known TreeElement
+                // in our tree we can just return that tree element.
+                var elements = this._knownTreeElements[representedObject.__treeElementIdentifier];
+                if (elements) {
+                    for (var i = 0; i < elements.length; ++i) if (elements[i].representedObject === representedObject) return elements[i];
                 }
             }
-        } else if (event.keyCode === 8 /* Backspace */ || event.keyCode === 46 /* Delete */) {
-            if (this.selectedTreeElement.ondelete)
-                handled = this.selectedTreeElement.ondelete();
-            if (!handled && this.treeOutline.ondelete)
-                handled = this.treeOutline.ondelete(this.selectedTreeElement);
-        } else if (isEnterKey(event)) {
-            if (this.selectedTreeElement.onenter)
-                handled = this.selectedTreeElement.onenter();
-            if (!handled && this.treeOutline.onenter)
-                handled = this.treeOutline.onenter(this.selectedTreeElement);
-        } else if (event.keyIdentifier === "U+0020" /* Space */) {
-            if (this.selectedTreeElement.onspace)
-                handled = this.selectedTreeElement.onspace();
-            if (!handled && this.treeOutline.onspace)
-                handled = this.treeOutline.onspace(this.selectedTreeElement);
+            return null;
         }
+    }, {
+        key: "findTreeElement",
+        value: function findTreeElement(representedObject, isAncestor, getParent) {
+            if (!representedObject) return null;
 
-        if (nextSelectedElement) {
-            nextSelectedElement.reveal();
-            nextSelectedElement.select(false, true);
+            var cachedElement = this.getCachedTreeElement(representedObject);
+            if (cachedElement) return cachedElement;
+
+            // The representedObject isn't known, so we start at the top of the tree and work down to find the first
+            // tree element that represents representedObject or one of its ancestors.
+            var item;
+            var found = false;
+            for (var i = 0; i < this.children.length; ++i) {
+                item = this.children[i];
+                if (item.representedObject === representedObject || isAncestor && isAncestor(item.representedObject, representedObject)) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) return null;
+
+            // Make sure the item that we found is connected to the root of the tree.
+            // Build up a list of representedObject's ancestors that aren't already in our tree.
+            var ancestors = [];
+            var currentObject = representedObject;
+            while (currentObject) {
+                ancestors.unshift(currentObject);
+                if (currentObject === item.representedObject) break;
+                currentObject = getParent(currentObject);
+            }
+
+            // For each of those ancestors we populate them to fill in the tree.
+            for (var i = 0; i < ancestors.length; ++i) {
+                // Make sure we don't call findTreeElement with the same representedObject
+                // again, to prevent infinite recursion.
+                if (ancestors[i] === representedObject) continue;
+
+                // FIXME: we could do something faster than findTreeElement since we will know the next
+                // ancestor exists in the tree.
+                item = this.findTreeElement(ancestors[i], isAncestor, getParent);
+                if (item) item.onpopulate();
+            }
+
+            return this.getCachedTreeElement(representedObject);
         }
+    }, {
+        key: "_treeElementDidChange",
+        value: function _treeElementDidChange(treeElement) {
+            if (treeElement.treeOutline !== this) return;
 
-        if (handled) {
-            event.preventDefault();
-            event.stopPropagation();
+            if (this.onchange) this.onchange(treeElement);
         }
-    }
+    }, {
+        key: "treeElementFromNode",
+        value: function treeElementFromNode(node) {
+            var listNode = node.enclosingNodeOrSelfWithNodeNameInArray(["ol", "li"]);
+            if (listNode) return listNode.parentTreeElement || listNode.treeElement;
+            return null;
+        }
+    }, {
+        key: "treeElementFromPoint",
+        value: function treeElementFromPoint(x, y) {
+            var node = this._childrenListNode.ownerDocument.elementFromPoint(x, y);
+            if (!node) return null;
 
-    expand()
-    {
-        // this is the root, do nothing
-    }
+            return this.treeElementFromNode(node);
+        }
+    }, {
+        key: "_treeKeyDown",
+        value: function _treeKeyDown(event) {
+            if (event.target !== this._childrenListNode) return;
 
-    collapse()
-    {
-        // this is the root, do nothing
-    }
+            if (!this.selectedTreeElement || event.shiftKey || event.metaKey || event.ctrlKey) return;
 
-    revealed()
-    {
-        return true;
-    }
+            var handled = false;
+            var nextSelectedElement;
+            if (event.keyIdentifier === "Up" && !event.altKey) {
+                nextSelectedElement = this.selectedTreeElement.traversePreviousTreeElement(true);
+                while (nextSelectedElement && !nextSelectedElement.selectable) nextSelectedElement = nextSelectedElement.traversePreviousTreeElement(!this.expandTreeElementsWhenArrowing);
+                handled = nextSelectedElement ? true : false;
+            } else if (event.keyIdentifier === "Down" && !event.altKey) {
+                nextSelectedElement = this.selectedTreeElement.traverseNextTreeElement(true);
+                while (nextSelectedElement && !nextSelectedElement.selectable) nextSelectedElement = nextSelectedElement.traverseNextTreeElement(!this.expandTreeElementsWhenArrowing);
+                handled = nextSelectedElement ? true : false;
+            } else if (event.keyIdentifier === "Left") {
+                if (this.selectedTreeElement.expanded) {
+                    if (event.altKey) this.selectedTreeElement.collapseRecursively();else this.selectedTreeElement.collapse();
+                    handled = true;
+                } else if (this.selectedTreeElement.parent && !this.selectedTreeElement.parent.root) {
+                    handled = true;
+                    if (this.selectedTreeElement.parent.selectable) {
+                        nextSelectedElement = this.selectedTreeElement.parent;
+                        while (nextSelectedElement && !nextSelectedElement.selectable) nextSelectedElement = nextSelectedElement.parent;
+                        handled = nextSelectedElement ? true : false;
+                    } else if (this.selectedTreeElement.parent) this.selectedTreeElement.parent.collapse();
+                }
+            } else if (event.keyIdentifier === "Right") {
+                if (!this.selectedTreeElement.revealed()) {
+                    this.selectedTreeElement.reveal();
+                    handled = true;
+                } else if (this.selectedTreeElement.hasChildren) {
+                    handled = true;
+                    if (this.selectedTreeElement.expanded) {
+                        nextSelectedElement = this.selectedTreeElement.children[0];
+                        while (nextSelectedElement && !nextSelectedElement.selectable) nextSelectedElement = nextSelectedElement.nextSibling;
+                        handled = nextSelectedElement ? true : false;
+                    } else {
+                        if (event.altKey) this.selectedTreeElement.expandRecursively();else this.selectedTreeElement.expand();
+                    }
+                }
+            } else if (event.keyCode === 8 /* Backspace */ || event.keyCode === 46 /* Delete */) {
+                if (this.selectedTreeElement.ondelete) handled = this.selectedTreeElement.ondelete();
+                if (!handled && this.treeOutline.ondelete) handled = this.treeOutline.ondelete(this.selectedTreeElement);
+            } else if (isEnterKey(event)) {
+                if (this.selectedTreeElement.onenter) handled = this.selectedTreeElement.onenter();
+                if (!handled && this.treeOutline.onenter) handled = this.treeOutline.onenter(this.selectedTreeElement);
+            } else if (event.keyIdentifier === "U+0020" /* Space */) {
+                if (this.selectedTreeElement.onspace) handled = this.selectedTreeElement.onspace();
+                if (!handled && this.treeOutline.onspace) handled = this.treeOutline.onspace(this.selectedTreeElement);
+            }
 
-    reveal()
-    {
-        // this is the root, do nothing
-    }
+            if (nextSelectedElement) {
+                nextSelectedElement.reveal();
+                nextSelectedElement.select(false, true);
+            }
 
-    select()
-    {
-        // this is the root, do nothing
-    }
+            if (handled) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+    }, {
+        key: "expand",
+        value: function expand() {}
+    }, {
+        key: "collapse",
+        value: function collapse() {}
+    }, {
+        key: "revealed",
+        value: function revealed() {
+            return true;
+        }
+    }, {
+        key: "reveal",
+        value: function reveal() {}
+    }, {
+        key: "select",
+        value: function select() {}
+    }, {
+        key: "revealAndSelect",
+        value: function revealAndSelect(omitFocus) {}
+    }]);
 
-    revealAndSelect(omitFocus)
-    {
-        // this is the root, do nothing
-    }
-};
+    return TreeOutline;
+})(WebInspector.Object);
 
 WebInspector.TreeOutline._knownTreeElementNextIdentifier = 1;
 
-WebInspector.TreeElement = class TreeElement extends WebInspector.Object
-{
-    constructor(title, representedObject, hasChildren)
-    {
-        super();
+WebInspector.TreeElement = (function (_WebInspector$Object2) {
+    function TreeElement(title, representedObject, hasChildren) {
+        _classCallCheck(this, TreeElement);
+
+        _get(Object.getPrototypeOf(TreeElement.prototype), "constructor", this).call(this);
 
         this._title = title;
-        this.representedObject = (representedObject || {});
+        this.representedObject = representedObject || {};
 
-        if (this.representedObject.__treeElementIdentifier)
-            this.identifier = this.representedObject.__treeElementIdentifier;
-        else {
+        if (this.representedObject.__treeElementIdentifier) this.identifier = this.representedObject.__treeElementIdentifier;else {
             this.identifier = WebInspector.TreeOutline._knownTreeElementNextIdentifier++;
             this.representedObject.__treeElementIdentifier = this.identifier;
         }
@@ -533,568 +474,494 @@ WebInspector.TreeElement = class TreeElement extends WebInspector.Object
         this._listItemNode = null;
     }
 
-    // Methods
+    _inherits(TreeElement, _WebInspector$Object2);
 
-    appendChild() { return WebInspector.TreeOutline.prototype.appendChild.apply(this, arguments); }
-    insertChild() { return WebInspector.TreeOutline.prototype.insertChild.apply(this, arguments); }
-    removeChild() { return WebInspector.TreeOutline.prototype.removeChild.apply(this, arguments); }
-    removeChildAtIndex() { return WebInspector.TreeOutline.prototype.removeChildAtIndex.apply(this, arguments); }
-    removeChildren() { return WebInspector.TreeOutline.prototype.removeChildren.apply(this, arguments); }
-    removeChildrenRecursive() { return WebInspector.TreeOutline.prototype.removeChildrenRecursive.apply(this, arguments); }
+    _createClass(TreeElement, [{
+        key: "appendChild",
 
-    get arrowToggleWidth()
-    {
-        return 10;
-    }
+        // Methods
 
-    get selectable()
-    {
-        if (this._hidden)
-            return false;
-        return this._selectable;
-    }
-
-    set selectable(x)
-    {
-        this._selectable = x;
-    }
-
-    get listItemElement()
-    {
-        return this._listItemNode;
-    }
-
-    get childrenListElement()
-    {
-        return this._childrenListNode;
-    }
-
-    get title()
-    {
-        return this._title;
-    }
-
-    set title(x)
-    {
-        this._title = x;
-        this._setListItemNodeContent();
-        this.didChange();
-    }
-
-    get titleHTML()
-    {
-        return this._titleHTML;
-    }
-
-    set titleHTML(x)
-    {
-        this._titleHTML = x;
-        this._setListItemNodeContent();
-        this.didChange();
-    }
-
-    get tooltip()
-    {
-        return this._tooltip;
-    }
-
-    set tooltip(x)
-    {
-        this._tooltip = x;
-        if (this._listItemNode)
-            this._listItemNode.title = x ? x : "";
-        this.didChange();
-    }
-
-    get hasChildren()
-    {
-        return this._hasChildren;
-    }
-
-    set hasChildren(x)
-    {
-        if (this._hasChildren === x)
-            return;
-
-        this._hasChildren = x;
-
-        if (!this._listItemNode)
-            return;
-
-        if (x)
-            this._listItemNode.classList.add("parent");
-        else {
-            this._listItemNode.classList.remove("parent");
-            this.collapse();
+        value: function appendChild() {
+            return WebInspector.TreeOutline.prototype.appendChild.apply(this, arguments);
         }
-
-        this.didChange();
-    }
-
-    get hidden()
-    {
-        return this._hidden;
-    }
-
-    set hidden(x)
-    {
-        if (this._hidden === x)
-            return;
-
-        this._hidden = x;
-
-        if (x) {
-            if (this._listItemNode)
-                this._listItemNode.classList.add("hidden");
-            if (this._childrenListNode)
-                this._childrenListNode.classList.add("hidden");
-        } else {
-            if (this._listItemNode)
-                this._listItemNode.classList.remove("hidden");
-            if (this._childrenListNode)
-                this._childrenListNode.classList.remove("hidden");
+    }, {
+        key: "insertChild",
+        value: function insertChild() {
+            return WebInspector.TreeOutline.prototype.insertChild.apply(this, arguments);
         }
-
-        if (this.treeOutline && this.treeOutline.onhidden)
-            this.treeOutline.onhidden(this, x);
-    }
-
-    get shouldRefreshChildren()
-    {
-        return this._shouldRefreshChildren;
-    }
-
-    set shouldRefreshChildren(x)
-    {
-        this._shouldRefreshChildren = x;
-        if (x && this.expanded)
-            this.expand();
-    }
-
-    _fireDidChange()
-    {
-        delete this._didChangeTimeoutIdentifier;
-
-        if (this.treeOutline)
-            this.treeOutline._treeElementDidChange(this);
-    }
-
-    didChange()
-    {
-        if (!this.treeOutline)
-            return;
-
-        // Prevent telling the TreeOutline multiple times in a row by delaying it with a timeout.
-        if (!this._didChangeTimeoutIdentifier)
-            this._didChangeTimeoutIdentifier = setTimeout(this._fireDidChange.bind(this), 0);
-    }
-
-    _setListItemNodeContent()
-    {
-        if (!this._listItemNode)
-            return;
-
-        if (!this._titleHTML && !this._title)
-            this._listItemNode.removeChildren();
-        else if (typeof this._titleHTML === "string")
-            this._listItemNode.innerHTML = this._titleHTML;
-        else if (typeof this._title === "string")
-            this._listItemNode.textContent = this._title;
-        else {
-            this._listItemNode.removeChildren();
-            if (this._title.parentNode)
-                this._title.parentNode.removeChild(this._title);
-            this._listItemNode.appendChild(this._title);
+    }, {
+        key: "removeChild",
+        value: function removeChild() {
+            return WebInspector.TreeOutline.prototype.removeChild.apply(this, arguments);
         }
-    }
+    }, {
+        key: "removeChildAtIndex",
+        value: function removeChildAtIndex() {
+            return WebInspector.TreeOutline.prototype.removeChildAtIndex.apply(this, arguments);
+        }
+    }, {
+        key: "removeChildren",
+        value: function removeChildren() {
+            return WebInspector.TreeOutline.prototype.removeChildren.apply(this, arguments);
+        }
+    }, {
+        key: "removeChildrenRecursive",
+        value: function removeChildrenRecursive() {
+            return WebInspector.TreeOutline.prototype.removeChildrenRecursive.apply(this, arguments);
+        }
+    }, {
+        key: "_fireDidChange",
+        value: function _fireDidChange() {
+            delete this._didChangeTimeoutIdentifier;
 
-    _attach()
-    {
-        if (!this._listItemNode || this.parent._shouldRefreshChildren) {
-            if (this._listItemNode && this._listItemNode.parentNode)
-                this._listItemNode.parentNode.removeChild(this._listItemNode);
+            if (this.treeOutline) this.treeOutline._treeElementDidChange(this);
+        }
+    }, {
+        key: "didChange",
+        value: function didChange() {
+            if (!this.treeOutline) return;
 
-            this._listItemNode = this.treeOutline._childrenListNode.ownerDocument.createElement("li");
-            this._listItemNode.treeElement = this;
-            this._setListItemNodeContent();
-            this._listItemNode.title = this._tooltip ? this._tooltip : "";
+            // Prevent telling the TreeOutline multiple times in a row by delaying it with a timeout.
+            if (!this._didChangeTimeoutIdentifier) this._didChangeTimeoutIdentifier = setTimeout(this._fireDidChange.bind(this), 0);
+        }
+    }, {
+        key: "_setListItemNodeContent",
+        value: function _setListItemNodeContent() {
+            if (!this._listItemNode) return;
 
-            if (this.hidden)
-                this._listItemNode.classList.add("hidden");
-            if (this.hasChildren)
-                this._listItemNode.classList.add("parent");
-            if (this.expanded)
+            if (!this._titleHTML && !this._title) this._listItemNode.removeChildren();else if (typeof this._titleHTML === "string") this._listItemNode.innerHTML = this._titleHTML;else if (typeof this._title === "string") this._listItemNode.textContent = this._title;else {
+                this._listItemNode.removeChildren();
+                if (this._title.parentNode) this._title.parentNode.removeChild(this._title);
+                this._listItemNode.appendChild(this._title);
+            }
+        }
+    }, {
+        key: "_attach",
+        value: function _attach() {
+            if (!this._listItemNode || this.parent._shouldRefreshChildren) {
+                if (this._listItemNode && this._listItemNode.parentNode) this._listItemNode.parentNode.removeChild(this._listItemNode);
+
+                this._listItemNode = this.treeOutline._childrenListNode.ownerDocument.createElement("li");
+                this._listItemNode.treeElement = this;
+                this._setListItemNodeContent();
+                this._listItemNode.title = this._tooltip ? this._tooltip : "";
+
+                if (this.hidden) this._listItemNode.classList.add("hidden");
+                if (this.hasChildren) this._listItemNode.classList.add("parent");
+                if (this.expanded) this._listItemNode.classList.add("expanded");
+                if (this.selected) this._listItemNode.classList.add("selected");
+
+                this._listItemNode.addEventListener("mousedown", WebInspector.TreeElement.treeElementMouseDown);
+                this._listItemNode.addEventListener("click", WebInspector.TreeElement.treeElementToggled);
+                this._listItemNode.addEventListener("dblclick", WebInspector.TreeElement.treeElementDoubleClicked);
+
+                if (this.onattach) this.onattach(this);
+            }
+
+            var nextSibling = null;
+            if (this.nextSibling && this.nextSibling._listItemNode && this.nextSibling._listItemNode.parentNode === this.parent._childrenListNode) nextSibling = this.nextSibling._listItemNode;
+            this.parent._childrenListNode.insertBefore(this._listItemNode, nextSibling);
+            if (this._childrenListNode) this.parent._childrenListNode.insertBefore(this._childrenListNode, this._listItemNode.nextSibling);
+            if (this.selected) this.select();
+            if (this.expanded) this.expand();
+        }
+    }, {
+        key: "_detach",
+        value: function _detach() {
+            if (this.ondetach) this.ondetach(this);
+            if (this._listItemNode && this._listItemNode.parentNode) this._listItemNode.parentNode.removeChild(this._listItemNode);
+            if (this._childrenListNode && this._childrenListNode.parentNode) this._childrenListNode.parentNode.removeChild(this._childrenListNode);
+        }
+    }, {
+        key: "collapse",
+        value: function collapse() {
+            if (this._listItemNode) this._listItemNode.classList.remove("expanded");
+            if (this._childrenListNode) this._childrenListNode.classList.remove("expanded");
+
+            this.expanded = false;
+            if (this.treeOutline) this.treeOutline._treeElementsExpandedState[this.identifier] = false;
+
+            if (this.oncollapse) this.oncollapse(this);
+
+            if (this.treeOutline && this.treeOutline.oncollapse) this.treeOutline.oncollapse(this);
+        }
+    }, {
+        key: "collapseRecursively",
+        value: function collapseRecursively() {
+            var item = this;
+            while (item) {
+                if (item.expanded) item.collapse();
+                item = item.traverseNextTreeElement(false, this, true);
+            }
+        }
+    }, {
+        key: "expand",
+        value: function expand() {
+            if (this.expanded && !this._shouldRefreshChildren && this._childrenListNode) return;
+
+            // Set this before onpopulate. Since onpopulate can add elements and call onadd, this makes
+            // sure the expanded flag is true before calling those functions. This prevents the possibility
+            // of an infinite loop if onpopulate or onadd were to call expand.
+
+            this.expanded = true;
+            if (this.treeOutline) this.treeOutline._treeElementsExpandedState[this.identifier] = true;
+
+            // If there are no children, return. We will be expanded once we have children.
+            if (!this.hasChildren) return;
+
+            if (this.treeOutline && (!this._childrenListNode || this._shouldRefreshChildren)) {
+                if (this._childrenListNode && this._childrenListNode.parentNode) this._childrenListNode.parentNode.removeChild(this._childrenListNode);
+
+                this._childrenListNode = this.treeOutline._childrenListNode.ownerDocument.createElement("ol");
+                this._childrenListNode.parentTreeElement = this;
+                this._childrenListNode.classList.add("children");
+
+                if (this.hidden) this._childrenListNode.classList.add("hidden");
+
+                this.onpopulate();
+
+                for (var i = 0; i < this.children.length; ++i) this.children[i]._attach();
+
+                delete this._shouldRefreshChildren;
+            }
+
+            if (this._listItemNode) {
                 this._listItemNode.classList.add("expanded");
-            if (this.selected)
-                this._listItemNode.classList.add("selected");
+                if (this._childrenListNode && this._childrenListNode.parentNode !== this._listItemNode.parentNode) this.parent._childrenListNode.insertBefore(this._childrenListNode, this._listItemNode.nextSibling);
+            }
 
-            this._listItemNode.addEventListener("mousedown", WebInspector.TreeElement.treeElementMouseDown);
-            this._listItemNode.addEventListener("click", WebInspector.TreeElement.treeElementToggled);
-            this._listItemNode.addEventListener("dblclick", WebInspector.TreeElement.treeElementDoubleClicked);
+            if (this._childrenListNode) this._childrenListNode.classList.add("expanded");
 
-            if (this.onattach)
-                this.onattach(this);
+            if (this.onexpand) this.onexpand(this);
+
+            if (this.treeOutline && this.treeOutline.onexpand) this.treeOutline.onexpand(this);
         }
+    }, {
+        key: "expandRecursively",
+        value: function expandRecursively(maxDepth) {
+            var item = this;
+            var info = {};
+            var depth = 0;
 
-        var nextSibling = null;
-        if (this.nextSibling && this.nextSibling._listItemNode && this.nextSibling._listItemNode.parentNode === this.parent._childrenListNode)
-            nextSibling = this.nextSibling._listItemNode;
-        this.parent._childrenListNode.insertBefore(this._listItemNode, nextSibling);
-        if (this._childrenListNode)
-            this.parent._childrenListNode.insertBefore(this._childrenListNode, this._listItemNode.nextSibling);
-        if (this.selected)
-            this.select();
-        if (this.expanded)
-            this.expand();
-    }
+            // The Inspector uses TreeOutlines to represents object properties, so recursive expansion
+            // in some case can be infinite, since JavaScript objects can hold circular references.
+            // So default to a recursion cap of 3 levels, since that gives fairly good results.
+            if (maxDepth === undefined) maxDepth = 3;
 
-    _detach()
-    {
-        if (this.ondetach)
-            this.ondetach(this);
-        if (this._listItemNode && this._listItemNode.parentNode)
-            this._listItemNode.parentNode.removeChild(this._listItemNode);
-        if (this._childrenListNode && this._childrenListNode.parentNode)
-            this._childrenListNode.parentNode.removeChild(this._childrenListNode);
-    }
-
-    static treeElementMouseDown(event)
-    {
-        var element = event.currentTarget;
-        if (!element || !element.treeElement || !element.treeElement.selectable)
-            return;
-
-        if (element.treeElement.isEventWithinDisclosureTriangle(event)) {
-            event.preventDefault();
-            return;
+            while (item) {
+                if (depth < maxDepth) item.expand();
+                item = item.traverseNextTreeElement(false, this, depth >= maxDepth, info);
+                depth += info.depthChange;
+            }
         }
+    }, {
+        key: "hasAncestor",
+        value: function hasAncestor(ancestor) {
+            if (!ancestor) return false;
 
-        element.treeElement.selectOnMouseDown(event);
-    }
+            var currentNode = this.parent;
+            while (currentNode) {
+                if (ancestor === currentNode) return true;
+                currentNode = currentNode.parent;
+            }
 
-    static treeElementToggled(event)
-    {
-        var element = event.currentTarget;
-        if (!element || !element.treeElement)
-            return;
-
-        var toggleOnClick = element.treeElement.toggleOnClick && !element.treeElement.selectable;
-        var isInTriangle = element.treeElement.isEventWithinDisclosureTriangle(event);
-        if (!toggleOnClick && !isInTriangle)
-            return;
-
-        if (element.treeElement.expanded) {
-            if (event.altKey)
-                element.treeElement.collapseRecursively();
-            else
-                element.treeElement.collapse();
-        } else {
-            if (event.altKey)
-                element.treeElement.expandRecursively();
-            else
-                element.treeElement.expand();
-        }
-        event.stopPropagation();
-    }
-
-    static treeElementDoubleClicked(event)
-    {
-        var element = event.currentTarget;
-        if (!element || !element.treeElement)
-            return;
-
-        if (element.treeElement.isEventWithinDisclosureTriangle(event))
-            return;
-
-        if (element.treeElement.ondblclick)
-            element.treeElement.ondblclick.call(element.treeElement, event);
-        else if (element.treeElement.hasChildren && !element.treeElement.expanded)
-            element.treeElement.expand();
-    }
-
-    collapse()
-    {
-        if (this._listItemNode)
-            this._listItemNode.classList.remove("expanded");
-        if (this._childrenListNode)
-            this._childrenListNode.classList.remove("expanded");
-
-        this.expanded = false;
-        if (this.treeOutline)
-            this.treeOutline._treeElementsExpandedState[this.identifier] = false;
-
-        if (this.oncollapse)
-            this.oncollapse(this);
-
-        if (this.treeOutline && this.treeOutline.oncollapse)
-            this.treeOutline.oncollapse(this);
-    }
-
-    collapseRecursively()
-    {
-        var item = this;
-        while (item) {
-            if (item.expanded)
-                item.collapse();
-            item = item.traverseNextTreeElement(false, this, true);
-        }
-    }
-
-    expand()
-    {
-        if (this.expanded && !this._shouldRefreshChildren && this._childrenListNode)
-            return;
-
-        // Set this before onpopulate. Since onpopulate can add elements and call onadd, this makes
-        // sure the expanded flag is true before calling those functions. This prevents the possibility
-        // of an infinite loop if onpopulate or onadd were to call expand.
-
-        this.expanded = true;
-        if (this.treeOutline)
-            this.treeOutline._treeElementsExpandedState[this.identifier] = true;
-
-        // If there are no children, return. We will be expanded once we have children.
-        if (!this.hasChildren)
-            return;
-
-        if (this.treeOutline && (!this._childrenListNode || this._shouldRefreshChildren)) {
-            if (this._childrenListNode && this._childrenListNode.parentNode)
-                this._childrenListNode.parentNode.removeChild(this._childrenListNode);
-
-            this._childrenListNode = this.treeOutline._childrenListNode.ownerDocument.createElement("ol");
-            this._childrenListNode.parentTreeElement = this;
-            this._childrenListNode.classList.add("children");
-
-            if (this.hidden)
-                this._childrenListNode.classList.add("hidden");
-
-            this.onpopulate();
-
-            for (var i = 0; i < this.children.length; ++i)
-                this.children[i]._attach();
-
-            delete this._shouldRefreshChildren;
-        }
-
-        if (this._listItemNode) {
-            this._listItemNode.classList.add("expanded");
-            if (this._childrenListNode && this._childrenListNode.parentNode !== this._listItemNode.parentNode)
-                this.parent._childrenListNode.insertBefore(this._childrenListNode, this._listItemNode.nextSibling);
-        }
-
-        if (this._childrenListNode)
-            this._childrenListNode.classList.add("expanded");
-
-        if (this.onexpand)
-            this.onexpand(this);
-
-        if (this.treeOutline && this.treeOutline.onexpand)
-            this.treeOutline.onexpand(this);
-    }
-
-    expandRecursively(maxDepth)
-    {
-        var item = this;
-        var info = {};
-        var depth = 0;
-
-        // The Inspector uses TreeOutlines to represents object properties, so recursive expansion
-        // in some case can be infinite, since JavaScript objects can hold circular references.
-        // So default to a recursion cap of 3 levels, since that gives fairly good results.
-        if (maxDepth === undefined)
-            maxDepth = 3;
-
-        while (item) {
-            if (depth < maxDepth)
-                item.expand();
-            item = item.traverseNextTreeElement(false, this, (depth >= maxDepth), info);
-            depth += info.depthChange;
-        }
-    }
-
-    hasAncestor(ancestor)
-        {
-        if (!ancestor)
             return false;
-
-        var currentNode = this.parent;
-        while (currentNode) {
-            if (ancestor === currentNode)
-                return true;
-            currentNode = currentNode.parent;
         }
+    }, {
+        key: "reveal",
+        value: function reveal() {
+            var currentAncestor = this.parent;
+            while (currentAncestor && !currentAncestor.root) {
+                if (!currentAncestor.expanded) currentAncestor.expand();
+                currentAncestor = currentAncestor.parent;
+            }
 
-        return false;
-    }
-
-    reveal()
-    {
-        var currentAncestor = this.parent;
-        while (currentAncestor && !currentAncestor.root) {
-            if (!currentAncestor.expanded)
-                currentAncestor.expand();
-            currentAncestor = currentAncestor.parent;
+            if (this.onreveal) this.onreveal(this);
         }
+    }, {
+        key: "revealed",
+        value: function revealed() {
+            if (this.hidden) return false;
 
-        if (this.onreveal)
-            this.onreveal(this);
-    }
+            var currentAncestor = this.parent;
+            while (currentAncestor && !currentAncestor.root) {
+                if (!currentAncestor.expanded) return false;
+                if (currentAncestor.hidden) return false;
+                currentAncestor = currentAncestor.parent;
+            }
 
-    revealed()
-    {
-        if (this.hidden)
-            return false;
-
-        var currentAncestor = this.parent;
-        while (currentAncestor && !currentAncestor.root) {
-            if (!currentAncestor.expanded)
-                return false;
-            if (currentAncestor.hidden)
-                return false;
-            currentAncestor = currentAncestor.parent;
+            return true;
         }
-
-        return true;
-    }
-
-    selectOnMouseDown(event)
-    {
-        this.select(false, true);
-    }
-
-    select(omitFocus, selectedByUser, suppressOnSelect, suppressOnDeselect)
-    {
-        if (!this.treeOutline || !this.selectable)
-            return;
-
-        if (this.selected && !this.treeOutline.allowsRepeatSelection)
-            return;
-
-        if (!omitFocus)
-            this.treeOutline._childrenListNode.focus();
-
-        // Focusing on another node may detach "this" from tree.
-        var treeOutline = this.treeOutline;
-        if (!treeOutline)
-            return;
-
-        treeOutline.processingSelectionChange = true;
-
-        if (!this.selected) {
-            if (treeOutline.selectedTreeElement)
-                treeOutline.selectedTreeElement.deselect(suppressOnDeselect);
-
-            this.selected = true;
-            treeOutline.selectedTreeElement = this;
-
-            if (this._listItemNode)
-                this._listItemNode.classList.add("selected");
+    }, {
+        key: "selectOnMouseDown",
+        value: function selectOnMouseDown(event) {
+            this.select(false, true);
         }
+    }, {
+        key: "select",
+        value: function select(omitFocus, selectedByUser, suppressOnSelect, suppressOnDeselect) {
+            if (!this.treeOutline || !this.selectable) return;
 
-        if (this.onselect && !suppressOnSelect)
-            this.onselect(this, selectedByUser);
+            if (this.selected && !this.treeOutline.allowsRepeatSelection) return;
 
-        if (treeOutline.onselect && !suppressOnSelect)
-            treeOutline.onselect(this, selectedByUser);
+            if (!omitFocus) this.treeOutline._childrenListNode.focus();
 
-        treeOutline.processingSelectionChange = false;
-    }
+            // Focusing on another node may detach "this" from tree.
+            var treeOutline = this.treeOutline;
+            if (!treeOutline) return;
 
-    revealAndSelect(omitFocus, selectedByUser, suppressOnSelect, suppressOnDeselect)
-    {
-        this.reveal();
-        this.select(omitFocus, selectedByUser, suppressOnSelect, suppressOnDeselect);
-    }
+            treeOutline.processingSelectionChange = true;
 
-    deselect(suppressOnDeselect)
-    {
-        if (!this.treeOutline || this.treeOutline.selectedTreeElement !== this || !this.selected)
-            return false;
+            if (!this.selected) {
+                if (treeOutline.selectedTreeElement) treeOutline.selectedTreeElement.deselect(suppressOnDeselect);
 
-        this.selected = false;
-        this.treeOutline.selectedTreeElement = null;
+                this.selected = true;
+                treeOutline.selectedTreeElement = this;
 
-        if (this._listItemNode)
-            this._listItemNode.classList.remove("selected");
+                if (this._listItemNode) this._listItemNode.classList.add("selected");
+            }
 
-        if (this.ondeselect && !suppressOnDeselect)
-            this.ondeselect(this);
+            if (this.onselect && !suppressOnSelect) this.onselect(this, selectedByUser);
 
-        if (this.treeOutline.ondeselect && !suppressOnDeselect)
-            this.treeOutline.ondeselect(this);
+            if (treeOutline.onselect && !suppressOnSelect) treeOutline.onselect(this, selectedByUser);
 
-        return true;
-    }
-
-    onpopulate()
-    {
-        // Overriden by subclasses.
-    }
-
-    traverseNextTreeElement(skipUnrevealed, stayWithin, dontPopulate, info)
-    {
-        if (!dontPopulate && this.hasChildren)
-            this.onpopulate.call(this); // FIXME: This shouldn't need to use call, but this is working around a JSC bug. https://webkit.org/b/74811
-
-        if (info)
-            info.depthChange = 0;
-
-        var element = skipUnrevealed ? (this.revealed() ? this.children[0] : null) : this.children[0];
-        if (element && (!skipUnrevealed || (skipUnrevealed && this.expanded))) {
-            if (info)
-                info.depthChange = 1;
-            return element;
+            treeOutline.processingSelectionChange = false;
         }
-
-        if (this === stayWithin)
-            return null;
-
-        element = skipUnrevealed ? (this.revealed() ? this.nextSibling : null) : this.nextSibling;
-        if (element)
-            return element;
-
-        element = this;
-        while (element && !element.root && !(skipUnrevealed ? (element.revealed() ? element.nextSibling : null) : element.nextSibling) && element.parent !== stayWithin) {
-            if (info)
-                info.depthChange -= 1;
-            element = element.parent;
+    }, {
+        key: "revealAndSelect",
+        value: function revealAndSelect(omitFocus, selectedByUser, suppressOnSelect, suppressOnDeselect) {
+            this.reveal();
+            this.select(omitFocus, selectedByUser, suppressOnSelect, suppressOnDeselect);
         }
+    }, {
+        key: "deselect",
+        value: function deselect(suppressOnDeselect) {
+            if (!this.treeOutline || this.treeOutline.selectedTreeElement !== this || !this.selected) return false;
 
-        if (!element)
-            return null;
+            this.selected = false;
+            this.treeOutline.selectedTreeElement = null;
 
-        return (skipUnrevealed ? (element.revealed() ? element.nextSibling : null) : element.nextSibling);
-    }
+            if (this._listItemNode) this._listItemNode.classList.remove("selected");
 
-    traversePreviousTreeElement(skipUnrevealed, dontPopulate)
-    {
-        var element = skipUnrevealed ? (this.revealed() ? this.previousSibling : null) : this.previousSibling;
-        if (!dontPopulate && element && element.hasChildren)
-            element.onpopulate();
+            if (this.ondeselect && !suppressOnDeselect) this.ondeselect(this);
 
-        while (element && (skipUnrevealed ? (element.revealed() && element.expanded ? element.children[element.children.length - 1] : null) : element.children[element.children.length - 1])) {
-            if (!dontPopulate && element.hasChildren)
-                element.onpopulate();
-            element = (skipUnrevealed ? (element.revealed() && element.expanded ? element.children[element.children.length - 1] : null) : element.children[element.children.length - 1]);
+            if (this.treeOutline.ondeselect && !suppressOnDeselect) this.treeOutline.ondeselect(this);
+
+            return true;
         }
+    }, {
+        key: "onpopulate",
+        value: function onpopulate() {}
+    }, {
+        key: "traverseNextTreeElement",
+        value: function traverseNextTreeElement(skipUnrevealed, stayWithin, dontPopulate, info) {
+            if (!dontPopulate && this.hasChildren) this.onpopulate.call(this); // FIXME: This shouldn't need to use call, but this is working around a JSC bug. https://webkit.org/b/74811
 
-        if (element)
-            return element;
+            if (info) info.depthChange = 0;
 
-        if (!this.parent || this.parent.root)
-            return null;
+            var element = skipUnrevealed ? this.revealed() ? this.children[0] : null : this.children[0];
+            if (element && (!skipUnrevealed || skipUnrevealed && this.expanded)) {
+                if (info) info.depthChange = 1;
+                return element;
+            }
 
-        return this.parent;
-    }
+            if (this === stayWithin) return null;
 
-    isEventWithinDisclosureTriangle(event)
-    {
-        if (!document.contains(this._listItemNode))
-            return false;
+            element = skipUnrevealed ? this.revealed() ? this.nextSibling : null : this.nextSibling;
+            if (element) return element;
 
-        // FIXME: We should not use getComputedStyle(). For that we need to get rid of using ::before for disclosure triangle. (http://webk.it/74446)
-        var computedLeftPadding = window.getComputedStyle(this._listItemNode).getPropertyCSSValue("padding-left").getFloatValue(CSSPrimitiveValue.CSS_PX);
-        var left = this._listItemNode.totalOffsetLeft + computedLeftPadding;
-        return event.pageX >= left && event.pageX <= left + this.arrowToggleWidth && this.hasChildren;
-    }
-};
+            element = this;
+            while (element && !element.root && !(skipUnrevealed ? element.revealed() ? element.nextSibling : null : element.nextSibling) && element.parent !== stayWithin) {
+                if (info) info.depthChange -= 1;
+                element = element.parent;
+            }
+
+            if (!element) return null;
+
+            return skipUnrevealed ? element.revealed() ? element.nextSibling : null : element.nextSibling;
+        }
+    }, {
+        key: "traversePreviousTreeElement",
+        value: function traversePreviousTreeElement(skipUnrevealed, dontPopulate) {
+            var element = skipUnrevealed ? this.revealed() ? this.previousSibling : null : this.previousSibling;
+            if (!dontPopulate && element && element.hasChildren) element.onpopulate();
+
+            while (element && (skipUnrevealed ? element.revealed() && element.expanded ? element.children[element.children.length - 1] : null : element.children[element.children.length - 1])) {
+                if (!dontPopulate && element.hasChildren) element.onpopulate();
+                element = skipUnrevealed ? element.revealed() && element.expanded ? element.children[element.children.length - 1] : null : element.children[element.children.length - 1];
+            }
+
+            if (element) return element;
+
+            if (!this.parent || this.parent.root) return null;
+
+            return this.parent;
+        }
+    }, {
+        key: "isEventWithinDisclosureTriangle",
+        value: function isEventWithinDisclosureTriangle(event) {
+            if (!document.contains(this._listItemNode)) return false;
+
+            // FIXME: We should not use getComputedStyle(). For that we need to get rid of using ::before for disclosure triangle. (http://webk.it/74446)
+            var computedLeftPadding = window.getComputedStyle(this._listItemNode).getPropertyCSSValue("padding-left").getFloatValue(CSSPrimitiveValue.CSS_PX);
+            var left = this._listItemNode.totalOffsetLeft + computedLeftPadding;
+            return event.pageX >= left && event.pageX <= left + this.arrowToggleWidth && this.hasChildren;
+        }
+    }, {
+        key: "arrowToggleWidth",
+        get: function () {
+            return 10;
+        }
+    }, {
+        key: "selectable",
+        get: function () {
+            if (this._hidden) return false;
+            return this._selectable;
+        },
+        set: function (x) {
+            this._selectable = x;
+        }
+    }, {
+        key: "listItemElement",
+        get: function () {
+            return this._listItemNode;
+        }
+    }, {
+        key: "childrenListElement",
+        get: function () {
+            return this._childrenListNode;
+        }
+    }, {
+        key: "title",
+        get: function () {
+            return this._title;
+        },
+        set: function (x) {
+            this._title = x;
+            this._setListItemNodeContent();
+            this.didChange();
+        }
+    }, {
+        key: "titleHTML",
+        get: function () {
+            return this._titleHTML;
+        },
+        set: function (x) {
+            this._titleHTML = x;
+            this._setListItemNodeContent();
+            this.didChange();
+        }
+    }, {
+        key: "tooltip",
+        get: function () {
+            return this._tooltip;
+        },
+        set: function (x) {
+            this._tooltip = x;
+            if (this._listItemNode) this._listItemNode.title = x ? x : "";
+            this.didChange();
+        }
+    }, {
+        key: "hasChildren",
+        get: function () {
+            return this._hasChildren;
+        },
+        set: function (x) {
+            if (this._hasChildren === x) return;
+
+            this._hasChildren = x;
+
+            if (!this._listItemNode) return;
+
+            if (x) this._listItemNode.classList.add("parent");else {
+                this._listItemNode.classList.remove("parent");
+                this.collapse();
+            }
+
+            this.didChange();
+        }
+    }, {
+        key: "hidden",
+        get: function () {
+            return this._hidden;
+        },
+        set: function (x) {
+            if (this._hidden === x) return;
+
+            this._hidden = x;
+
+            if (x) {
+                if (this._listItemNode) this._listItemNode.classList.add("hidden");
+                if (this._childrenListNode) this._childrenListNode.classList.add("hidden");
+            } else {
+                if (this._listItemNode) this._listItemNode.classList.remove("hidden");
+                if (this._childrenListNode) this._childrenListNode.classList.remove("hidden");
+            }
+
+            if (this.treeOutline && this.treeOutline.onhidden) this.treeOutline.onhidden(this, x);
+        }
+    }, {
+        key: "shouldRefreshChildren",
+        get: function () {
+            return this._shouldRefreshChildren;
+        },
+        set: function (x) {
+            this._shouldRefreshChildren = x;
+            if (x && this.expanded) this.expand();
+        }
+    }], [{
+        key: "treeElementMouseDown",
+        value: function treeElementMouseDown(event) {
+            var element = event.currentTarget;
+            if (!element || !element.treeElement || !element.treeElement.selectable) return;
+
+            if (element.treeElement.isEventWithinDisclosureTriangle(event)) {
+                event.preventDefault();
+                return;
+            }
+
+            element.treeElement.selectOnMouseDown(event);
+        }
+    }, {
+        key: "treeElementToggled",
+        value: function treeElementToggled(event) {
+            var element = event.currentTarget;
+            if (!element || !element.treeElement) return;
+
+            var toggleOnClick = element.treeElement.toggleOnClick && !element.treeElement.selectable;
+            var isInTriangle = element.treeElement.isEventWithinDisclosureTriangle(event);
+            if (!toggleOnClick && !isInTriangle) return;
+
+            if (element.treeElement.expanded) {
+                if (event.altKey) element.treeElement.collapseRecursively();else element.treeElement.collapse();
+            } else {
+                if (event.altKey) element.treeElement.expandRecursively();else element.treeElement.expand();
+            }
+            event.stopPropagation();
+        }
+    }, {
+        key: "treeElementDoubleClicked",
+        value: function treeElementDoubleClicked(event) {
+            var element = event.currentTarget;
+            if (!element || !element.treeElement) return;
+
+            if (element.treeElement.isEventWithinDisclosureTriangle(event)) return;
+
+            if (element.treeElement.ondblclick) element.treeElement.ondblclick.call(element.treeElement, event);else if (element.treeElement.hasChildren && !element.treeElement.expanded) element.treeElement.expand();
+        }
+    }]);
+
+    return TreeElement;
+})(WebInspector.Object);
+
+// this is the root, do nothing
+
+// this is the root, do nothing
+
+// this is the root, do nothing
+
+// this is the root, do nothing
+
+// this is the root, do nothing
+
+// Overriden by subclasses.

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TextMarker = class TextMarker extends WebInspector.Object
-{
-    constructor(codeMirrorTextMarker, type)
-    {
-        super();
+WebInspector.TextMarker = (function (_WebInspector$Object) {
+    function TextMarker(codeMirrorTextMarker, type) {
+        _classCallCheck(this, TextMarker);
+
+        _get(Object.getPrototypeOf(TextMarker.prototype), "constructor", this).call(this);
 
         this._codeMirrorTextMarker = codeMirrorTextMarker;
         codeMirrorTextMarker.__webInspectorTextMarker = this;
@@ -35,49 +43,55 @@ WebInspector.TextMarker = class TextMarker extends WebInspector.Object
         this._type = type || WebInspector.TextMarker.Type.Plain;
     }
 
-    // Static
+    _inherits(TextMarker, _WebInspector$Object);
 
-    static textMarkerForCodeMirrorTextMarker(codeMirrorTextMarker)
-    {
-        return codeMirrorTextMarker.__webInspectorTextMarker || new WebInspector.TextMarker(codeMirrorTextMarker);
-    }
+    _createClass(TextMarker, [{
+        key: "clear",
+        value: function clear() {
+            this._codeMirrorTextMarker.clear();
+        }
+    }, {
+        key: "codeMirrorTextMarker",
 
-    // Public
+        // Public
 
-    get codeMirrorTextMarker()
-    {
-        return this._codeMirrorTextMarker;
-    }
+        get: function () {
+            return this._codeMirrorTextMarker;
+        }
+    }, {
+        key: "type",
+        get: function () {
+            return this._type;
+        }
+    }, {
+        key: "range",
+        get: function () {
+            var range = this._codeMirrorTextMarker.find();
+            if (!range) return null;
+            return new WebInspector.TextRange(range.from.line, range.from.ch, range.to.line, range.to.ch);
+        }
+    }, {
+        key: "rects",
+        get: function () {
+            var range = this._codeMirrorTextMarker.find();
+            if (!range) return WebInspector.Rect.ZERO_RECT;
+            return this._codeMirrorTextMarker.doc.cm.rectsForRange({
+                start: range.from,
+                end: range.to
+            });
+        }
+    }], [{
+        key: "textMarkerForCodeMirrorTextMarker",
 
-    get type()
-    {
-        return this._type;
-    }
+        // Static
 
-    get range()
-    {
-        var range = this._codeMirrorTextMarker.find();
-        if (!range)
-            return null;
-        return new WebInspector.TextRange(range.from.line, range.from.ch, range.to.line, range.to.ch);
-    }
+        value: function textMarkerForCodeMirrorTextMarker(codeMirrorTextMarker) {
+            return codeMirrorTextMarker.__webInspectorTextMarker || new WebInspector.TextMarker(codeMirrorTextMarker);
+        }
+    }]);
 
-    get rects()
-    {
-        var range = this._codeMirrorTextMarker.find();
-        if (!range)
-            return WebInspector.Rect.ZERO_RECT;
-        return this._codeMirrorTextMarker.doc.cm.rectsForRange({
-            start: range.from,
-            end: range.to
-        });
-    }
-
-    clear()
-    {
-        this._codeMirrorTextMarker.clear();
-    }
-};
+    return TextMarker;
+})(WebInspector.Object);
 
 WebInspector.TextMarker.Type = {
     Color: "text-marker-type-color",

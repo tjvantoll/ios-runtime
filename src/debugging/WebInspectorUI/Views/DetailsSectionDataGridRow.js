@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,37 +31,40 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DetailsSectionDataGridRow = class DetailsSectionDataGridRow extends WebInspector.DetailsSectionRow
-{
-    constructor(dataGrid, emptyMessage)
-    {
-        super(emptyMessage);
+WebInspector.DetailsSectionDataGridRow = (function (_WebInspector$DetailsSectionRow) {
+    function DetailsSectionDataGridRow(dataGrid, emptyMessage) {
+        _classCallCheck(this, DetailsSectionDataGridRow);
+
+        _get(Object.getPrototypeOf(DetailsSectionDataGridRow.prototype), "constructor", this).call(this, emptyMessage);
 
         this.element.classList.add("data-grid");
 
         this.dataGrid = dataGrid;
     }
 
-    // Public
+    _inherits(DetailsSectionDataGridRow, _WebInspector$DetailsSectionRow);
 
-    get dataGrid()
-    {
-        return this._dataGrid;
-    }
+    _createClass(DetailsSectionDataGridRow, [{
+        key: "dataGrid",
 
-    set dataGrid(dataGrid)
-    {
-        if (this._dataGrid === dataGrid)
-            return;
+        // Public
 
-        this._dataGrid = dataGrid || null;
+        get: function () {
+            return this._dataGrid;
+        },
+        set: function (dataGrid) {
+            if (this._dataGrid === dataGrid) return;
 
-        if (dataGrid) {
-            dataGrid.element.classList.add("inline");
+            this._dataGrid = dataGrid || null;
 
-            this.hideEmptyMessage();
-            this.element.appendChild(dataGrid.element);
-        } else
-            this.showEmptyMessage();
-    }
-};
+            if (dataGrid) {
+                dataGrid.element.classList.add("inline");
+
+                this.hideEmptyMessage();
+                this.element.appendChild(dataGrid.element);
+            } else this.showEmptyMessage();
+        }
+    }]);
+
+    return DetailsSectionDataGridRow;
+})(WebInspector.DetailsSectionRow);

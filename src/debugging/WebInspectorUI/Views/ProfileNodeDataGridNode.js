@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ProfileNodeDataGridNode = function(profileNode, baseStartTime, rangeStartTime, rangeEndTime)
-{
+WebInspector.ProfileNodeDataGridNode = function (profileNode, baseStartTime, rangeStartTime, rangeEndTime) {
     var hasChildren = !!profileNode.childNodes.length;
 
     WebInspector.TimelineDataGridNode.call(this, false, null, hasChildren);
@@ -43,49 +42,15 @@ WebInspector.Object.deprecatedAddConstructorFunctions(WebInspector.ProfileNodeDa
 
 WebInspector.ProfileNodeDataGridNode.IconStyleClassName = "icon";
 
-WebInspector.ProfileNodeDataGridNode.prototype = {
+WebInspector.ProfileNodeDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.ProfileNodeDataGridNode,
     __proto__: WebInspector.TimelineDataGridNode.prototype,
 
-    // Public
-
-    get profileNode()
-    {
-        return this._profileNode;
-    },
-
-    get records()
-    {
-        return null;
-    },
-
-    get baseStartTime()
-    {
-        return this._baseStartTime;
-    },
-
-    get rangeStartTime()
-    {
-        return this._rangeStartTime;
-    },
-
-    get rangeEndTime()
-    {
-        return this._rangeEndTime;
-    },
-
-    get data()
-    {
-        return this._data;
-    },
-
-    updateRangeTimes: function(startTime, endTime)
-    {
+    updateRangeTimes: function updateRangeTimes(startTime, endTime) {
         var oldRangeStartTime = this._rangeStartTime;
         var oldRangeEndTime = this._rangeEndTime;
 
-        if (oldRangeStartTime === startTime && oldRangeEndTime === endTime)
-            return;
+        if (oldRangeStartTime === startTime && oldRangeEndTime === endTime) return;
 
         this._rangeStartTime = startTime;
         this._rangeEndTime = endTime;
@@ -98,33 +63,74 @@ WebInspector.ProfileNodeDataGridNode.prototype = {
         var newStartBoundary = clamp(profileStart, startTime, profileEnd);
         var newEndBoundary = clamp(profileStart, endTime, profileEnd);
 
-        if (oldStartBoundary !== newStartBoundary || oldEndBoundary !== newEndBoundary)
-            this.needsRefresh();
+        if (oldStartBoundary !== newStartBoundary || oldEndBoundary !== newEndBoundary) this.needsRefresh();
     },
 
-    refresh: function()
-    {
+    refresh: function refresh() {
         this._data = this._profileNode.computeCallInfoForTimeRange(this._rangeStartTime, this._rangeEndTime);
         this._data.location = this._profileNode.sourceCodeLocation;
 
         WebInspector.TimelineDataGridNode.prototype.refresh.call(this);
     },
 
-    createCellContent: function(columnIdentifier, cell)
-    {
-        const emptyValuePlaceholderString = "\u2014";
+    createCellContent: function createCellContent(columnIdentifier, cell) {
+        var emptyValuePlaceholderString = "—";
         var value = this.data[columnIdentifier];
 
         switch (columnIdentifier) {
-        case "startTime":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value - this._baseStartTime, true);
+            case "startTime":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value - this._baseStartTime, true);
 
-        case "selfTime":
-        case "totalTime":
-        case "averageTime":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
+            case "selfTime":
+            case "totalTime":
+            case "averageTime":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
         }
 
         return WebInspector.TimelineDataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
     }
-};
+}, {
+    profileNode: { // Public
+
+        get: function () {
+            return this._profileNode;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    records: {
+        get: function () {
+            return null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    baseStartTime: {
+        get: function () {
+            return this._baseStartTime;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    rangeStartTime: {
+        get: function () {
+            return this._rangeStartTime;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    rangeEndTime: {
+        get: function () {
+            return this._rangeEndTime;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            return this._data;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

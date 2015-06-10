@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ResourceSidebarPanel = class ResourceSidebarPanel extends WebInspector.NavigationSidebarPanel
-{
-    constructor(contentBrowser)
-    {
-        super("resource", WebInspector.UIString("Resources"), true);
+WebInspector.ResourceSidebarPanel = (function (_WebInspector$NavigationSidebarPanel) {
+    function ResourceSidebarPanel(contentBrowser) {
+        _classCallCheck(this, ResourceSidebarPanel);
+
+        _get(Object.getPrototypeOf(ResourceSidebarPanel.prototype), "constructor", this).call(this, "resource", WebInspector.UIString("Resources"), true);
 
         this.contentBrowser = contentBrowser;
 
@@ -45,258 +53,237 @@ WebInspector.ResourceSidebarPanel = class ResourceSidebarPanel extends WebInspec
         this.contentTreeOutline.onselect = this._treeElementSelected.bind(this);
         this.contentTreeOutline.includeSourceMapResourceChildren = true;
 
-        if (WebInspector.debuggableType === WebInspector.DebuggableType.JavaScript)
-            this.contentTreeOutline.element.classList.add(WebInspector.NavigationSidebarPanel.HideDisclosureButtonsStyleClassName);
+        if (WebInspector.debuggableType === WebInspector.DebuggableType.JavaScript) this.contentTreeOutline.element.classList.add(WebInspector.NavigationSidebarPanel.HideDisclosureButtonsStyleClassName);
 
-        if (WebInspector.frameResourceManager.mainFrame)
+        if (WebInspector.frameResourceManager.mainFrame) this._mainFrameMainResourceDidChange(WebInspector.frameResourceManager.mainFrame);
+    }
+
+    _inherits(ResourceSidebarPanel, _WebInspector$NavigationSidebarPanel);
+
+    _createClass(ResourceSidebarPanel, [{
+        key: "closed",
+
+        // Public
+
+        value: function closed() {
+            _get(Object.getPrototypeOf(ResourceSidebarPanel.prototype), "closed", this).call(this);
+
+            WebInspector.Frame.removeEventListener(null, null, this);
+            WebInspector.frameResourceManager.removeEventListener(null, null, this);
+            WebInspector.debuggerManager.removeEventListener(null, null, this);
+            WebInspector.notifications.removeEventListener(null, null, this);
+        }
+    }, {
+        key: "showDefaultContentView",
+        value: function showDefaultContentView() {
+            if (WebInspector.frameResourceManager.mainFrame) {
+                this.contentBrowser.showContentViewForRepresentedObject(WebInspector.frameResourceManager.mainFrame);
+                return;
+            }
+
+            var firstTreeElement = this.contentTreeOutline.children[0];
+            if (firstTreeElement && firstTreeElement instanceof WebInspector.ScriptTreeElement) this.showDefaultContentViewForTreeElement(firstTreeElement);
+        }
+    }, {
+        key: "treeElementForRepresentedObject",
+        value: function treeElementForRepresentedObject(representedObject) {
+            // A custom implementation is needed for this since the frames are populated lazily.
+
+            if (!this._mainFrameTreeElement && (representedObject instanceof WebInspector.Resource || representedObject instanceof WebInspector.Frame)) {
+                // All resources are under the main frame, so we need to return early if we don't have the main frame yet.
+                return null;
+            }
+
+            // The Frame is used as the representedObject instead of the main resource in our tree.
+            if (representedObject instanceof WebInspector.Resource && representedObject.parentFrame && representedObject.parentFrame.mainResource === representedObject) representedObject = representedObject.parentFrame;
+
+            function isAncestor(ancestor, resourceOrFrame) {
+                // SourceMapResources are descendants of another SourceCode object.
+                if (resourceOrFrame instanceof WebInspector.SourceMapResource) {
+                    if (resourceOrFrame.sourceMap.originalSourceCode === ancestor) return true;
+
+                    // Not a direct ancestor, so check the ancestors of the parent SourceCode object.
+                    resourceOrFrame = resourceOrFrame.sourceMap.originalSourceCode;
+                }
+
+                var currentFrame = resourceOrFrame.parentFrame;
+                while (currentFrame) {
+                    if (currentFrame === ancestor) return true;
+                    currentFrame = currentFrame.parentFrame;
+                }
+
+                return false;
+            }
+
+            function getParent(resourceOrFrame) {
+                // SourceMapResources are descendants of another SourceCode object.
+                if (resourceOrFrame instanceof WebInspector.SourceMapResource) return resourceOrFrame.sourceMap.originalSourceCode;
+                return resourceOrFrame.parentFrame;
+            }
+
+            var treeElement = this.contentTreeOutline.findTreeElement(representedObject, isAncestor, getParent);
+            if (treeElement) return treeElement;
+
+            // Only special case Script objects.
+            if (!(representedObject instanceof WebInspector.Script)) {
+                console.error("Didn't find a TreeElement for representedObject", representedObject);
+                return null;
+            }
+
+            // If the Script has a URL we should have found it earlier.
+            if (representedObject.url) {
+                console.error("Didn't find a ScriptTreeElement for a Script with a URL.");
+                return null;
+            }
+
+            // Since the Script does not have a URL we consider it an 'anonymous' script. These scripts happen from calls to
+            // window.eval() or browser features like Auto Fill and Reader. They are not normally added to the sidebar, but since
+            // we have a ScriptContentView asking for the tree element we will make a ScriptTreeElement on demand and add it.
+
+            if (!this._anonymousScriptsFolderTreeElement) this._anonymousScriptsFolderTreeElement = new WebInspector.FolderTreeElement(WebInspector.UIString("Anonymous Scripts"));
+
+            if (!this._anonymousScriptsFolderTreeElement.parent) {
+                var index = insertionIndexForObjectInListSortedByFunction(this._anonymousScriptsFolderTreeElement, this.contentTreeOutline.children, this._compareTreeElements);
+                this.contentTreeOutline.insertChild(this._anonymousScriptsFolderTreeElement, index);
+            }
+
+            var scriptTreeElement = new WebInspector.ScriptTreeElement(representedObject);
+            this._anonymousScriptsFolderTreeElement.appendChild(scriptTreeElement);
+
+            return scriptTreeElement;
+        }
+    }, {
+        key: "_mainResourceDidChange",
+
+        // Private
+
+        value: function _mainResourceDidChange(event) {
+            if (!event.target.isMainFrame()) return;
+
+            this._mainFrameMainResourceDidChange(event.target);
+        }
+    }, {
+        key: "_mainFrameDidChange",
+        value: function _mainFrameDidChange(event) {
             this._mainFrameMainResourceDidChange(WebInspector.frameResourceManager.mainFrame);
-    }
-
-    // Public
-
-    closed()
-    {
-        super.closed();
-
-        WebInspector.Frame.removeEventListener(null, null, this);
-        WebInspector.frameResourceManager.removeEventListener(null, null, this);
-        WebInspector.debuggerManager.removeEventListener(null, null, this);
-        WebInspector.notifications.removeEventListener(null, null, this);
-    }
-
-    showDefaultContentView()
-    {
-        if (WebInspector.frameResourceManager.mainFrame) {
-            this.contentBrowser.showContentViewForRepresentedObject(WebInspector.frameResourceManager.mainFrame);
-            return;
         }
+    }, {
+        key: "_mainFrameMainResourceDidChange",
+        value: function _mainFrameMainResourceDidChange(mainFrame) {
+            this.contentBrowser.contentViewContainer.closeAllContentViews();
 
-        var firstTreeElement = this.contentTreeOutline.children[0];
-        if (firstTreeElement)
-            this.showDefaultContentViewForTreeElement(firstTreeElement);
-    }
-
-    treeElementForRepresentedObject(representedObject)
-    {
-        // A custom implementation is needed for this since the frames are populated lazily.
-
-        if (!this._mainFrameTreeElement && (representedObject instanceof WebInspector.Resource || representedObject instanceof WebInspector.Frame)) {
-            // All resources are under the main frame, so we need to return early if we don't have the main frame yet.
-            return null;
-        }
-
-        // The Frame is used as the representedObject instead of the main resource in our tree.
-        if (representedObject instanceof WebInspector.Resource && representedObject.parentFrame && representedObject.parentFrame.mainResource === representedObject)
-            representedObject = representedObject.parentFrame;
-
-        function isAncestor(ancestor, resourceOrFrame)
-        {
-            // SourceMapResources are descendants of another SourceCode object.
-            if (resourceOrFrame instanceof WebInspector.SourceMapResource) {
-                if (resourceOrFrame.sourceMap.originalSourceCode === ancestor)
-                    return true;
-
-                // Not a direct ancestor, so check the ancestors of the parent SourceCode object.
-                resourceOrFrame = resourceOrFrame.sourceMap.originalSourceCode;
+            if (this._mainFrameTreeElement) {
+                this.contentTreeOutline.removeChild(this._mainFrameTreeElement);
+                this._mainFrameTreeElement = null;
             }
 
-            var currentFrame = resourceOrFrame.parentFrame;
-            while (currentFrame) {
-                if (currentFrame === ancestor)
-                    return true;
-                currentFrame = currentFrame.parentFrame;
+            if (!mainFrame) return;
+
+            this._mainFrameTreeElement = new WebInspector.FrameTreeElement(mainFrame);
+            this.contentTreeOutline.insertChild(this._mainFrameTreeElement, 0);
+
+            function delayedWork() {
+                if (!this.contentTreeOutline.selectedTreeElement) {
+                    var currentContentView = this.contentBrowser.currentContentView;
+                    var treeElement = currentContentView ? this.treeElementForRepresentedObject(currentContentView.representedObject) : null;
+                    if (!treeElement) treeElement = this._mainFrameTreeElement;
+                    this.showDefaultContentViewForTreeElement(treeElement);
+                }
             }
 
-            return false;
+            // Cookie restoration will attempt to re-select the resource we were showing.
+            // Give it time to do that before selecting the main frame resource.
+            setTimeout(delayedWork.bind(this));
         }
+    }, {
+        key: "_scriptWasAdded",
+        value: function _scriptWasAdded(event) {
+            var script = event.data.script;
 
-        function getParent(resourceOrFrame)
-        {
-            // SourceMapResources are descendants of another SourceCode object.
-            if (resourceOrFrame instanceof WebInspector.SourceMapResource)
-                return resourceOrFrame.sourceMap.originalSourceCode;
-            return resourceOrFrame.parentFrame;
-        }
+            // We don't add scripts without URLs here. Those scripts can quickly clutter the interface and
+            // are usually more transient. They will get added if/when they need to be shown in a content view.
+            if (!script.url) return;
 
-        var treeElement = this.contentTreeOutline.findTreeElement(representedObject, isAncestor, getParent);
-        if (treeElement)
-            return treeElement;
+            // Exclude inspector scripts.
+            if (script.url.startsWith("__WebInspector")) return;
 
-        // Only special case Script objects.
-        if (!(representedObject instanceof WebInspector.Script)) {
-            console.error("Didn't find a TreeElement for representedObject", representedObject);
-            return null;
-        }
+            // If the script URL matches a resource we can assume it is part of that resource and does not need added.
+            if (script.resource) return;
 
-        // If the Script has a URL we should have found it earlier.
-        if (representedObject.url) {
-            console.error("Didn't find a ScriptTreeElement for a Script with a URL.");
-            return null;
-        }
+            var insertIntoTopLevel = false;
 
-        // Since the Script does not have a URL we consider it an 'anonymous' script. These scripts happen from calls to
-        // window.eval() or browser features like Auto Fill and Reader. They are not normally added to the sidebar, but since
-        // we have a ScriptContentView asking for the tree element we will make a ScriptTreeElement on demand and add it.
-
-        if (!this._anonymousScriptsFolderTreeElement)
-            this._anonymousScriptsFolderTreeElement = new WebInspector.FolderTreeElement(WebInspector.UIString("Anonymous Scripts"));
-
-        if (!this._anonymousScriptsFolderTreeElement.parent) {
-            var index = insertionIndexForObjectInListSortedByFunction(this._anonymousScriptsFolderTreeElement, this.contentTreeOutline.children, this._compareTreeElements);
-            this.contentTreeOutline.insertChild(this._anonymousScriptsFolderTreeElement, index);
-        }
-
-        var scriptTreeElement = new WebInspector.ScriptTreeElement(representedObject);
-        this._anonymousScriptsFolderTreeElement.appendChild(scriptTreeElement);
-
-        return scriptTreeElement;
-    }
-
-    // Private
-
-    _mainResourceDidChange(event)
-    {
-        if (!event.target.isMainFrame())
-            return;
-
-        this._mainFrameMainResourceDidChange(event.target);
-    }
-
-    _mainFrameDidChange(event)
-    {
-        this._mainFrameMainResourceDidChange(WebInspector.frameResourceManager.mainFrame);
-    }
-
-    _mainFrameMainResourceDidChange(mainFrame)
-    {
-        this.contentBrowser.contentViewContainer.closeAllContentViews();
-
-        if (this._mainFrameTreeElement) {
-            this.contentTreeOutline.removeChild(this._mainFrameTreeElement);
-            this._mainFrameTreeElement = null;
-        }
-
-        if (!mainFrame)
-            return;
-
-        this._mainFrameTreeElement = new WebInspector.FrameTreeElement(mainFrame);
-        this.contentTreeOutline.insertChild(this._mainFrameTreeElement, 0);
-
-        function delayedWork()
-        {
-            if (!this.contentTreeOutline.selectedTreeElement) {
-                var currentContentView = this.contentBrowser.currentContentView;
-                var treeElement = currentContentView ? this.treeElementForRepresentedObject(currentContentView.representedObject) : null;
-                if (!treeElement)
-                    treeElement = this._mainFrameTreeElement;
-                this.showDefaultContentViewForTreeElement(treeElement);
-            }
-        }
-
-        // Cookie restoration will attempt to re-select the resource we were showing.
-        // Give it time to do that before selecting the main frame resource.
-        setTimeout(delayedWork.bind(this));
-    }
-
-    _scriptWasAdded(event)
-    {
-        var script = event.data.script;
-
-        // We don't add scripts without URLs here. Those scripts can quickly clutter the interface and
-        // are usually more transient. They will get added if/when they need to be shown in a content view.
-        if (!script.url)
-            return;
-
-        // Exclude inspector scripts.
-        if (script.url.startsWith("__WebInspector"))
-            return;
-
-        // If the script URL matches a resource we can assume it is part of that resource and does not need added.
-        if (script.resource)
-            return;
-
-        var insertIntoTopLevel = false;
-
-        if (script.injected) {
-            if (!this._extensionScriptsFolderTreeElement)
-                this._extensionScriptsFolderTreeElement = new WebInspector.FolderTreeElement(WebInspector.UIString("Extension Scripts"));
-            var parentFolderTreeElement = this._extensionScriptsFolderTreeElement;
-        } else {
-            if (WebInspector.debuggableType === WebInspector.DebuggableType.JavaScript && !WebInspector.hasExtraDomains)
-                insertIntoTopLevel = true;
-            else {
-                if (!this._extraScriptsFolderTreeElement)
-                    this._extraScriptsFolderTreeElement = new WebInspector.FolderTreeElement(WebInspector.UIString("Extra Scripts"));
-                var parentFolderTreeElement = this._extraScriptsFolderTreeElement;
-            }
-        }
-
-        var scriptTreeElement = new WebInspector.ScriptTreeElement(script);
-
-        if (insertIntoTopLevel) {
-            var index = insertionIndexForObjectInListSortedByFunction(scriptTreeElement, this.contentTreeOutline.children, this._compareTreeElements);
-            this.contentTreeOutline.insertChild(scriptTreeElement, index);
-        } else {
-            if (!parentFolderTreeElement.parent) {
-                var index = insertionIndexForObjectInListSortedByFunction(parentFolderTreeElement, this.contentTreeOutline.children, this._compareTreeElements);
-                this.contentTreeOutline.insertChild(parentFolderTreeElement, index);
+            if (script.injected) {
+                if (!this._extensionScriptsFolderTreeElement) this._extensionScriptsFolderTreeElement = new WebInspector.FolderTreeElement(WebInspector.UIString("Extension Scripts"));
+                var parentFolderTreeElement = this._extensionScriptsFolderTreeElement;
+            } else {
+                if (WebInspector.debuggableType === WebInspector.DebuggableType.JavaScript && !WebInspector.hasExtraDomains) insertIntoTopLevel = true;else {
+                    if (!this._extraScriptsFolderTreeElement) this._extraScriptsFolderTreeElement = new WebInspector.FolderTreeElement(WebInspector.UIString("Extra Scripts"));
+                    var parentFolderTreeElement = this._extraScriptsFolderTreeElement;
+                }
             }
 
-            parentFolderTreeElement.appendChild(scriptTreeElement);
+            var scriptTreeElement = new WebInspector.ScriptTreeElement(script);
+
+            if (insertIntoTopLevel) {
+                var index = insertionIndexForObjectInListSortedByFunction(scriptTreeElement, this.contentTreeOutline.children, this._compareTreeElements);
+                this.contentTreeOutline.insertChild(scriptTreeElement, index);
+            } else {
+                if (!parentFolderTreeElement.parent) {
+                    var index = insertionIndexForObjectInListSortedByFunction(parentFolderTreeElement, this.contentTreeOutline.children, this._compareTreeElements);
+                    this.contentTreeOutline.insertChild(parentFolderTreeElement, index);
+                }
+
+                parentFolderTreeElement.appendChild(scriptTreeElement);
+            }
         }
-    }
+    }, {
+        key: "_scriptsCleared",
+        value: function _scriptsCleared(event) {
+            if (this._extensionScriptsFolderTreeElement) {
+                if (this._extensionScriptsFolderTreeElement.parent) this._extensionScriptsFolderTreeElement.parent.removeChild(this._extensionScriptsFolderTreeElement);
+                this._extensionScriptsFolderTreeElement = null;
+            }
 
-    _scriptsCleared(event)
-    {
-        if (this._extensionScriptsFolderTreeElement) {
-            if (this._extensionScriptsFolderTreeElement.parent)
-                this._extensionScriptsFolderTreeElement.parent.removeChild(this._extensionScriptsFolderTreeElement);
-            this._extensionScriptsFolderTreeElement = null;
+            if (this._extraScriptsFolderTreeElement) {
+                if (this._extraScriptsFolderTreeElement.parent) this._extraScriptsFolderTreeElement.parent.removeChild(this._extraScriptsFolderTreeElement);
+                this._extraScriptsFolderTreeElement = null;
+            }
+
+            if (this._anonymousScriptsFolderTreeElement) {
+                if (this._anonymousScriptsFolderTreeElement.parent) this._anonymousScriptsFolderTreeElement.parent.removeChild(this._anonymousScriptsFolderTreeElement);
+                this._anonymousScriptsFolderTreeElement = null;
+            }
         }
+    }, {
+        key: "_treeElementSelected",
+        value: function _treeElementSelected(treeElement, selectedByUser) {
+            if (treeElement instanceof WebInspector.FolderTreeElement) return;
 
-        if (this._extraScriptsFolderTreeElement) {
-            if (this._extraScriptsFolderTreeElement.parent)
-                this._extraScriptsFolderTreeElement.parent.removeChild(this._extraScriptsFolderTreeElement);
-            this._extraScriptsFolderTreeElement = null;
+            if (treeElement instanceof WebInspector.ResourceTreeElement || treeElement instanceof WebInspector.ScriptTreeElement) {
+                WebInspector.showRepresentedObject(treeElement.representedObject);
+                return;
+            }
+
+            console.error("Unknown tree element", treeElement);
         }
+    }, {
+        key: "_compareTreeElements",
+        value: function _compareTreeElements(a, b) {
+            // Always sort the main frame element first.
+            if (a instanceof WebInspector.FrameTreeElement) return -1;
+            if (b instanceof WebInspector.FrameTreeElement) return 1;
 
-        if (this._anonymousScriptsFolderTreeElement) {
-            if (this._anonymousScriptsFolderTreeElement.parent)
-                this._anonymousScriptsFolderTreeElement.parent.removeChild(this._anonymousScriptsFolderTreeElement);
-            this._anonymousScriptsFolderTreeElement = null;
+            console.assert(a.mainTitle);
+            console.assert(b.mainTitle);
+
+            return (a.mainTitle || "").localeCompare(b.mainTitle || "");
         }
-    }
-
-    _treeElementSelected(treeElement, selectedByUser)
-    {
-        if (treeElement instanceof WebInspector.FolderTreeElement)
-            return;
-
-        if (treeElement instanceof WebInspector.ResourceTreeElement || treeElement instanceof WebInspector.ScriptTreeElement) {
-            WebInspector.showRepresentedObject(treeElement.representedObject);
-            return;
+    }, {
+        key: "_extraDomainsActivated",
+        value: function _extraDomainsActivated() {
+            if (WebInspector.debuggableType === WebInspector.DebuggableType.JavaScript) this.contentTreeOutline.element.classList.remove(WebInspector.NavigationSidebarPanel.HideDisclosureButtonsStyleClassName);
         }
+    }]);
 
-        console.error("Unknown tree element", treeElement);
-    }
-
-    _compareTreeElements(a, b)
-    {
-        // Always sort the main frame element first.
-        if (a instanceof WebInspector.FrameTreeElement)
-            return -1;
-        if (b instanceof WebInspector.FrameTreeElement)
-            return 1;
-
-        console.assert(a.mainTitle);
-        console.assert(b.mainTitle);
-
-        return (a.mainTitle || "").localeCompare(b.mainTitle || "");
-    }
-
-    _extraDomainsActivated()
-    {
-        if (WebInspector.debuggableType === WebInspector.DebuggableType.JavaScript)
-            this.contentTreeOutline.element.classList.remove(WebInspector.NavigationSidebarPanel.HideDisclosureButtonsStyleClassName);
-    }
-};
+    return ResourceSidebarPanel;
+})(WebInspector.NavigationSidebarPanel);

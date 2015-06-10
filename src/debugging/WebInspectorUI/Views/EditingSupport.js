@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,89 +27,80 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.isBeingEdited = function(element)
-{
+WebInspector.isBeingEdited = function (element) {
     while (element) {
-        if (element.__editing)
-            return true;
+        if (element.__editing) return true;
         element = element.parentNode;
     }
 
     return false;
 };
 
-WebInspector.markBeingEdited = function(element, value)
-{
+WebInspector.markBeingEdited = function (element, value) {
     if (value) {
-        if (element.__editing)
-            return false;
+        if (element.__editing) return false;
         element.__editing = true;
         WebInspector.__editingCount = (WebInspector.__editingCount || 0) + 1;
     } else {
-        if (!element.__editing)
-            return false;
+        if (!element.__editing) return false;
         delete element.__editing;
         --WebInspector.__editingCount;
     }
     return true;
 };
 
-WebInspector.isEditingAnyField = function()
-{
+WebInspector.isEditingAnyField = function () {
     return !!WebInspector.__editingCount;
 };
 
-WebInspector.isEventTargetAnEditableField = function(event)
-{
-    var textInputTypes = {"text": true, "search": true, "tel": true, "url": true, "email": true, "password": true};
-    if (event.target instanceof HTMLInputElement)
-        return event.target.type in textInputTypes;
+WebInspector.isEventTargetAnEditableField = function (event) {
+    var textInputTypes = { "text": true, "search": true, "tel": true, "url": true, "email": true, "password": true };
+    if (event.target instanceof HTMLInputElement) return event.target.type in textInputTypes;
 
     var codeMirrorEditorElement = event.target.enclosingNodeOrSelfWithClass("CodeMirror");
-    if (codeMirrorEditorElement && codeMirrorEditorElement.CodeMirror)
-        return !codeMirrorEditorElement.CodeMirror.getOption("readOnly");
+    if (codeMirrorEditorElement && codeMirrorEditorElement.CodeMirror) return !codeMirrorEditorElement.CodeMirror.getOption("readOnly");
 
-    if (event.target instanceof HTMLTextAreaElement)
-        return true;
+    if (event.target instanceof HTMLTextAreaElement) return true;
 
-    if (event.target.enclosingNodeOrSelfWithClass("text-prompt"))
-        return true;
+    if (event.target.enclosingNodeOrSelfWithClass("text-prompt")) return true;
 
     return false;
 };
 
-WebInspector.EditingConfig = class EditingConfig
-{
-    constructor(commitHandler, cancelHandler, context)
-    {
+WebInspector.EditingConfig = (function () {
+    function EditingConfig(commitHandler, cancelHandler, context) {
+        _classCallCheck(this, EditingConfig);
+
         this.commitHandler = commitHandler;
         this.cancelHandler = cancelHandler;
         this.context = context;
         this.spellcheck = false;
     }
 
-    setPasteHandler(pasteHandler)
-    {
-        this.pasteHandler = pasteHandler;
-    }
+    _createClass(EditingConfig, [{
+        key: "setPasteHandler",
+        value: function setPasteHandler(pasteHandler) {
+            this.pasteHandler = pasteHandler;
+        }
+    }, {
+        key: "setMultiline",
+        value: function setMultiline(multiline) {
+            this.multiline = multiline;
+        }
+    }, {
+        key: "setCustomFinishHandler",
+        value: function setCustomFinishHandler(customFinishHandler) {
+            this.customFinishHandler = customFinishHandler;
+        }
+    }]);
 
-    setMultiline(multiline)
-    {
-        this.multiline = multiline;
-    }
+    return EditingConfig;
+})();
 
-    setCustomFinishHandler(customFinishHandler)
-    {
-        this.customFinishHandler = customFinishHandler;
-    }
-};
+WebInspector.startEditing = function (element, config) {
+    if (!WebInspector.markBeingEdited(element, true)) return null;
 
-WebInspector.startEditing = function(element, config)
-{
-    if (!WebInspector.markBeingEdited(element, true))
-        return null;
-
-    config = config || new WebInspector.EditingConfig(function() {}, function() {});
+    config = config || new WebInspector.EditingConfig(function () {}, function () {});
     var committedCallback = config.commitHandler;
     var cancelledCallback = config.cancelHandler;
     var pasteCallback = config.pasteHandler;
@@ -118,82 +113,58 @@ WebInspector.startEditing = function(element, config)
     var oldSpellCheck = element.hasAttribute("spellcheck") ? element.spellcheck : undefined;
     element.spellcheck = config.spellcheck;
 
-    if (config.multiline)
-        element.classList.add("multiline");
+    if (config.multiline) element.classList.add("multiline");
 
     var oldTabIndex = element.tabIndex;
-    if (element.tabIndex < 0)
-        element.tabIndex = 0;
+    if (element.tabIndex < 0) element.tabIndex = 0;
 
     function blurEventListener() {
         editingCommitted.call(element);
     }
 
     function getContent(element) {
-        if (element.tagName === "INPUT" && element.type === "text")
-            return element.value;
-        else
-            return element.textContent;
+        if (element.tagName === "INPUT" && element.type === "text") return element.value;else return element.textContent;
     }
 
-    function cleanUpAfterEditing()
-    {
+    function cleanUpAfterEditing() {
         WebInspector.markBeingEdited(element, false);
 
         this.classList.remove("editing");
         this.scrollTop = 0;
         this.scrollLeft = 0;
 
-        if (oldSpellCheck === undefined)
-            element.removeAttribute("spellcheck");
-        else
-            element.spellcheck = oldSpellCheck;
+        if (oldSpellCheck === undefined) element.removeAttribute("spellcheck");else element.spellcheck = oldSpellCheck;
 
-        if (oldTabIndex === -1)
-            this.removeAttribute("tabindex");
-        else
-            this.tabIndex = oldTabIndex;
+        if (oldTabIndex === -1) this.removeAttribute("tabindex");else this.tabIndex = oldTabIndex;
 
         element.removeEventListener("blur", blurEventListener, false);
         element.removeEventListener("keydown", keyDownEventListener, true);
-        if (pasteCallback)
-            element.removeEventListener("paste", pasteEventListener, true);
+        if (pasteCallback) element.removeEventListener("paste", pasteEventListener, true);
 
         WebInspector.restoreFocusFromElement(element);
     }
 
-    function editingCancelled()
-    {
-        if (this.tagName === "INPUT" && this.type === "text")
-            this.value = oldText;
-        else
-            this.textContent = oldText;
+    function editingCancelled() {
+        if (this.tagName === "INPUT" && this.type === "text") this.value = oldText;else this.textContent = oldText;
 
         cleanUpAfterEditing.call(this);
 
         cancelledCallback(this, context);
     }
 
-    function editingCommitted()
-    {
+    function editingCommitted() {
         cleanUpAfterEditing.call(this);
 
         committedCallback(this, getContent(this), oldText, context, moveDirection);
     }
 
-    function defaultFinishHandler(event)
-    {
+    function defaultFinishHandler(event) {
         var hasOnlyMetaModifierKey = event.metaKey && !event.shiftKey && !event.ctrlKey && !event.altKey;
-        if (isEnterKey(event) && (!config.multiline || hasOnlyMetaModifierKey))
-            return "commit";
-        else if (event.keyCode === WebInspector.KeyboardShortcut.Key.Escape.keyCode || event.keyIdentifier === "U+001B")
-            return "cancel";
-        else if (event.keyIdentifier === "U+0009") // Tab key
+        if (isEnterKey(event) && (!config.multiline || hasOnlyMetaModifierKey)) return "commit";else if (event.keyCode === WebInspector.KeyboardShortcut.Key.Escape.keyCode || event.keyIdentifier === "U+001B") return "cancel";else if (event.keyIdentifier === "U+0009") // Tab key
             return "move-" + (event.shiftKey ? "backward" : "forward");
     }
 
-    function handleEditingResult(result, event)
-    {
+    function handleEditingResult(result, event) {
         if (result === "commit") {
             editingCommitted.call(element);
             event.preventDefault();
@@ -204,19 +175,16 @@ WebInspector.startEditing = function(element, config)
             event.stopPropagation();
         } else if (result && result.startsWith("move-")) {
             moveDirection = result.substring(5);
-            if (event.keyIdentifier !== "U+0009")
-                blurEventListener();
+            if (event.keyIdentifier !== "U+0009") blurEventListener();
         }
     }
 
-    function pasteEventListener(event)
-    {
+    function pasteEventListener(event) {
         var result = pasteCallback(event);
         handleEditingResult(result, event);
     }
 
-    function keyDownEventListener(event)
-    {
+    function keyDownEventListener(event) {
         var handler = config.customFinishHandler || defaultFinishHandler;
         var result = handler(event);
         handleEditingResult(result, event);
@@ -224,8 +192,7 @@ WebInspector.startEditing = function(element, config)
 
     element.addEventListener("blur", blurEventListener, false);
     element.addEventListener("keydown", keyDownEventListener, true);
-    if (pasteCallback)
-        element.addEventListener("paste", pasteEventListener, true);
+    if (pasteCallback) element.addEventListener("paste", pasteEventListener, true);
 
     element.focus();
 

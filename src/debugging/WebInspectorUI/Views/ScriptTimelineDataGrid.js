@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ScriptTimelineDataGrid = function(treeOutline, columns, delegate, editCallback, deleteCallback)
-{
+WebInspector.ScriptTimelineDataGrid = function (treeOutline, columns, delegate, editCallback, deleteCallback) {
     WebInspector.TimelineDataGrid.call(this, treeOutline, columns, delegate, editCallback, deleteCallback);
 };
 
@@ -33,8 +32,7 @@ WebInspector.ScriptTimelineDataGrid.prototype = {
 
     // Protected
 
-    callFramePopoverAnchorElement: function()
-    {
+    callFramePopoverAnchorElement: function callFramePopoverAnchorElement() {
         return this.selectedNode.elementWithColumnIdentifier("location");
     }
 };

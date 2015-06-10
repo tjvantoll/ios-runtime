@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Frame = class Frame extends WebInspector.Object
-{
-    constructor(id, name, securityOrigin, loaderIdentifier, mainResource)
-    {
-        super();
+WebInspector.Frame = (function (_WebInspector$Object) {
+    function Frame(id, name, securityOrigin, loaderIdentifier, mainResource) {
+        _classCallCheck(this, Frame);
+
+        _get(Object.getPrototypeOf(Frame.prototype), "constructor", this).call(this);
 
         console.assert(id);
 
@@ -36,8 +44,8 @@ WebInspector.Frame = class Frame extends WebInspector.Object
         this._name = null;
         this._securityOrigin = null;
 
-        this._resourceCollection = new WebInspector.ResourceCollection;
-        this._provisionalResourceCollection = new WebInspector.ResourceCollection;
+        this._resourceCollection = new WebInspector.ResourceCollection();
+        this._provisionalResourceCollection = new WebInspector.ResourceCollection();
 
         this._childFrames = [];
         this._childFrameIdentifierMap = {};
@@ -48,432 +56,406 @@ WebInspector.Frame = class Frame extends WebInspector.Object
         this._domContentReadyEventTimestamp = NaN;
         this._loadEventTimestamp = NaN;
 
-        this._executionContextList = new WebInspector.ExecutionContextList;
+        this._executionContextList = new WebInspector.ExecutionContextList();
 
         this.initialize(name, securityOrigin, loaderIdentifier, mainResource);
     }
 
-    // Public
+    _inherits(Frame, _WebInspector$Object);
 
-    initialize(name, securityOrigin, loaderIdentifier, mainResource)
-    {
-        console.assert(loaderIdentifier);
-        console.assert(mainResource);
+    _createClass(Frame, [{
+        key: "initialize",
 
-        var oldName = this._name;
-        var oldSecurityOrigin = this._securityOrigin;
-        var oldMainResource = this._mainResource;
+        // Public
 
-        this._name = name || null;
-        this._securityOrigin = securityOrigin || null;
-        this._loaderIdentifier = loaderIdentifier || null;
+        value: function initialize(name, securityOrigin, loaderIdentifier, mainResource) {
+            console.assert(loaderIdentifier);
+            console.assert(mainResource);
 
-        this._mainResource = mainResource;
-        this._mainResource._parentFrame = this;
+            var oldName = this._name;
+            var oldSecurityOrigin = this._securityOrigin;
+            var oldMainResource = this._mainResource;
 
-        if (oldMainResource && this._mainResource !== oldMainResource)
-            this._disassociateWithResource(oldMainResource);
+            this._name = name || null;
+            this._securityOrigin = securityOrigin || null;
+            this._loaderIdentifier = loaderIdentifier || null;
 
-        this.removeAllResources();
-        this.removeAllChildFrames();
-        this.clearExecutionContexts();
-        this.clearProvisionalLoad();
+            this._mainResource = mainResource;
+            this._mainResource._parentFrame = this;
 
-        if (this._mainResource !== oldMainResource)
-            this._dispatchMainResourceDidChangeEvent(oldMainResource);
+            if (oldMainResource && this._mainResource !== oldMainResource) this._disassociateWithResource(oldMainResource);
 
-        if (this._securityOrigin !== oldSecurityOrigin)
-            this.dispatchEventToListeners(WebInspector.Frame.Event.SecurityOriginDidChange, {oldSecurityOrigin});
+            this.removeAllResources();
+            this.removeAllChildFrames();
+            this.clearExecutionContexts();
+            this.clearProvisionalLoad();
 
-        if (this._name !== oldName)
-            this.dispatchEventToListeners(WebInspector.Frame.Event.NameDidChange, {oldName});
-    }
+            if (this._mainResource !== oldMainResource) this._dispatchMainResourceDidChangeEvent(oldMainResource);
 
-    startProvisionalLoad(provisionalMainResource)
-    {
-        console.assert(provisionalMainResource);
+            if (this._securityOrigin !== oldSecurityOrigin) this.dispatchEventToListeners(WebInspector.Frame.Event.SecurityOriginDidChange, { oldSecurityOrigin: oldSecurityOrigin });
 
-        this._provisionalMainResource = provisionalMainResource;
-        this._provisionalMainResource._parentFrame = this;
-
-        this._provisionalLoaderIdentifier = provisionalMainResource.loaderIdentifier;
-
-        this._provisionalResourceCollection.removeAllResources();
-
-        this.dispatchEventToListeners(WebInspector.Frame.Event.ProvisionalLoadStarted);
-    }
-
-    commitProvisionalLoad(securityOrigin)
-    {
-        console.assert(this._provisionalMainResource);
-        console.assert(this._provisionalLoaderIdentifier);
-        if (!this._provisionalLoaderIdentifier)
-            return;
-
-        var oldSecurityOrigin = this._securityOrigin;
-        var oldMainResource = this._mainResource;
-
-        this._securityOrigin = securityOrigin || null;
-        this._loaderIdentifier = this._provisionalLoaderIdentifier;
-        this._mainResource = this._provisionalMainResource;
-
-        this._domContentReadyEventTimestamp = NaN;
-        this._loadEventTimestamp = NaN;
-
-        if (oldMainResource && this._mainResource !== oldMainResource)
-            this._disassociateWithResource(oldMainResource);
-
-        this.removeAllResources();
-
-        this._resourceCollection = this._provisionalResourceCollection;
-        this._provisionalResourceCollection = new WebInspector.ResourceCollection;
-
-        this.clearExecutionContexts(true);
-        this.clearProvisionalLoad(true);
-        this.removeAllChildFrames();
-
-        this.dispatchEventToListeners(WebInspector.Frame.Event.ProvisionalLoadCommitted);
-
-        if (this._mainResource !== oldMainResource)
-            this._dispatchMainResourceDidChangeEvent(oldMainResource);
-
-        if (this._securityOrigin !== oldSecurityOrigin)
-            this.dispatchEventToListeners(WebInspector.Frame.Event.SecurityOriginDidChange, {oldSecurityOrigin});
-    }
-
-    clearProvisionalLoad(skipProvisionalLoadClearedEvent)
-    {
-        if (!this._provisionalLoaderIdentifier)
-            return;
-
-        this._provisionalLoaderIdentifier = null;
-        this._provisionalMainResource = null;
-        this._provisionalResourceCollection.removeAllResources();
-
-        if (!skipProvisionalLoadClearedEvent)
-            this.dispatchEventToListeners(WebInspector.Frame.Event.ProvisionalLoadCleared);
-    }
-
-    get id()
-    {
-        return this._id;
-    }
-
-    get loaderIdentifier()
-    {
-        return this._loaderIdentifier;
-    }
-
-    get provisionalLoaderIdentifier()
-    {
-        return this._provisionalLoaderIdentifier;
-    }
-
-    get name()
-    {
-        return this._name;
-    }
-
-    get securityOrigin()
-    {
-        return this._securityOrigin;
-    }
-
-    get url()
-    {
-        return this._mainResource._url;
-    }
-
-    get domTree()
-    {
-        if (!this._domTree)
-            this._domTree = new WebInspector.DOMTree(this);
-        return this._domTree;
-    }
-
-    get pageExecutionContext()
-    {
-        return this._executionContextList.pageExecutionContext;
-    }
-
-    get executionContextList()
-    {
-        return this._executionContextList;
-    }
-
-    clearExecutionContexts(committingProvisionalLoad)
-    {
-        if (this._executionContextList.contexts.length) {
-            this._executionContextList.clear();
-            this.dispatchEventToListeners(WebInspector.Frame.Event.ExecutionContextsCleared, {committingProvisionalLoad:!!committingProvisionalLoad});
+            if (this._name !== oldName) this.dispatchEventToListeners(WebInspector.Frame.Event.NameDidChange, { oldName: oldName });
         }
-    }
+    }, {
+        key: "startProvisionalLoad",
+        value: function startProvisionalLoad(provisionalMainResource) {
+            console.assert(provisionalMainResource);
 
-    addExecutionContext(context)
-    {
-        var changedPageContext = this._executionContextList.add(context);
+            this._provisionalMainResource = provisionalMainResource;
+            this._provisionalMainResource._parentFrame = this;
 
-        if (changedPageContext)
-            this.dispatchEventToListeners(WebInspector.Frame.Event.PageExecutionContextChanged);
-    }
+            this._provisionalLoaderIdentifier = provisionalMainResource.loaderIdentifier;
 
-    get mainResource()
-    {
-        return this._mainResource;
-    }
+            this._provisionalResourceCollection.removeAllResources();
 
-    get provisionalMainResource()
-    {
-        return this._provisionalMainResource;
-    }
-
-    get parentFrame()
-    {
-        return this._parentFrame;
-    }
-
-    get childFrames()
-    {
-        return this._childFrames;
-    }
-
-    get domContentReadyEventTimestamp()
-    {
-        return this._domContentReadyEventTimestamp;
-    }
-
-    get loadEventTimestamp()
-    {
-        return this._loadEventTimestamp;
-    }
-
-    isMainFrame()
-    {
-        return this._isMainFrame;
-    }
-
-    markAsMainFrame()
-    {
-        this._isMainFrame = true;
-    }
-
-    unmarkAsMainFrame()
-    {
-        this._isMainFrame = false;
-    }
-
-    markDOMContentReadyEvent(timestamp)
-    {
-        this._domContentReadyEventTimestamp = timestamp || NaN;
-    }
-
-    markLoadEvent(timestamp)
-    {
-        this._loadEventTimestamp = timestamp || NaN;
-    }
-
-    isDetached()
-    {
-        var frame = this;
-        while (frame) {
-            if (frame.isMainFrame())
-                return false;
-            frame = frame.parentFrame;
+            this.dispatchEventToListeners(WebInspector.Frame.Event.ProvisionalLoadStarted);
         }
+    }, {
+        key: "commitProvisionalLoad",
+        value: function commitProvisionalLoad(securityOrigin) {
+            console.assert(this._provisionalMainResource);
+            console.assert(this._provisionalLoaderIdentifier);
+            if (!this._provisionalLoaderIdentifier) return;
 
-        return true;
-    }
+            var oldSecurityOrigin = this._securityOrigin;
+            var oldMainResource = this._mainResource;
 
-    childFrameForIdentifier(frameId)
-    {
-        return this._childFrameIdentifierMap[frameId] || null;
-    }
+            this._securityOrigin = securityOrigin || null;
+            this._loaderIdentifier = this._provisionalLoaderIdentifier;
+            this._mainResource = this._provisionalMainResource;
 
-    addChildFrame(frame)
-    {
-        console.assert(frame instanceof WebInspector.Frame);
-        if (!(frame instanceof WebInspector.Frame))
-            return;
+            this._domContentReadyEventTimestamp = NaN;
+            this._loadEventTimestamp = NaN;
 
-        if (frame._parentFrame === this)
-            return;
+            if (oldMainResource && this._mainResource !== oldMainResource) this._disassociateWithResource(oldMainResource);
 
-        if (frame._parentFrame)
-            frame._parentFrame.removeChildFrame(frame);
+            this.removeAllResources();
 
-        this._childFrames.push(frame);
-        this._childFrameIdentifierMap[frame._id] = frame;
+            this._resourceCollection = this._provisionalResourceCollection;
+            this._provisionalResourceCollection = new WebInspector.ResourceCollection();
 
-        frame._parentFrame = this;
+            this.clearExecutionContexts(true);
+            this.clearProvisionalLoad(true);
+            this.removeAllChildFrames();
 
-        this.dispatchEventToListeners(WebInspector.Frame.Event.ChildFrameWasAdded, {childFrame: frame});
-    }
+            this.dispatchEventToListeners(WebInspector.Frame.Event.ProvisionalLoadCommitted);
 
-    removeChildFrame(frameOrFrameId)
-    {
-        console.assert(frameOrFrameId);
+            if (this._mainResource !== oldMainResource) this._dispatchMainResourceDidChangeEvent(oldMainResource);
 
-        if (frameOrFrameId instanceof WebInspector.Frame)
-            var childFrameId = frameOrFrameId._id;
-        else
-            var childFrameId = frameOrFrameId;
-
-        // Fetch the frame by id even if we were passed a WebInspector.Frame.
-        // We do this incase the WebInspector.Frame is a new object that isn't in _childFrames,
-        // but the id is a valid child frame.
-        var childFrame = this.childFrameForIdentifier(childFrameId);
-        console.assert(childFrame instanceof WebInspector.Frame);
-        if (!(childFrame instanceof WebInspector.Frame))
-            return;
-
-        console.assert(childFrame.parentFrame === this);
-
-        this._childFrames.remove(childFrame);
-        delete this._childFrameIdentifierMap[childFrame._id];
-
-        childFrame._parentFrame = null;
-
-        this.dispatchEventToListeners(WebInspector.Frame.Event.ChildFrameWasRemoved, {childFrame});
-    }
-
-    removeAllChildFrames()
-    {
-        if (!this._childFrames.length)
-            return;
-
-        for (var i = 0; i < this._childFrames.length; ++i)
-            this._childFrames[i]._parentFrame = null;
-
-        this._childFrames = [];
-        this._childFrameIdentifierMap = {};
-
-        this.dispatchEventToListeners(WebInspector.Frame.Event.AllChildFramesRemoved);
-    }
-
-    get resources()
-    {
-        return this._resourceCollection.resources;
-    }
-
-    resourceForURL(url, recursivelySearchChildFrames)
-    {
-        var resource = this._resourceCollection.resourceForURL(url);
-        if (resource)
-            return resource;
-
-        // Check the main resources of the child frames for the requested URL.
-        for (var i = 0; i < this._childFrames.length; ++i) {
-            resource = this._childFrames[i].mainResource;
-            if (resource.url === url)
-                return resource;
+            if (this._securityOrigin !== oldSecurityOrigin) this.dispatchEventToListeners(WebInspector.Frame.Event.SecurityOriginDidChange, { oldSecurityOrigin: oldSecurityOrigin });
         }
+    }, {
+        key: "clearProvisionalLoad",
+        value: function clearProvisionalLoad(skipProvisionalLoadClearedEvent) {
+            if (!this._provisionalLoaderIdentifier) return;
 
-        if (!recursivelySearchChildFrames)
+            this._provisionalLoaderIdentifier = null;
+            this._provisionalMainResource = null;
+            this._provisionalResourceCollection.removeAllResources();
+
+            if (!skipProvisionalLoadClearedEvent) this.dispatchEventToListeners(WebInspector.Frame.Event.ProvisionalLoadCleared);
+        }
+    }, {
+        key: "clearExecutionContexts",
+        value: function clearExecutionContexts(committingProvisionalLoad) {
+            if (this._executionContextList.contexts.length) {
+                this._executionContextList.clear();
+                this.dispatchEventToListeners(WebInspector.Frame.Event.ExecutionContextsCleared, { committingProvisionalLoad: !!committingProvisionalLoad });
+            }
+        }
+    }, {
+        key: "addExecutionContext",
+        value: function addExecutionContext(context) {
+            var changedPageContext = this._executionContextList.add(context);
+
+            if (changedPageContext) this.dispatchEventToListeners(WebInspector.Frame.Event.PageExecutionContextChanged);
+        }
+    }, {
+        key: "isMainFrame",
+        value: function isMainFrame() {
+            return this._isMainFrame;
+        }
+    }, {
+        key: "markAsMainFrame",
+        value: function markAsMainFrame() {
+            this._isMainFrame = true;
+        }
+    }, {
+        key: "unmarkAsMainFrame",
+        value: function unmarkAsMainFrame() {
+            this._isMainFrame = false;
+        }
+    }, {
+        key: "markDOMContentReadyEvent",
+        value: function markDOMContentReadyEvent(timestamp) {
+            this._domContentReadyEventTimestamp = timestamp || NaN;
+        }
+    }, {
+        key: "markLoadEvent",
+        value: function markLoadEvent(timestamp) {
+            this._loadEventTimestamp = timestamp || NaN;
+        }
+    }, {
+        key: "isDetached",
+        value: function isDetached() {
+            var frame = this;
+            while (frame) {
+                if (frame.isMainFrame()) return false;
+                frame = frame.parentFrame;
+            }
+
+            return true;
+        }
+    }, {
+        key: "childFrameForIdentifier",
+        value: function childFrameForIdentifier(frameId) {
+            return this._childFrameIdentifierMap[frameId] || null;
+        }
+    }, {
+        key: "addChildFrame",
+        value: function addChildFrame(frame) {
+            console.assert(frame instanceof WebInspector.Frame);
+            if (!(frame instanceof WebInspector.Frame)) return;
+
+            if (frame._parentFrame === this) return;
+
+            if (frame._parentFrame) frame._parentFrame.removeChildFrame(frame);
+
+            this._childFrames.push(frame);
+            this._childFrameIdentifierMap[frame._id] = frame;
+
+            frame._parentFrame = this;
+
+            this.dispatchEventToListeners(WebInspector.Frame.Event.ChildFrameWasAdded, { childFrame: frame });
+        }
+    }, {
+        key: "removeChildFrame",
+        value: function removeChildFrame(frameOrFrameId) {
+            console.assert(frameOrFrameId);
+
+            if (frameOrFrameId instanceof WebInspector.Frame) var childFrameId = frameOrFrameId._id;else var childFrameId = frameOrFrameId;
+
+            // Fetch the frame by id even if we were passed a WebInspector.Frame.
+            // We do this incase the WebInspector.Frame is a new object that isn't in _childFrames,
+            // but the id is a valid child frame.
+            var childFrame = this.childFrameForIdentifier(childFrameId);
+            console.assert(childFrame instanceof WebInspector.Frame);
+            if (!(childFrame instanceof WebInspector.Frame)) return;
+
+            console.assert(childFrame.parentFrame === this);
+
+            this._childFrames.remove(childFrame);
+            delete this._childFrameIdentifierMap[childFrame._id];
+
+            childFrame._parentFrame = null;
+
+            this.dispatchEventToListeners(WebInspector.Frame.Event.ChildFrameWasRemoved, { childFrame: childFrame });
+        }
+    }, {
+        key: "removeAllChildFrames",
+        value: function removeAllChildFrames() {
+            if (!this._childFrames.length) return;
+
+            for (var i = 0; i < this._childFrames.length; ++i) this._childFrames[i]._parentFrame = null;
+
+            this._childFrames = [];
+            this._childFrameIdentifierMap = {};
+
+            this.dispatchEventToListeners(WebInspector.Frame.Event.AllChildFramesRemoved);
+        }
+    }, {
+        key: "resourceForURL",
+        value: function resourceForURL(url, recursivelySearchChildFrames) {
+            var resource = this._resourceCollection.resourceForURL(url);
+            if (resource) return resource;
+
+            // Check the main resources of the child frames for the requested URL.
+            for (var i = 0; i < this._childFrames.length; ++i) {
+                resource = this._childFrames[i].mainResource;
+                if (resource.url === url) return resource;
+            }
+
+            if (!recursivelySearchChildFrames) return null;
+
+            // Recursively search resources of child frames.
+            for (var i = 0; i < this._childFrames.length; ++i) {
+                resource = this._childFrames[i].resourceForURL(url, true);
+                if (resource) return resource;
+            }
+
             return null;
-
-        // Recursively search resources of child frames.
-        for (var i = 0; i < this._childFrames.length; ++i) {
-            resource = this._childFrames[i].resourceForURL(url, true);
-            if (resource)
-                return resource;
         }
-
-        return null;
-    }
-
-    resourcesWithType(type)
-    {
-        return this._resourceCollection.resourcesWithType(type);
-    }
-
-    addResource(resource)
-    {
-        console.assert(resource instanceof WebInspector.Resource);
-        if (!(resource instanceof WebInspector.Resource))
-            return;
-
-        if (resource.parentFrame === this)
-            return;
-
-        if (resource.parentFrame)
-            resource.parentFrame.removeResource(resource);
-
-        this._associateWithResource(resource);
-
-        if (this._isProvisionalResource(resource)) {
-            this._provisionalResourceCollection.addResource(resource);
-            this.dispatchEventToListeners(WebInspector.Frame.Event.ProvisionalResourceWasAdded, {resource});
-        } else {
-            this._resourceCollection.addResource(resource);
-            this.dispatchEventToListeners(WebInspector.Frame.Event.ResourceWasAdded, {resource});
+    }, {
+        key: "resourcesWithType",
+        value: function resourcesWithType(type) {
+            return this._resourceCollection.resourcesWithType(type);
         }
-    }
+    }, {
+        key: "addResource",
+        value: function addResource(resource) {
+            console.assert(resource instanceof WebInspector.Resource);
+            if (!(resource instanceof WebInspector.Resource)) return;
 
-    removeResource(resourceOrURL)
-    {
-        // This does not remove provisional resources.
+            if (resource.parentFrame === this) return;
 
-        var resource = this._resourceCollection.removeResource(resourceOrURL);
-        if (!resource)
-            return;
+            if (resource.parentFrame) resource.parentFrame.removeResource(resource);
 
-        this._disassociateWithResource(resource);
+            this._associateWithResource(resource);
 
-        this.dispatchEventToListeners(WebInspector.Frame.Event.ResourceWasRemoved, {resource});
-    }
+            if (this._isProvisionalResource(resource)) {
+                this._provisionalResourceCollection.addResource(resource);
+                this.dispatchEventToListeners(WebInspector.Frame.Event.ProvisionalResourceWasAdded, { resource: resource });
+            } else {
+                this._resourceCollection.addResource(resource);
+                this.dispatchEventToListeners(WebInspector.Frame.Event.ResourceWasAdded, { resource: resource });
+            }
+        }
+    }, {
+        key: "removeResource",
+        value: function removeResource(resourceOrURL) {
+            // This does not remove provisional resources.
 
-    removeAllResources()
-    {
-        // This does not remove provisional resources, use clearProvisionalLoad for that.
+            var resource = this._resourceCollection.removeResource(resourceOrURL);
+            if (!resource) return;
 
-        var resources = this.resources;
-        if (!resources.length)
-            return;
+            this._disassociateWithResource(resource);
 
-        for (var i = 0; i < resources.length; ++i)
-            this._disassociateWithResource(resources[i]);
+            this.dispatchEventToListeners(WebInspector.Frame.Event.ResourceWasRemoved, { resource: resource });
+        }
+    }, {
+        key: "removeAllResources",
+        value: function removeAllResources() {
+            // This does not remove provisional resources, use clearProvisionalLoad for that.
 
-        this._resourceCollection.removeAllResources();
+            var resources = this.resources;
+            if (!resources.length) return;
 
-        this.dispatchEventToListeners(WebInspector.Frame.Event.AllResourcesRemoved);
-    }
+            for (var i = 0; i < resources.length; ++i) this._disassociateWithResource(resources[i]);
 
-    saveIdentityToCookie(cookie)
-    {
-        cookie[WebInspector.Frame.MainResourceURLCookieKey] = this.mainResource.url.hash;
-        cookie[WebInspector.Frame.IsMainFrameCookieKey] = this._isMainFrame;
-    }
+            this._resourceCollection.removeAllResources();
 
-    // Private
+            this.dispatchEventToListeners(WebInspector.Frame.Event.AllResourcesRemoved);
+        }
+    }, {
+        key: "saveIdentityToCookie",
+        value: function saveIdentityToCookie(cookie) {
+            cookie[WebInspector.Frame.MainResourceURLCookieKey] = this.mainResource.url.hash;
+            cookie[WebInspector.Frame.IsMainFrameCookieKey] = this._isMainFrame;
+        }
+    }, {
+        key: "_isProvisionalResource",
 
-    _isProvisionalResource(resource)
-    {
-        return (resource.loaderIdentifier && this._provisionalLoaderIdentifier && resource.loaderIdentifier === this._provisionalLoaderIdentifier);
-    }
+        // Private
 
-    _associateWithResource(resource)
-    {
-        console.assert(!resource._parentFrame);
-        if (resource._parentFrame)
-            return;
+        value: function _isProvisionalResource(resource) {
+            return resource.loaderIdentifier && this._provisionalLoaderIdentifier && resource.loaderIdentifier === this._provisionalLoaderIdentifier;
+        }
+    }, {
+        key: "_associateWithResource",
+        value: function _associateWithResource(resource) {
+            console.assert(!resource._parentFrame);
+            if (resource._parentFrame) return;
 
-        resource._parentFrame = this;
-    }
+            resource._parentFrame = this;
+        }
+    }, {
+        key: "_disassociateWithResource",
+        value: function _disassociateWithResource(resource) {
+            console.assert(resource.parentFrame === this);
+            if (resource.parentFrame !== this) return;
 
-    _disassociateWithResource(resource)
-    {
-        console.assert(resource.parentFrame === this);
-        if (resource.parentFrame !== this)
-            return;
+            resource._parentFrame = null;
+        }
+    }, {
+        key: "_dispatchMainResourceDidChangeEvent",
+        value: function _dispatchMainResourceDidChangeEvent(oldMainResource) {
+            this.dispatchEventToListeners(WebInspector.Frame.Event.MainResourceDidChange, { oldMainResource: oldMainResource });
+        }
+    }, {
+        key: "id",
+        get: function () {
+            return this._id;
+        }
+    }, {
+        key: "loaderIdentifier",
+        get: function () {
+            return this._loaderIdentifier;
+        }
+    }, {
+        key: "provisionalLoaderIdentifier",
+        get: function () {
+            return this._provisionalLoaderIdentifier;
+        }
+    }, {
+        key: "name",
+        get: function () {
+            return this._name;
+        }
+    }, {
+        key: "securityOrigin",
+        get: function () {
+            return this._securityOrigin;
+        }
+    }, {
+        key: "url",
+        get: function () {
+            return this._mainResource._url;
+        }
+    }, {
+        key: "domTree",
+        get: function () {
+            if (!this._domTree) this._domTree = new WebInspector.DOMTree(this);
+            return this._domTree;
+        }
+    }, {
+        key: "pageExecutionContext",
+        get: function () {
+            return this._executionContextList.pageExecutionContext;
+        }
+    }, {
+        key: "executionContextList",
+        get: function () {
+            return this._executionContextList;
+        }
+    }, {
+        key: "mainResource",
+        get: function () {
+            return this._mainResource;
+        }
+    }, {
+        key: "provisionalMainResource",
+        get: function () {
+            return this._provisionalMainResource;
+        }
+    }, {
+        key: "parentFrame",
+        get: function () {
+            return this._parentFrame;
+        }
+    }, {
+        key: "childFrames",
+        get: function () {
+            return this._childFrames;
+        }
+    }, {
+        key: "domContentReadyEventTimestamp",
+        get: function () {
+            return this._domContentReadyEventTimestamp;
+        }
+    }, {
+        key: "loadEventTimestamp",
+        get: function () {
+            return this._loadEventTimestamp;
+        }
+    }, {
+        key: "resources",
+        get: function () {
+            return this._resourceCollection.resources;
+        }
+    }]);
 
-        resource._parentFrame = null;
-    }
-
-    _dispatchMainResourceDidChangeEvent(oldMainResource)
-    {
-        this.dispatchEventToListeners(WebInspector.Frame.Event.MainResourceDidChange, {oldMainResource});
-    }
-};
+    return Frame;
+})(WebInspector.Object);
 
 WebInspector.Frame.Event = {
     NameDidChange: "frame-name-did-change",

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Script = class Script extends WebInspector.SourceCode
-{
-    constructor(id, range, url, injected, sourceMapURL)
-    {
-        super();
+WebInspector.Script = (function (_WebInspector$SourceCode) {
+    function Script(id, range, url, injected, sourceMapURL) {
+        _classCallCheck(this, Script);
+
+        _get(Object.getPrototypeOf(Script.prototype), "constructor", this).call(this);
 
         console.assert(id);
         console.assert(range instanceof WebInspector.TextRange);
@@ -38,183 +46,181 @@ WebInspector.Script = class Script extends WebInspector.SourceCode
         this._injected = injected || false;
 
         this._resource = this._resolveResource();
-        if (this._resource)
-            this._resource.associateWithScript(this);
+        if (this._resource) this._resource.associateWithScript(this);
 
-        if (sourceMapURL)
-            WebInspector.sourceMapManager.downloadSourceMap(sourceMapURL, this._url, this);
+        if (sourceMapURL) WebInspector.sourceMapManager.downloadSourceMap(sourceMapURL, this._url, this);
 
         this._scriptSyntaxTree = null;
     }
 
-    // Static
+    _inherits(Script, _WebInspector$SourceCode);
 
-    static resetUniqueDisplayNameNumbers()
-    {
-        WebInspector.Script._nextUniqueDisplayNameNumber = 1;
-    }
+    _createClass(Script, [{
+        key: "requestContentFromBackend",
+        value: function requestContentFromBackend() {
+            if (!this._id) {
+                // There is no identifier to request content with. Return false to cause the
+                // pending callbacks to get null content.
+                return Promise.reject(new Error("There is no identifier to request content with."));
+            }
 
-    // Public
-
-    get id()
-    {
-        return this._id;
-    }
-
-    get range()
-    {
-        return this._range;
-    }
-
-    get url()
-    {
-        return this._url;
-    }
-
-    get urlComponents()
-    {
-        if (!this._urlComponents)
-            this._urlComponents = parseURL(this._url);
-        return this._urlComponents;
-    }
-
-    get mimeType()
-    {
-        return this._resource.mimeType;
-    }
-
-    get displayName()
-    {
-        if (this._url)
-            return WebInspector.displayNameForURL(this._url, this.urlComponents);
-
-        // Assign a unique number to the script object so it will stay the same.
-        if (!this._uniqueDisplayNameNumber)
-            this._uniqueDisplayNameNumber = this.constructor._nextUniqueDisplayNameNumber++;
-
-        return WebInspector.UIString("Anonymous Script %d").format(this._uniqueDisplayNameNumber);
-    }
-
-    get injected()
-    {
-        return this._injected;
-    }
-
-    get resource()
-    {
-        return this._resource;
-    }
-
-    get scriptSyntaxTree()
-    {
-        return this._scriptSyntaxTree;
-    }
-
-    requestContentFromBackend()
-    {
-        if (!this._id) {
-            // There is no identifier to request content with. Return false to cause the
-            // pending callbacks to get null content.
-            return Promise.reject(new Error("There is no identifier to request content with."));
+            return DebuggerAgent.getScriptSource.promise(this._id);
         }
-
-        return DebuggerAgent.getScriptSource.promise(this._id);
-    }
-
-    saveIdentityToCookie(cookie)
-    {
-        cookie[WebInspector.Script.URLCookieKey] = this.url;
-        cookie[WebInspector.Script.DisplayNameCookieKey] = this.displayName;
-    }
-
-    requestScriptSyntaxTree(callback)
-    {
-        if (this._scriptSyntaxTree) {
-            setTimeout(function() { callback(this._scriptSyntaxTree); }.bind(this), 0);
-            return;
+    }, {
+        key: "saveIdentityToCookie",
+        value: function saveIdentityToCookie(cookie) {
+            cookie[WebInspector.Script.URLCookieKey] = this.url;
+            cookie[WebInspector.Script.DisplayNameCookieKey] = this.displayName;
         }
+    }, {
+        key: "requestScriptSyntaxTree",
+        value: function requestScriptSyntaxTree(callback) {
+            if (this._scriptSyntaxTree) {
+                setTimeout((function () {
+                    callback(this._scriptSyntaxTree);
+                }).bind(this), 0);
+                return;
+            }
 
-        var makeSyntaxTreeAndCallCallback = function(content)
-        {
-            this._makeSyntaxTree(content);
-            callback(this._scriptSyntaxTree);
-        }.bind(this);
+            var makeSyntaxTreeAndCallCallback = (function (content) {
+                this._makeSyntaxTree(content);
+                callback(this._scriptSyntaxTree);
+            }).bind(this);
 
-        var content = this.content;
-        if (!content && this._resource && this._resource.type === WebInspector.Resource.Type.Script && this._resource.finished)
-            content = this._resource.content;
-        if (content) {
-            setTimeout(makeSyntaxTreeAndCallCallback, 0, content);
-            return;
+            var content = this.content;
+            if (!content && this._resource && this._resource.type === WebInspector.Resource.Type.Script && this._resource.finished) content = this._resource.content;
+            if (content) {
+                setTimeout(makeSyntaxTreeAndCallCallback, 0, content);
+                return;
+            }
+
+            this.requestContent().then(function (parameters) {
+                makeSyntaxTreeAndCallCallback(parameters.content);
+            })["catch"](function (error) {
+                makeSyntaxTreeAndCallCallback(null);
+            });
         }
+    }, {
+        key: "_resolveResource",
 
-        this.requestContent().then(function(parameters) {
-            makeSyntaxTreeAndCallCallback(parameters.content);
-        }).catch(function(error) {
-            makeSyntaxTreeAndCallCallback(null);
-        });
-    }
+        // Private
 
-    // Private
+        value: function _resolveResource() {
+            // FIXME: We should be able to associate a Script with a Resource through identifiers,
+            // we shouldn't need to lookup by URL, which is not safe with frames, where there might
+            // be multiple resources with the same URL.
+            // <rdar://problem/13373951> Scripts should be able to associate directly with a Resource
 
-    _resolveResource()
-    {
-        // FIXME: We should be able to associate a Script with a Resource through identifiers,
-        // we shouldn't need to lookup by URL, which is not safe with frames, where there might
-        // be multiple resources with the same URL.
-        // <rdar://problem/13373951> Scripts should be able to associate directly with a Resource
+            // No URL, no resource.
+            if (!this._url) return null;
 
-        // No URL, no resource.
-        if (!this._url)
+            try {
+                // Try with the Script's full URL.
+                var resource = WebInspector.frameResourceManager.resourceForURL(this.url);
+                if (resource) return resource;
+
+                // Try with the Script's full decoded URL.
+                var decodedURL = decodeURI(this._url);
+                if (decodedURL !== this._url) {
+                    resource = WebInspector.frameResourceManager.resourceForURL(decodedURL);
+                    if (resource) return resource;
+                }
+
+                // Next try removing any fragment in the original URL.
+                var urlWithoutFragment = removeURLFragment(this._url);
+                if (urlWithoutFragment !== this._url) {
+                    resource = WebInspector.frameResourceManager.resourceForURL(urlWithoutFragment);
+                    if (resource) return resource;
+                }
+
+                // Finally try removing any fragment in the decoded URL.
+                var decodedURLWithoutFragment = removeURLFragment(decodedURL);
+                if (decodedURLWithoutFragment !== decodedURL) {
+                    resource = WebInspector.frameResourceManager.resourceForURL(decodedURLWithoutFragment);
+                    if (resource) return resource;
+                }
+            } catch (e) {}
+
             return null;
-
-        try {
-            // Try with the Script's full URL.
-            var resource = WebInspector.frameResourceManager.resourceForURL(this.url);
-            if (resource)
-                return resource;
-
-            // Try with the Script's full decoded URL.
-            var decodedURL = decodeURI(this._url);
-            if (decodedURL !== this._url) {
-                resource = WebInspector.frameResourceManager.resourceForURL(decodedURL);
-                if (resource)
-                    return resource;
-            }
-
-            // Next try removing any fragment in the original URL.
-            var urlWithoutFragment = removeURLFragment(this._url);
-            if (urlWithoutFragment !== this._url) {
-                resource = WebInspector.frameResourceManager.resourceForURL(urlWithoutFragment);
-                if (resource)
-                    return resource;
-            }
-
-            // Finally try removing any fragment in the decoded URL.
-            var decodedURLWithoutFragment = removeURLFragment(decodedURL);
-            if (decodedURLWithoutFragment !== decodedURL) {
-                resource = WebInspector.frameResourceManager.resourceForURL(decodedURLWithoutFragment);
-                if (resource)
-                    return resource;
-            }
-        } catch (e) {
-            // Ignore possible URIErrors.
         }
+    }, {
+        key: "_makeSyntaxTree",
+        value: function _makeSyntaxTree(sourceText) {
+            if (this._scriptSyntaxTree || !sourceText) return;
 
-        return null;
-    }
+            this._scriptSyntaxTree = new WebInspector.ScriptSyntaxTree(sourceText, this);
+        }
+    }, {
+        key: "id",
 
-    _makeSyntaxTree(sourceText)
-    {
-        if (this._scriptSyntaxTree || !sourceText)
-            return;
+        // Public
 
-        this._scriptSyntaxTree = new WebInspector.ScriptSyntaxTree(sourceText, this);
-    }
-};
+        get: function () {
+            return this._id;
+        }
+    }, {
+        key: "range",
+        get: function () {
+            return this._range;
+        }
+    }, {
+        key: "url",
+        get: function () {
+            return this._url;
+        }
+    }, {
+        key: "urlComponents",
+        get: function () {
+            if (!this._urlComponents) this._urlComponents = parseURL(this._url);
+            return this._urlComponents;
+        }
+    }, {
+        key: "mimeType",
+        get: function () {
+            return this._resource.mimeType;
+        }
+    }, {
+        key: "displayName",
+        get: function () {
+            if (this._url) return WebInspector.displayNameForURL(this._url, this.urlComponents);
+
+            // Assign a unique number to the script object so it will stay the same.
+            if (!this._uniqueDisplayNameNumber) this._uniqueDisplayNameNumber = this.constructor._nextUniqueDisplayNameNumber++;
+
+            return WebInspector.UIString("Anonymous Script %d").format(this._uniqueDisplayNameNumber);
+        }
+    }, {
+        key: "injected",
+        get: function () {
+            return this._injected;
+        }
+    }, {
+        key: "resource",
+        get: function () {
+            return this._resource;
+        }
+    }, {
+        key: "scriptSyntaxTree",
+        get: function () {
+            return this._scriptSyntaxTree;
+        }
+    }], [{
+        key: "resetUniqueDisplayNameNumbers",
+
+        // Static
+
+        value: function resetUniqueDisplayNameNumbers() {
+            WebInspector.Script._nextUniqueDisplayNameNumber = 1;
+        }
+    }]);
+
+    return Script;
+})(WebInspector.SourceCode);
 
 WebInspector.Script.TypeIdentifier = "script";
 WebInspector.Script.URLCookieKey = "script-url";
 WebInspector.Script.DisplayNameCookieKey = "script-display-name";
 
 WebInspector.Script._nextUniqueDisplayNameNumber = 1;
+
+// Ignore possible URIErrors.

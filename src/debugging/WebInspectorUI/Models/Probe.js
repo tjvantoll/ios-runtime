@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 University of Washington. All rights reserved.
  * Copyright (C) 2014 Apple Inc. All rights reserved.
@@ -24,24 +32,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ProbeSample = class ProbeSample extends WebInspector.Object
-{
-    constructor(sampleId, batchId, elapsedTime, payload)
-    {
-        super();
+WebInspector.ProbeSample = (function (_WebInspector$Object) {
+    function ProbeSample(sampleId, batchId, elapsedTime, payload) {
+        _classCallCheck(this, ProbeSample);
+
+        _get(Object.getPrototypeOf(ProbeSample.prototype), "constructor", this).call(this);
 
         this.sampleId = sampleId;
         this.batchId = batchId;
         this.timestamp = elapsedTime;
         this.object = WebInspector.RemoteObject.fromPayload(payload);
     }
-};
 
-WebInspector.Probe = class Probe extends WebInspector.Object
-{
-    constructor(id, breakpoint, expression)
-    {
-        super();
+    _inherits(ProbeSample, _WebInspector$Object);
+
+    return ProbeSample;
+})(WebInspector.Object);
+
+WebInspector.Probe = (function (_WebInspector$Object2) {
+    function Probe(id, breakpoint, expression) {
+        _classCallCheck(this, Probe);
+
+        _get(Object.getPrototypeOf(Probe.prototype), "constructor", this).call(this);
 
         console.assert(id);
         console.assert(breakpoint instanceof WebInspector.Breakpoint);
@@ -52,52 +64,56 @@ WebInspector.Probe = class Probe extends WebInspector.Object
         this._samples = [];
     }
 
-    // Public
+    _inherits(Probe, _WebInspector$Object2);
 
-    get id()
-    {
-        return this._id;
-    }
+    _createClass(Probe, [{
+        key: "clearSamples",
+        value: function clearSamples() {
+            this._samples = [];
+            this.dispatchEventToListeners(WebInspector.Probe.Event.SamplesCleared);
+        }
+    }, {
+        key: "addSample",
+        value: function addSample(sample) {
+            console.assert(sample instanceof WebInspector.ProbeSample, "Wrong object type passed as probe sample: ", sample);
+            this._samples.push(sample);
+            this.dispatchEventToListeners(WebInspector.Probe.Event.SampleAdded, sample);
+        }
+    }, {
+        key: "id",
 
-    get breakpoint()
-    {
-        return this._breakpoint;
-    }
+        // Public
 
-    get expression()
-    {
-        return this._expression;
-    }
+        get: function () {
+            return this._id;
+        }
+    }, {
+        key: "breakpoint",
+        get: function () {
+            return this._breakpoint;
+        }
+    }, {
+        key: "expression",
+        get: function () {
+            return this._expression;
+        },
+        set: function (value) {
+            if (this._expression === value) return;
 
-    set expression(value)
-    {
-        if (this._expression === value)
-            return;
+            var data = { oldValue: this._expression, newValue: value };
+            this._expression = value;
+            this.clearSamples();
+            this.dispatchEventToListeners(WebInspector.Probe.Event.ExpressionChanged, data);
+        }
+    }, {
+        key: "samples",
+        get: function () {
+            return this._samples.slice();
+        }
+    }]);
 
-        var data = {oldValue: this._expression, newValue: value};
-        this._expression = value;
-        this.clearSamples();
-        this.dispatchEventToListeners(WebInspector.Probe.Event.ExpressionChanged, data);
-    }
-
-    get samples()
-    {
-        return this._samples.slice();
-    }
-
-    clearSamples()
-    {
-        this._samples = [];
-        this.dispatchEventToListeners(WebInspector.Probe.Event.SamplesCleared);
-    }
-
-    addSample(sample)
-    {
-        console.assert(sample instanceof WebInspector.ProbeSample, "Wrong object type passed as probe sample: ", sample);
-        this._samples.push(sample);
-        this.dispatchEventToListeners(WebInspector.Probe.Event.SampleAdded, sample);
-    }
-};
+    return Probe;
+})(WebInspector.Object);
 
 WebInspector.Probe.Event = {
     ExpressionChanged: "probe-object-expression-changed",

@@ -1,3 +1,7 @@
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014 Apple Inc. All rights reserved.
  *
@@ -23,6 +27,16 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DebuggerDashboard = class DebuggerDashboard extends WebInspector.Object
-{
-};
+WebInspector.DebuggerDashboard = (function (_WebInspector$Object) {
+  function DebuggerDashboard() {
+    _classCallCheck(this, DebuggerDashboard);
+
+    if (_WebInspector$Object != null) {
+      _WebInspector$Object.apply(this, arguments);
+    }
+  }
+
+  _inherits(DebuggerDashboard, _WebInspector$Object);
+
+  return DebuggerDashboard;
+})(WebInspector.Object);

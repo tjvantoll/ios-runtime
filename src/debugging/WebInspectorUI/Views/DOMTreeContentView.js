@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMTreeContentView = function(representedObject)
-{
+WebInspector.DOMTreeContentView = function (representedObject) {
     console.assert(representedObject);
 
     WebInspector.ContentView.call(this, representedObject);
@@ -65,46 +64,25 @@ WebInspector.DOMTreeContentView = function(representedObject)
 
 WebInspector.DOMTreeContentView.StyleClassName = "dom-tree";
 
-WebInspector.DOMTreeContentView.prototype = {
+WebInspector.DOMTreeContentView.prototype = Object.defineProperties({
     constructor: WebInspector.DOMTreeContentView,
     __proto__: WebInspector.ContentView.prototype,
 
-    // Public
-
-    get navigationItems()
-    {
-        return [this._showsShadowDOMButtonNavigationItem, this._compositingBordersButtonNavigationItem, this._paintFlashingButtonNavigationItem];
-    },
-
-    get domTreeOutline()
-    {
-        return this._domTreeOutline;
-    },
-
-    get scrollableElements()
-    {
-        return [this.element];
-    },
-
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         this._domTreeOutline.updateSelection();
     },
 
-    shown: function()
-    {
+    shown: function shown() {
         this._domTreeOutline.setVisible(true, WebInspector.isConsoleFocused());
         this._updateCompositingBordersButtonToMatchPageSettings();
     },
 
-    hidden: function()
-    {
+    hidden: function hidden() {
         WebInspector.domTreeManager.hideDOMNodeHighlight();
         this._domTreeOutline.setVisible(false);
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         WebInspector.showPaintRectsSetting.removeEventListener(null, null, this);
         WebInspector.showShadowDOMSetting.removeEventListener(null, null, this);
         WebInspector.domTreeManager.removeEventListener(null, null, this);
@@ -112,32 +90,8 @@ WebInspector.DOMTreeContentView.prototype = {
         this._domTreeOutline.close();
     },
 
-    get selectionPathComponents()
-    {
-        var treeElement = this._domTreeOutline.selectedTreeElement;
-        var pathComponents = [];
-
-        while (treeElement && !treeElement.root) {
-            // The close tag is contained within the element it closes. So skip it since we don't want to
-            // show the same node twice in the hierarchy.
-            if (treeElement.isCloseTag()) {
-                treeElement = treeElement.parent;
-                continue;
-            }
-
-            var pathComponent = new WebInspector.DOMTreeElementPathComponent(treeElement, treeElement.representedObject);
-            pathComponent.addEventListener(WebInspector.HierarchicalPathComponent.Event.SiblingWasSelected, this._pathComponentSelected, this);
-            pathComponents.unshift(pathComponent);
-            treeElement = treeElement.parent;
-        }
-
-        return pathComponents;
-    },
-
-    restoreFromCookie: function(cookie)
-    {
-        if (!cookie || !cookie.nodeToSelect)
-            return;
+    restoreFromCookie: function restoreFromCookie(cookie) {
+        if (!cookie || !cookie.nodeToSelect) return;
 
         this.selectAndRevealDOMNode(cookie.nodeToSelect);
 
@@ -146,17 +100,14 @@ WebInspector.DOMTreeContentView.prototype = {
         cookie.nodeToSelect = undefined;
     },
 
-    selectAndRevealDOMNode: function(domNode, preventFocusChange)
-    {
+    selectAndRevealDOMNode: function selectAndRevealDOMNode(domNode, preventFocusChange) {
         this._restoreSelectedNodeIsAllowed = false;
         this._domTreeOutline.selectDOMNode(domNode, !preventFocusChange);
     },
 
-    handleCopyEvent: function(event)
-    {
+    handleCopyEvent: function handleCopyEvent(event) {
         var selectedDOMNode = this._domTreeOutline.selectedDOMNode();
-        if (!selectedDOMNode)
-            return;
+        if (!selectedDOMNode) return;
 
         event.clipboardData.clearData();
         event.preventDefault();
@@ -164,51 +115,8 @@ WebInspector.DOMTreeContentView.prototype = {
         selectedDOMNode.copyNode();
     },
 
-    get supportsSave()
-    {
-        return WebInspector.canArchiveMainFrame();
-    },
-
-    get saveData()
-    {
-        function saveHandler(forceSaveAs)
-        {
-            WebInspector.archiveMainFrame();
-        }
-
-        return { customSaveHandler: saveHandler };
-    },
-
-    get supportsSearch()
-    {
-        return true;
-    },
-
-    get numberOfSearchResults()
-    {
-        return this._numberOfSearchResults;
-    },
-
-    get hasPerformedSearch()
-    {
-        return this._numberOfSearchResults !== null;
-    },
-
-    set automaticallyRevealFirstSearchResult(reveal)
-    {
-        this._automaticallyRevealFirstSearchResult = reveal;
-
-        // If we haven't shown a search result yet, reveal one now.
-        if (this._automaticallyRevealFirstSearchResult && this._numberOfSearchResults > 0) {
-            if (this._currentSearchResultIndex === -1)
-                this.revealNextSearchResult();
-        }
-    },
-
-    performSearch: function(query)
-    {
-        if (this._searchQuery === query)
-            return;
+    performSearch: function performSearch(query) {
+        if (this._searchQuery === query) return;
 
         if (this._searchIdentifier) {
             DOMAgent.discardSearchResults(this._searchIdentifier);
@@ -220,10 +128,8 @@ WebInspector.DOMTreeContentView.prototype = {
         this._numberOfSearchResults = null;
         this._currentSearchResultIndex = -1;
 
-        function searchResultsReady(error, searchIdentifier, resultsCount)
-        {
-            if (error)
-                return;
+        function searchResultsReady(error, searchIdentifier, resultsCount) {
+            if (error) return;
 
             this._searchIdentifier = searchIdentifier;
             this._numberOfSearchResults = resultsCount;
@@ -232,27 +138,23 @@ WebInspector.DOMTreeContentView.prototype = {
 
             this._showSearchHighlights();
 
-            if (this._automaticallyRevealFirstSearchResult)
-                this.revealNextSearchResult();
+            if (this._automaticallyRevealFirstSearchResult) this.revealNextSearchResult();
         }
 
-        function contextNodesReady(nodeIds)
-        {
+        function contextNodesReady(nodeIds) {
             DOMAgent.performSearch(query, nodeIds, searchResultsReady.bind(this));
         }
 
         this.getSearchContextNodes(contextNodesReady.bind(this));
     },
 
-    getSearchContextNodes: function(callback)
-    {
+    getSearchContextNodes: function getSearchContextNodes(callback) {
         // Overwrite this to limit the search to just a subtree.
         // Passing undefined will make DOMAgent.performSearch search through all the documents.
         callback(undefined);
     },
 
-    searchCleared: function()
-    {
+    searchCleared: function searchCleared() {
         if (this._searchIdentifier) {
             DOMAgent.discardSearchResults(this._searchIdentifier);
             this._hideSearchHighlights();
@@ -264,137 +166,102 @@ WebInspector.DOMTreeContentView.prototype = {
         this._currentSearchResultIndex = -1;
     },
 
-    revealPreviousSearchResult: function(changeFocus)
-    {
-        if (!this._numberOfSearchResults)
-            return;
+    revealPreviousSearchResult: function revealPreviousSearchResult(changeFocus) {
+        if (!this._numberOfSearchResults) return;
 
-        if (this._currentSearchResultIndex > 0)
-            --this._currentSearchResultIndex;
-        else
-            this._currentSearchResultIndex = this._numberOfSearchResults - 1;
+        if (this._currentSearchResultIndex > 0) --this._currentSearchResultIndex;else this._currentSearchResultIndex = this._numberOfSearchResults - 1;
 
         this._revealSearchResult(this._currentSearchResultIndex, changeFocus);
     },
 
-    revealNextSearchResult: function(changeFocus)
-    {
-        if (!this._numberOfSearchResults)
-            return;
+    revealNextSearchResult: function revealNextSearchResult(changeFocus) {
+        if (!this._numberOfSearchResults) return;
 
-        if (this._currentSearchResultIndex + 1 < this._numberOfSearchResults)
-            ++this._currentSearchResultIndex;
-        else
-            this._currentSearchResultIndex = 0;
+        if (this._currentSearchResultIndex + 1 < this._numberOfSearchResults) ++this._currentSearchResultIndex;else this._currentSearchResultIndex = 0;
 
         this._revealSearchResult(this._currentSearchResultIndex, changeFocus);
     },
 
     // Private
 
-    _revealSearchResult: function(index, changeFocus)
-    {
+    _revealSearchResult: function _revealSearchResult(index, changeFocus) {
         console.assert(this._searchIdentifier);
 
         var searchIdentifier = this._searchIdentifier;
 
-        function revealResult(error, nodeIdentifiers)
-        {
-            if (error)
-                return;
+        function revealResult(error, nodeIdentifiers) {
+            if (error) return;
 
             // Bail if the searchIdentifier changed since we started.
-            if (this._searchIdentifier !== searchIdentifier)
-                return;
+            if (this._searchIdentifier !== searchIdentifier) return;
 
             console.assert(nodeIdentifiers.length === 1);
 
             var domNode = WebInspector.domTreeManager.nodeForId(nodeIdentifiers[0]);
             console.assert(domNode);
-            if (!domNode)
-                return;
+            if (!domNode) return;
 
             this._domTreeOutline.selectDOMNode(domNode, changeFocus);
 
             var selectedTreeElement = this._domTreeOutline.selectedTreeElement;
-            if (selectedTreeElement)
-                selectedTreeElement.emphasizeSearchHighlight();
+            if (selectedTreeElement) selectedTreeElement.emphasizeSearchHighlight();
         }
 
         DOMAgent.getSearchResults(this._searchIdentifier, index, index + 1, revealResult.bind(this));
     },
 
-    _restoreSelectedNodeAfterUpdate: function(documentURL, defaultNode)
-    {
-        if (!this._restoreSelectedNodeIsAllowed || !WebInspector.domTreeManager.restoreSelectedNodeIsAllowed)
-            return;
+    _restoreSelectedNodeAfterUpdate: function _restoreSelectedNodeAfterUpdate(documentURL, defaultNode) {
+        if (!this._restoreSelectedNodeIsAllowed || !WebInspector.domTreeManager.restoreSelectedNodeIsAllowed) return;
 
-        function selectNode(lastSelectedNode)
-        {
+        function selectNode(lastSelectedNode) {
             var nodeToFocus = lastSelectedNode;
-            if (!nodeToFocus)
-                nodeToFocus = defaultNode;
+            if (!nodeToFocus) nodeToFocus = defaultNode;
 
-            if (!nodeToFocus)
-                return;
+            if (!nodeToFocus) return;
 
             this._dontSetLastSelectedNodePath = true;
             this.selectAndRevealDOMNode(nodeToFocus, WebInspector.isConsoleFocused());
             this._dontSetLastSelectedNodePath = false;
 
             // If this wasn't the last selected node, then expand it.
-            if (!lastSelectedNode && this._domTreeOutline.selectedTreeElement)
-                this._domTreeOutline.selectedTreeElement.expand();
+            if (!lastSelectedNode && this._domTreeOutline.selectedTreeElement) this._domTreeOutline.selectedTreeElement.expand();
         }
 
-        function selectLastSelectedNode(nodeId)
-        {
-            if (!this._restoreSelectedNodeIsAllowed || !WebInspector.domTreeManager.restoreSelectedNodeIsAllowed)
-                return;
+        function selectLastSelectedNode(nodeId) {
+            if (!this._restoreSelectedNodeIsAllowed || !WebInspector.domTreeManager.restoreSelectedNodeIsAllowed) return;
 
             selectNode.call(this, WebInspector.domTreeManager.nodeForId(nodeId));
         }
 
-        if (documentURL && this._lastSelectedNodePathSetting.value && this._lastSelectedNodePathSetting.value.path && this._lastSelectedNodePathSetting.value.url === documentURL.hash)
-            WebInspector.domTreeManager.pushNodeByPathToFrontend(this._lastSelectedNodePathSetting.value.path, selectLastSelectedNode.bind(this));
-        else
-            selectNode.call(this);
+        if (documentURL && this._lastSelectedNodePathSetting.value && this._lastSelectedNodePathSetting.value.path && this._lastSelectedNodePathSetting.value.url === documentURL.hash) WebInspector.domTreeManager.pushNodeByPathToFrontend(this._lastSelectedNodePathSetting.value.path, selectLastSelectedNode.bind(this));else selectNode.call(this);
     },
 
-    _selectedNodeDidChange: function(event)
-    {
+    _selectedNodeDidChange: function _selectedNodeDidChange(event) {
         var selectedDOMNode = this._domTreeOutline.selectedDOMNode();
-        if (selectedDOMNode && !this._dontSetLastSelectedNodePath)
-            this._lastSelectedNodePathSetting.value = {url: selectedDOMNode.ownerDocument.documentURL.hash, path: selectedDOMNode.path()};
+        if (selectedDOMNode && !this._dontSetLastSelectedNodePath) this._lastSelectedNodePathSetting.value = { url: selectedDOMNode.ownerDocument.documentURL.hash, path: selectedDOMNode.path() };
 
-        if (selectedDOMNode)
-            ConsoleAgent.addInspectedNode(selectedDOMNode.id);
+        if (selectedDOMNode) ConsoleAgent.addInspectedNode(selectedDOMNode.id);
 
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SelectionPathComponentsDidChange);
     },
 
-    _pathComponentSelected: function(event)
-    {
+    _pathComponentSelected: function _pathComponentSelected(event) {
         console.assert(event.data.pathComponent instanceof WebInspector.DOMTreeElementPathComponent);
         console.assert(event.data.pathComponent.domTreeElement instanceof WebInspector.DOMTreeElement);
 
         this._domTreeOutline.selectDOMNode(event.data.pathComponent.domTreeElement.representedObject, true);
     },
 
-    _domNodeChanged: function(event)
-    {
+    _domNodeChanged: function _domNodeChanged(event) {
         var selectedDOMNode = this._domTreeOutline.selectedDOMNode();
-        if (selectedDOMNode !== event.data.node)
-            return;
+        if (selectedDOMNode !== event.data.node) return;
 
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SelectionPathComponentsDidChange);
     },
 
-    _mouseWasClicked: function(event)
-    {
+    _mouseWasClicked: function _mouseWasClicked(event) {
         var anchorElement = event.target.enclosingNodeOrSelfWithNodeName("a");
-        if (!anchorElement || !anchorElement.href)
-            return;
+        if (!anchorElement || !anchorElement.href) return;
 
         // Prevent the link from navigating, since we don't do any navigation by following links normally.
         event.preventDefault();
@@ -412,11 +279,9 @@ WebInspector.DOMTreeContentView.prototype = {
         }
 
         // If this is a double-click (or multiple-click), return early.
-        if (event.detail > 1)
-            return;
+        if (event.detail > 1) return;
 
-        function followLink()
-        {
+        function followLink() {
             // Since followLink is delayed, the call to WebInspector.openURL can't look at window.event
             // to see if the command key is down like it normally would. So we need to do that check
             // before calling WebInspector.openURL.
@@ -430,8 +295,7 @@ WebInspector.DOMTreeContentView.prototype = {
         this._followLinkTimeoutIdentifier = setTimeout(followLink.bind(this), 333);
     },
 
-    _toggleCompositingBorders: function(event)
-    {
+    _toggleCompositingBorders: function _toggleCompositingBorders(event) {
         console.assert(PageAgent.setCompositingBordersVisible);
 
         var activated = !this._compositingBordersButtonNavigationItem.activated;
@@ -439,28 +303,24 @@ WebInspector.DOMTreeContentView.prototype = {
         PageAgent.setCompositingBordersVisible(activated);
     },
 
-    _togglePaintFlashing: function(event)
-    {
+    _togglePaintFlashing: function _togglePaintFlashing(event) {
         WebInspector.showPaintRectsSetting.value = !WebInspector.showPaintRectsSetting.value;
     },
 
-    _updateCompositingBordersButtonToMatchPageSettings: function()
-    {
-        if (!PageAgent.getCompositingBordersVisible)
-            return;
+    _updateCompositingBordersButtonToMatchPageSettings: function _updateCompositingBordersButtonToMatchPageSettings() {
+        if (!PageAgent.getCompositingBordersVisible) return;
 
         var button = this._compositingBordersButtonNavigationItem;
 
         // We need to sync with the page settings since these can be controlled
         // in a different way than just using the navigation bar button.
-        PageAgent.getCompositingBordersVisible(function(error, compositingBordersVisible) {
+        PageAgent.getCompositingBordersVisible(function (error, compositingBordersVisible) {
             button.activated = error ? false : compositingBordersVisible;
             button.enabled = error !== "unsupported";
         });
     },
 
-    _showPaintRectsSettingChanged: function(event)
-    {
+    _showPaintRectsSettingChanged: function _showPaintRectsSettingChanged(event) {
         console.assert(PageAgent.setShowPaintRects);
 
         this._paintFlashingButtonNavigationItem.activated = WebInspector.showPaintRectsSetting.value;
@@ -468,60 +328,169 @@ WebInspector.DOMTreeContentView.prototype = {
         PageAgent.setShowPaintRects(this._paintFlashingButtonNavigationItem.activated);
     },
 
-    _showShadowDOMSettingChanged: function(event)
-    {
+    _showShadowDOMSettingChanged: function _showShadowDOMSettingChanged(event) {
         this._showsShadowDOMButtonNavigationItem.activated = WebInspector.showShadowDOMSetting.value;
     },
 
-    _toggleShowsShadowDOMSetting: function(event)
-    {
+    _toggleShowsShadowDOMSetting: function _toggleShowsShadowDOMSetting(event) {
         WebInspector.showShadowDOMSetting.value = !WebInspector.showShadowDOMSetting.value;
     },
 
-    _showSearchHighlights: function()
-    {
+    _showSearchHighlights: function _showSearchHighlights() {
         console.assert(this._searchIdentifier);
 
         this._searchResultNodes = [];
 
         var searchIdentifier = this._searchIdentifier;
 
-        DOMAgent.getSearchResults(this._searchIdentifier, 0, this._numberOfSearchResults, function(error, nodeIdentifiers) {
-            if (error)
-                return;
+        DOMAgent.getSearchResults(this._searchIdentifier, 0, this._numberOfSearchResults, (function (error, nodeIdentifiers) {
+            if (error) return;
 
-            if (this._searchIdentifier !== searchIdentifier)
-                return;
+            if (this._searchIdentifier !== searchIdentifier) return;
 
             console.assert(nodeIdentifiers.length === this._numberOfSearchResults);
 
             for (var i = 0; i < nodeIdentifiers.length; ++i) {
                 var domNode = WebInspector.domTreeManager.nodeForId(nodeIdentifiers[i]);
                 console.assert(domNode);
-                if (!domNode)
-                    continue;
+                if (!domNode) continue;
 
                 this._searchResultNodes.push(domNode);
 
                 var treeElement = this._domTreeOutline.findTreeElement(domNode);
                 console.assert(treeElement);
-                if (treeElement)
-                    treeElement.highlightSearchResults(this._searchQuery);
+                if (treeElement) treeElement.highlightSearchResults(this._searchQuery);
             }
-        }.bind(this));
+        }).bind(this));
     },
 
-    _hideSearchHighlights: function()
-    {
-        if (!this._searchResultNodes)
-            return;
+    _hideSearchHighlights: function _hideSearchHighlights() {
+        if (!this._searchResultNodes) return;
 
-        for (var domNode of this._searchResultNodes) {
-            var treeElement = this._domTreeOutline.findTreeElement(domNode);
-            if (treeElement)
-                treeElement.hideSearchHighlights();
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = this._searchResultNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var domNode = _step.value;
+
+                var treeElement = this._domTreeOutline.findTreeElement(domNode);
+                if (treeElement) treeElement.hideSearchHighlights();
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
 
         delete this._searchResultNodes;
     }
-};
+}, {
+    navigationItems: { // Public
+
+        get: function () {
+            return [this._showsShadowDOMButtonNavigationItem, this._compositingBordersButtonNavigationItem, this._paintFlashingButtonNavigationItem];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    domTreeOutline: {
+        get: function () {
+            return this._domTreeOutline;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    scrollableElements: {
+        get: function () {
+            return [this.element];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    selectionPathComponents: {
+        get: function () {
+            var treeElement = this._domTreeOutline.selectedTreeElement;
+            var pathComponents = [];
+
+            while (treeElement && !treeElement.root) {
+                // The close tag is contained within the element it closes. So skip it since we don't want to
+                // show the same node twice in the hierarchy.
+                if (treeElement.isCloseTag()) {
+                    treeElement = treeElement.parent;
+                    continue;
+                }
+
+                var pathComponent = new WebInspector.DOMTreeElementPathComponent(treeElement, treeElement.representedObject);
+                pathComponent.addEventListener(WebInspector.HierarchicalPathComponent.Event.SiblingWasSelected, this._pathComponentSelected, this);
+                pathComponents.unshift(pathComponent);
+                treeElement = treeElement.parent;
+            }
+
+            return pathComponents;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSave: {
+        get: function () {
+            return WebInspector.canArchiveMainFrame();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    saveData: {
+        get: function () {
+            function saveHandler(forceSaveAs) {
+                WebInspector.archiveMainFrame();
+            }
+
+            return { customSaveHandler: saveHandler };
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSearch: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    numberOfSearchResults: {
+        get: function () {
+            return this._numberOfSearchResults;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    hasPerformedSearch: {
+        get: function () {
+            return this._numberOfSearchResults !== null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    automaticallyRevealFirstSearchResult: {
+        set: function (reveal) {
+            this._automaticallyRevealFirstSearchResult = reveal;
+
+            // If we haven't shown a search result yet, reveal one now.
+            if (this._automaticallyRevealFirstSearchResult && this._numberOfSearchResults > 0) {
+                if (this._currentSearchResultIndex === -1) this.revealNextSearchResult();
+            }
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

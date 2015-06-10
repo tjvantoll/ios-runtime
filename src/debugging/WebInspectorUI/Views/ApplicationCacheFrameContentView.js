@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ApplicationCacheFrameContentView = function(representedObject)
-{
+WebInspector.ApplicationCacheFrameContentView = function (representedObject) {
     console.assert(representedObject instanceof WebInspector.ApplicationCacheFrame);
 
     WebInspector.ContentView.call(this, representedObject);
@@ -46,86 +45,65 @@ WebInspector.ApplicationCacheFrameContentView = function(representedObject)
     this.updateStatus(status);
 
     WebInspector.applicationCacheManager.addEventListener(WebInspector.ApplicationCacheManager.Event.FrameManifestStatusChanged, this._updateStatus, this);
-}
+};
 
 WebInspector.ApplicationCacheFrameContentView.StyleClassName = "application-cache-frame";
 
-WebInspector.ApplicationCacheFrameContentView.prototype = {
+WebInspector.ApplicationCacheFrameContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ApplicationCacheFrameContentView,
 
-    shown: function()
-    {
+    shown: function shown() {
         this._maybeUpdate();
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         WebInspector.applicationCacheManager.removeEventListener(null, null, this);
     },
 
-    updateLayout: function()
-    {
-        if (this.dataGrid)
-            this.dataGrid.updateLayout();
+    updateLayout: function updateLayout() {
+        if (this.dataGrid) this.dataGrid.updateLayout();
     },
 
-    saveToCookie: function(cookie)
-    {
+    saveToCookie: function saveToCookie(cookie) {
         cookie.type = WebInspector.ContentViewCookieType.ApplicationCache;
         cookie.frame = this.representedObject.frame.url;
         cookie.manifest = this.representedObject.manifest.manifestURL;
     },
 
-    get scrollableElements()
-    {
-        if (!this._dataGrid)
-            return [];
-        return [this._dataGrid.scrollContainer];
-    },
-
-    _maybeUpdate: function()
-    {
-        if (!this.visible || !this._viewDirty)
-            return;
+    _maybeUpdate: function _maybeUpdate() {
+        if (!this.visible || !this._viewDirty) return;
 
         this._update();
         this._viewDirty = false;
     },
 
-    _markDirty: function()
-    {
+    _markDirty: function _markDirty() {
         this._viewDirty = true;
     },
 
-    _updateStatus: function(event)
-    {
+    _updateStatus: function _updateStatus(event) {
         var frameManifest = event.data.frameManifest;
-        if (frameManifest !== this.representedObject)
-            return;
+        if (frameManifest !== this.representedObject) return;
 
         console.assert(frameManifest instanceof WebInspector.ApplicationCacheFrame);
 
         this.updateStatus(frameManifest.status);
     },
 
-    updateStatus: function(status)
-    {
+    updateStatus: function updateStatus(status) {
         var oldStatus = this._status;
         this._status = status;
 
-        if (this.visible && this._status === WebInspector.ApplicationCacheManager.Status.Idle && (oldStatus === WebInspector.ApplicationCacheManager.Status.UpdateReady || !this._resources))
-            this._markDirty();
+        if (this.visible && this._status === WebInspector.ApplicationCacheManager.Status.Idle && (oldStatus === WebInspector.ApplicationCacheManager.Status.UpdateReady || !this._resources)) this._markDirty();
 
         this._maybeUpdate();
     },
 
-    _update: function()
-    {
+    _update: function _update() {
         WebInspector.applicationCacheManager.requestApplicationCache(this._frame, this._updateCallback.bind(this));
     },
 
-    _updateCallback: function(applicationCache)
-    {
+    _updateCallback: function _updateCallback(applicationCache) {
         if (!applicationCache || !applicationCache.manifestURL) {
             delete this._manifest;
             delete this._creationTime;
@@ -135,8 +113,7 @@ WebInspector.ApplicationCacheFrameContentView.prototype = {
 
             this._emptyView.classList.remove("hidden");
 
-            if (this._dataGrid)
-                this._dataGrid.element.classList.add("hidden");
+            if (this._dataGrid) this._dataGrid.element.classList.add("hidden");
             return;
         }
 
@@ -147,8 +124,7 @@ WebInspector.ApplicationCacheFrameContentView.prototype = {
         this._size = applicationCache.size;
         this._resources = applicationCache.resources;
 
-        if (!this._dataGrid)
-            this._createDataGrid();
+        if (!this._dataGrid) this._createDataGrid();
 
         this._populateDataGrid();
         this._dataGrid.autoSizeColumns(20, 80);
@@ -157,9 +133,8 @@ WebInspector.ApplicationCacheFrameContentView.prototype = {
         this._emptyView.classList.add("hidden");
     },
 
-    _createDataGrid: function()
-    {
-        var columns = {url: {}, type: {}, size: {}};
+    _createDataGrid: function _createDataGrid() {
+        var columns = { url: {}, type: {}, size: {} };
 
         columns.url.title = WebInspector.UIString("Resource");
         columns.url.sortable = true;
@@ -181,58 +156,84 @@ WebInspector.ApplicationCacheFrameContentView.prototype = {
         this._dataGrid.updateLayout();
     },
 
-    _sortDataGrid: function()
-    {
-        function numberCompare(columnIdentifier, nodeA, nodeB)
-        {
+    _sortDataGrid: function _sortDataGrid() {
+        function numberCompare(columnIdentifier, nodeA, nodeB) {
             return nodeA.data[columnIdentifier] - nodeB.data[columnIdentifier];
         }
-        function localeCompare(columnIdentifier, nodeA, nodeB)
-        {
-             return (nodeA.data[columnIdentifier] + "").localeCompare(nodeB.data[columnIdentifier] + "");
+        function localeCompare(columnIdentifier, nodeA, nodeB) {
+            return (nodeA.data[columnIdentifier] + "").localeCompare(nodeB.data[columnIdentifier] + "");
         }
 
         var comparator;
         switch (this._dataGrid.sortColumnIdentifier) {
-            case "type": comparator = localeCompare.bind(this, "type"); break;
-            case "size": comparator = numberCompare.bind(this, "size"); break;
+            case "type":
+                comparator = localeCompare.bind(this, "type");break;
+            case "size":
+                comparator = numberCompare.bind(this, "size");break;
             case "url":
-            default:  comparator = localeCompare.bind(this, "url"); break;
+            default:
+                comparator = localeCompare.bind(this, "url");break;
         }
 
         this._dataGrid.sortNodes(comparator);
     },
 
-    _populateDataGrid: function()
-    {
+    _populateDataGrid: function _populateDataGrid() {
         this._dataGrid.removeChildren();
 
-        for (var resource of this._resources) {
-            var data = {
-                url: resource.url,
-                type: resource.type,
-                size: Number.bytesToString(resource.size)
-            };
-            var node = new WebInspector.DataGridNode(data);
-            this._dataGrid.appendChild(node);
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = this._resources[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var resource = _step.value;
+
+                var data = {
+                    url: resource.url,
+                    type: resource.type,
+                    size: Number.bytesToString(resource.size)
+                };
+                var node = new WebInspector.DataGridNode(data);
+                this._dataGrid.appendChild(node);
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
     },
 
-    _deleteButtonClicked: function(event)
-    {
-        if (!this._dataGrid || !this._dataGrid.selectedNode)
-            return;
+    _deleteButtonClicked: function _deleteButtonClicked(event) {
+        if (!this._dataGrid || !this._dataGrid.selectedNode) return;
 
         // FIXME: Delete Button semantics are not yet defined. (Delete a single, or all?)
         this._deleteCallback(this._dataGrid.selectedNode);
     },
 
-    _deleteCallback: function(node)
-    {
-        // FIXME: Should we delete a single (selected) resource or all resources?
-        // InspectorBackend.deleteCachedResource(...)
-        // this._update();
+    _deleteCallback: function _deleteCallback(node) {}
+}, {
+    scrollableElements: {
+        get: function () {
+            if (!this._dataGrid) return [];
+            return [this._dataGrid.scrollContainer];
+        },
+        configurable: true,
+        enumerable: true
     }
-}
+});
 
 WebInspector.ApplicationCacheFrameContentView.prototype.__proto__ = WebInspector.ContentView.prototype;
+
+// FIXME: Should we delete a single (selected) resource or all resources?
+// InspectorBackend.deleteCachedResource(...)
+// this._update();

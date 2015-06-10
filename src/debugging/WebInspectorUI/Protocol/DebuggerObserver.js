@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,47 +27,55 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DebuggerObserver = class DebuggerObserver
-{
-    // Events defined by the "Debugger" domain.
-
-    globalObjectCleared()
-    {
-        WebInspector.debuggerManager.reset();
+WebInspector.DebuggerObserver = (function () {
+    function DebuggerObserver() {
+        _classCallCheck(this, DebuggerObserver);
     }
 
-    scriptParsed(scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL)
-    {
-        WebInspector.debuggerManager.scriptDidParse(scriptId, url, isContentScript, startLine, startColumn, endLine, endColumn, sourceMapURL);
-    }
+    _createClass(DebuggerObserver, [{
+        key: "globalObjectCleared",
 
-    scriptFailedToParse(url, scriptSource, startLine, errorLine, errorMessage)
-    {
-        // FIXME: Not implemented.
-    }
+        // Events defined by the "Debugger" domain.
 
-    breakpointResolved(breakpointId, location)
-    {
-        WebInspector.debuggerManager.breakpointResolved(breakpointId, location);
-    }
+        value: function globalObjectCleared() {
+            WebInspector.debuggerManager.reset();
+        }
+    }, {
+        key: "scriptParsed",
+        value: function scriptParsed(scriptId, url, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL) {
+            WebInspector.debuggerManager.scriptDidParse(scriptId, url, isContentScript, startLine, startColumn, endLine, endColumn, sourceMapURL);
+        }
+    }, {
+        key: "scriptFailedToParse",
+        value: function scriptFailedToParse(url, scriptSource, startLine, errorLine, errorMessage) {}
+    }, {
+        key: "breakpointResolved",
+        value: function breakpointResolved(breakpointId, location) {
+            WebInspector.debuggerManager.breakpointResolved(breakpointId, location);
+        }
+    }, {
+        key: "paused",
+        value: function paused(callFrames, reason, data) {
+            WebInspector.debuggerManager.debuggerDidPause(callFrames, reason, data);
+        }
+    }, {
+        key: "resumed",
+        value: function resumed() {
+            WebInspector.debuggerManager.debuggerDidResume();
+        }
+    }, {
+        key: "playBreakpointActionSound",
+        value: function playBreakpointActionSound(breakpointActionIdentifier) {
+            WebInspector.debuggerManager.playBreakpointActionSound(breakpointActionIdentifier);
+        }
+    }, {
+        key: "didSampleProbe",
+        value: function didSampleProbe(sample) {
+            WebInspector.probeManager.didSampleProbe(sample);
+        }
+    }]);
 
-    paused(callFrames, reason, data)
-    {
-        WebInspector.debuggerManager.debuggerDidPause(callFrames, reason, data);
-    }
+    return DebuggerObserver;
+})();
 
-    resumed()
-    {
-        WebInspector.debuggerManager.debuggerDidResume();
-    }
-
-    playBreakpointActionSound(breakpointActionIdentifier)
-    {
-        WebInspector.debuggerManager.playBreakpointActionSound(breakpointActionIdentifier);
-    }
-
-    didSampleProbe(sample)
-    {
-        WebInspector.probeManager.didSampleProbe(sample);
-    }
-};
+// FIXME: Not implemented.

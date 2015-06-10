@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014-2015 Apple Inc. All rights reserved.
  *
@@ -23,10 +31,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TimelineRecordTreeElement = class TimelineRecordTreeElement extends WebInspector.GeneralTreeElement
-{
-    constructor(timelineRecord, subtitleNameStyle, includeTimerIdentifierInMainTitle, sourceCodeLocation, representedObject)
-    {
+WebInspector.TimelineRecordTreeElement = (function (_WebInspector$GeneralTreeElement) {
+    function TimelineRecordTreeElement(timelineRecord, subtitleNameStyle, includeTimerIdentifierInMainTitle, sourceCodeLocation, representedObject) {
+        _classCallCheck(this, TimelineRecordTreeElement);
+
         console.assert(timelineRecord);
 
         sourceCodeLocation = sourceCodeLocation || timelineRecord.sourceCodeLocation || null;
@@ -37,122 +45,125 @@ WebInspector.TimelineRecordTreeElement = class TimelineRecordTreeElement extends
         if (sourceCodeLocation) {
             subtitle = document.createElement("span");
 
-            if (subtitleNameStyle !== WebInspector.SourceCodeLocation.NameStyle.None)
-                sourceCodeLocation.populateLiveDisplayLocationString(subtitle, "textContent", null, subtitleNameStyle);
-            else
-                sourceCodeLocation.populateLiveDisplayLocationString(subtitle, "textContent", null, WebInspector.SourceCodeLocation.NameStyle.None, WebInspector.UIString("line "));
+            if (subtitleNameStyle !== WebInspector.SourceCodeLocation.NameStyle.None) sourceCodeLocation.populateLiveDisplayLocationString(subtitle, "textContent", null, subtitleNameStyle);else sourceCodeLocation.populateLiveDisplayLocationString(subtitle, "textContent", null, WebInspector.SourceCodeLocation.NameStyle.None, WebInspector.UIString("line "));
         }
 
         var iconStyleClass = null;
 
         switch (timelineRecord.type) {
-        case WebInspector.TimelineRecord.Type.Layout:
-            title = WebInspector.LayoutTimelineRecord.displayNameForEventType(timelineRecord.eventType);
+            case WebInspector.TimelineRecord.Type.Layout:
+                title = WebInspector.LayoutTimelineRecord.displayNameForEventType(timelineRecord.eventType);
 
-            switch (timelineRecord.eventType) {
-            case WebInspector.LayoutTimelineRecord.EventType.InvalidateStyles:
-            case WebInspector.LayoutTimelineRecord.EventType.RecalculateStyles:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.StyleRecordIconStyleClass;
+                switch (timelineRecord.eventType) {
+                    case WebInspector.LayoutTimelineRecord.EventType.InvalidateStyles:
+                    case WebInspector.LayoutTimelineRecord.EventType.RecalculateStyles:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.StyleRecordIconStyleClass;
+                        break;
+                    case WebInspector.LayoutTimelineRecord.EventType.InvalidateLayout:
+                    case WebInspector.LayoutTimelineRecord.EventType.ForcedLayout:
+                    case WebInspector.LayoutTimelineRecord.EventType.Layout:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.LayoutRecordIconStyleClass;
+                        break;
+                    case WebInspector.LayoutTimelineRecord.EventType.Paint:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.PaintRecordIconStyleClass;
+                        break;
+                    default:
+                        console.error("Unknown LayoutTimelineRecord eventType: " + timelineRecord.eventType, timelineRecord);
+                }
+
                 break;
-            case WebInspector.LayoutTimelineRecord.EventType.InvalidateLayout:
-            case WebInspector.LayoutTimelineRecord.EventType.ForcedLayout:
-            case WebInspector.LayoutTimelineRecord.EventType.Layout:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.LayoutRecordIconStyleClass;
+
+            case WebInspector.TimelineRecord.Type.Script:
+                title = WebInspector.ScriptTimelineRecord.EventType.displayName(timelineRecord.eventType, timelineRecord.details, includeTimerIdentifierInMainTitle);
+
+                switch (timelineRecord.eventType) {
+                    case WebInspector.ScriptTimelineRecord.EventType.ScriptEvaluated:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.EvaluatedRecordIconStyleClass;
+                        break;
+                    case WebInspector.ScriptTimelineRecord.EventType.EventDispatched:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.EventRecordIconStyleClass;
+                        break;
+                    case WebInspector.ScriptTimelineRecord.EventType.ProbeSampleRecorded:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.ProbeRecordIconStyleClass;
+                        break;
+                    case WebInspector.ScriptTimelineRecord.EventType.ConsoleProfileRecorded:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.ConsoleProfileIconStyleClass;
+                        break;
+                    case WebInspector.ScriptTimelineRecord.EventType.TimerFired:
+                    case WebInspector.ScriptTimelineRecord.EventType.TimerInstalled:
+                    case WebInspector.ScriptTimelineRecord.EventType.TimerRemoved:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.TimerRecordIconStyleClass;
+                        break;
+                    case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameFired:
+                    case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameRequested:
+                    case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameCanceled:
+                        iconStyleClass = WebInspector.TimelineRecordTreeElement.AnimationRecordIconStyleClass;
+                        break;
+                    default:
+                        console.error("Unknown ScriptTimelineRecord eventType: " + timelineRecord.eventType, timelineRecord);
+                }
+
                 break;
-            case WebInspector.LayoutTimelineRecord.EventType.Paint:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.PaintRecordIconStyleClass;
+
+            case WebInspector.TimelineRecord.Type.RenderingFrame:
+                title = WebInspector.UIString("Frame %d").format(timelineRecord.frameNumber);
+                iconStyleClass = WebInspector.TimelineRecordTreeElement.RenderingFrameRecordIconStyleClass;
                 break;
+
             default:
-                console.error("Unknown LayoutTimelineRecord eventType: " + timelineRecord.eventType, timelineRecord);
-            }
-
-            break;
-
-        case WebInspector.TimelineRecord.Type.Script:
-            title = WebInspector.ScriptTimelineRecord.EventType.displayName(timelineRecord.eventType, timelineRecord.details, includeTimerIdentifierInMainTitle);
-
-            switch (timelineRecord.eventType) {
-            case WebInspector.ScriptTimelineRecord.EventType.ScriptEvaluated:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.EvaluatedRecordIconStyleClass;
-                break;
-            case WebInspector.ScriptTimelineRecord.EventType.EventDispatched:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.EventRecordIconStyleClass;
-                break;
-            case WebInspector.ScriptTimelineRecord.EventType.ProbeSampleRecorded:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.ProbeRecordIconStyleClass;
-                break;
-            case WebInspector.ScriptTimelineRecord.EventType.ConsoleProfileRecorded:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.ConsoleProfileIconStyleClass;
-                break;
-            case WebInspector.ScriptTimelineRecord.EventType.TimerFired:
-            case WebInspector.ScriptTimelineRecord.EventType.TimerInstalled:
-            case WebInspector.ScriptTimelineRecord.EventType.TimerRemoved:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.TimerRecordIconStyleClass;
-                break;
-            case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameFired:
-            case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameRequested:
-            case WebInspector.ScriptTimelineRecord.EventType.AnimationFrameCanceled:
-                iconStyleClass = WebInspector.TimelineRecordTreeElement.AnimationRecordIconStyleClass;
-                break;
-            default:
-                console.error("Unknown ScriptTimelineRecord eventType: " + timelineRecord.eventType, timelineRecord);
-            }
-
-            break;
-
-        case WebInspector.TimelineRecord.Type.RenderingFrame:
-            title = WebInspector.UIString("Frame %d").format(timelineRecord.frameNumber);
-            iconStyleClass = WebInspector.TimelineRecordTreeElement.RenderingFrameRecordIconStyleClass;
-            break;
-
-        default:
-            console.error("Unknown TimelineRecord type: " + timelineRecord.type, timelineRecord);
+                console.error("Unknown TimelineRecord type: " + timelineRecord.type, timelineRecord);
         }
 
-        super([iconStyleClass], title, subtitle, representedObject || timelineRecord, false);
+        _get(Object.getPrototypeOf(TimelineRecordTreeElement.prototype), "constructor", this).call(this, [iconStyleClass], title, subtitle, representedObject || timelineRecord, false);
 
         this._record = timelineRecord;
         this._sourceCodeLocation = sourceCodeLocation;
 
         this.small = true;
 
-        if (this._sourceCodeLocation)
-            this.tooltipHandledSeparately = true;
+        if (this._sourceCodeLocation) this.tooltipHandledSeparately = true;
     }
 
-    // Public
+    _inherits(TimelineRecordTreeElement, _WebInspector$GeneralTreeElement);
 
-    get record()
-    {
-        return this._record;
-    }
+    _createClass(TimelineRecordTreeElement, [{
+        key: "onattach",
 
-    get filterableData()
-    {
-        var url = this._sourceCodeLocation ? this._sourceCodeLocation.sourceCode.url : "";
-        return {text: [this.mainTitle, url || "", this._record.details || ""]};
-    }
+        // Protected
 
-    get sourceCodeLocation()
-    {
-        return this._sourceCodeLocation;
-    }
+        value: function onattach() {
+            WebInspector.GeneralTreeElement.prototype.onattach.call(this);
 
-    // Protected
+            console.assert(this.element);
 
-    onattach()
-    {
-        WebInspector.GeneralTreeElement.prototype.onattach.call(this);
+            if (!this.tooltipHandledSeparately) return;
 
-        console.assert(this.element);
+            var tooltipPrefix = this.mainTitle + "\n";
+            this._sourceCodeLocation.populateLiveDisplayLocationTooltip(this.element, tooltipPrefix);
+        }
+    }, {
+        key: "record",
 
-        if (!this.tooltipHandledSeparately)
-            return;
+        // Public
 
-        var tooltipPrefix = this.mainTitle + "\n";
-        this._sourceCodeLocation.populateLiveDisplayLocationTooltip(this.element, tooltipPrefix);
-    }
-};
+        get: function () {
+            return this._record;
+        }
+    }, {
+        key: "filterableData",
+        get: function () {
+            var url = this._sourceCodeLocation ? this._sourceCodeLocation.sourceCode.url : "";
+            return { text: [this.mainTitle, url || "", this._record.details || ""] };
+        }
+    }, {
+        key: "sourceCodeLocation",
+        get: function () {
+            return this._sourceCodeLocation;
+        }
+    }]);
+
+    return TimelineRecordTreeElement;
+})(WebInspector.GeneralTreeElement);
 
 WebInspector.TimelineRecordTreeElement.StyleRecordIconStyleClass = "style-record";
 WebInspector.TimelineRecordTreeElement.LayoutRecordIconStyleClass = "layout-record";

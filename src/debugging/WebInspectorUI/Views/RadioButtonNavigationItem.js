@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.RadioButtonNavigationItem = function(identifier, toolTip, image, imageWidth, imageHeight) {
+WebInspector.RadioButtonNavigationItem = function (identifier, toolTip, image, imageWidth, imageHeight) {
     WebInspector.ButtonNavigationItem.call(this, identifier, toolTip, image, imageWidth, imageHeight, null, "tab");
 };
 
@@ -31,42 +31,10 @@ WebInspector.RadioButtonNavigationItem.StyleClassName = "radio";
 WebInspector.RadioButtonNavigationItem.ActiveStyleClassName = "active";
 WebInspector.RadioButtonNavigationItem.SelectedStyleClassName = "selected";
 
-WebInspector.RadioButtonNavigationItem.prototype = {
+WebInspector.RadioButtonNavigationItem.prototype = Object.defineProperties({
     constructor: WebInspector.RadioButtonNavigationItem,
 
-    // Public
-
-    get selected()
-    {
-        return this.element.classList.contains(WebInspector.RadioButtonNavigationItem.SelectedStyleClassName);
-    },
-
-    set selected(flag)
-    {
-        if (flag) {
-            this.element.classList.add(WebInspector.RadioButtonNavigationItem.SelectedStyleClassName);
-            this.element.setAttribute("aria-selected", "true");
-        } else {
-            this.element.classList.remove(WebInspector.RadioButtonNavigationItem.SelectedStyleClassName);
-            this.element.setAttribute("aria-selected", "false");
-        }
-    },
-
-    get active()
-    {
-        return this.element.classList.contains(WebInspector.RadioButtonNavigationItem.ActiveStyleClassName);
-    },
-
-    set active(flag)
-    {
-        if (flag)
-            this.element.classList.add(WebInspector.RadioButtonNavigationItem.ActiveStyleClassName);
-        else
-            this.element.classList.remove(WebInspector.RadioButtonNavigationItem.ActiveStyleClassName);
-    },
-
-    generateStyleText: function(parentSelector)
-    {
+    generateStyleText: function generateStyleText(parentSelector) {
         var classNames = this._classNames.join(".");
 
         // Default state.
@@ -81,10 +49,8 @@ WebInspector.RadioButtonNavigationItem.prototype = {
         return styleText;
     },
 
-    updateLayout: function(expandOnly)
-    {
-        if (expandOnly)
-            return;
+    updateLayout: function updateLayout(expandOnly) {
+        if (expandOnly) return;
 
         var isSelected = this.selected;
 
@@ -94,8 +60,7 @@ WebInspector.RadioButtonNavigationItem.prototype = {
         }
 
         var selectedWidth = this.element.offsetWidth;
-        if (selectedWidth)
-            this.element.style.minWidth = selectedWidth + "px";
+        if (selectedWidth) this.element.style.minWidth = selectedWidth + "px";
 
         if (!isSelected) {
             this.element.classList.remove(WebInspector.RadioButtonNavigationItem.SelectedStyleClassName);
@@ -105,7 +70,35 @@ WebInspector.RadioButtonNavigationItem.prototype = {
 
     // Private
 
-    _additionalClassNames: [WebInspector.RadioButtonNavigationItem.StyleClassName, WebInspector.ButtonNavigationItem.StyleClassName],
-};
+    _additionalClassNames: [WebInspector.RadioButtonNavigationItem.StyleClassName, WebInspector.ButtonNavigationItem.StyleClassName]
+}, {
+    selected: { // Public
+
+        get: function () {
+            return this.element.classList.contains(WebInspector.RadioButtonNavigationItem.SelectedStyleClassName);
+        },
+        set: function (flag) {
+            if (flag) {
+                this.element.classList.add(WebInspector.RadioButtonNavigationItem.SelectedStyleClassName);
+                this.element.setAttribute("aria-selected", "true");
+            } else {
+                this.element.classList.remove(WebInspector.RadioButtonNavigationItem.SelectedStyleClassName);
+                this.element.setAttribute("aria-selected", "false");
+            }
+        },
+        configurable: true,
+        enumerable: true
+    },
+    active: {
+        get: function () {
+            return this.element.classList.contains(WebInspector.RadioButtonNavigationItem.ActiveStyleClassName);
+        },
+        set: function (flag) {
+            if (flag) this.element.classList.add(WebInspector.RadioButtonNavigationItem.ActiveStyleClassName);else this.element.classList.remove(WebInspector.RadioButtonNavigationItem.ActiveStyleClassName);
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.RadioButtonNavigationItem.prototype.__proto__ = WebInspector.ButtonNavigationItem.prototype;

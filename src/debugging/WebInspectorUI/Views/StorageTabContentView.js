@@ -23,32 +23,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.StorageTabContentView = function(identifier)
-{
+WebInspector.StorageTabContentView = function (identifier) {
     var tabBarItem = new WebInspector.TabBarItem("Images/Storage.svg", WebInspector.UIString("Storage"));
     var detailsSidebarPanels = [WebInspector.applicationCacheDetailsSidebarPanel];
 
     WebInspector.ContentBrowserTabContentView.call(this, identifier || "storage", "storage", tabBarItem, WebInspector.StorageSidebarPanel, detailsSidebarPanels);
 };
 
-WebInspector.StorageTabContentView.prototype = {
+WebInspector.StorageTabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.StorageTabContentView,
     __proto__: WebInspector.ContentBrowserTabContentView.prototype,
 
-    // Public
-
-    get type()
-    {
-        return WebInspector.StorageTabContentView.Type;
-    },
-
-    canShowRepresentedObject: function(representedObject)
-    {
-        return representedObject instanceof WebInspector.DOMStorageObject || representedObject instanceof WebInspector.CookieStorageObject ||
-            representedObject instanceof WebInspector.DatabaseTableObject || representedObject instanceof WebInspector.DatabaseObject ||
-            representedObject instanceof WebInspector.ApplicationCacheFrame || representedObject instanceof WebInspector.IndexedDatabaseObjectStore ||
-            representedObject instanceof WebInspector.IndexedDatabaseObjectStoreIndex;
+    canShowRepresentedObject: function canShowRepresentedObject(representedObject) {
+        return representedObject instanceof WebInspector.DOMStorageObject || representedObject instanceof WebInspector.CookieStorageObject || representedObject instanceof WebInspector.DatabaseTableObject || representedObject instanceof WebInspector.DatabaseObject || representedObject instanceof WebInspector.ApplicationCacheFrame || representedObject instanceof WebInspector.IndexedDatabaseObjectStore || representedObject instanceof WebInspector.IndexedDatabaseObjectStoreIndex;
     }
-};
+}, {
+    type: { // Public
+
+        get: function () {
+            return WebInspector.StorageTabContentView.Type;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.StorageTabContentView.Type = "storage";

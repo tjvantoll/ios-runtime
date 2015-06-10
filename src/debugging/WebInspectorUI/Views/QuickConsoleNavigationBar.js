@@ -23,24 +23,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.QuickConsoleNavigationBar = function(element, navigationItems)
-{
+WebInspector.QuickConsoleNavigationBar = function (element, navigationItems) {
     WebInspector.NavigationBar.call(this, element, navigationItems);
 };
 
-WebInspector.QuickConsoleNavigationBar.prototype = {
+WebInspector.QuickConsoleNavigationBar.prototype = Object.defineProperties({
     constructor: WebInspector.QuickConsoleNavigationBar,
 
-    get sizesToFit()
-    {
-        return true;
-    },
-
-    addNavigationItem: function(navigationItem)
-    {
+    addNavigationItem: function addNavigationItem(navigationItem) {
         // Add new navigation items to the left.
         return this.insertNavigationItem(navigationItem, 0);
     }
-};
+}, {
+    sizesToFit: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.QuickConsoleNavigationBar.prototype.__proto__ = WebInspector.NavigationBar.prototype;

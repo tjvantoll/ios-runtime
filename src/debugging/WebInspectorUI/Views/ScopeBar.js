@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ScopeBar = class ScopeBar extends WebInspector.NavigationItem
-{
-    constructor(identifier, items, defaultItem)
-    {
-        super(identifier);
+WebInspector.ScopeBar = (function (_WebInspector$NavigationItem) {
+    function ScopeBar(identifier, items, defaultItem) {
+        _classCallCheck(this, ScopeBar);
+
+        _get(Object.getPrototypeOf(ScopeBar.prototype), "constructor", this).call(this, identifier);
 
         this._element.classList.add("scope-bar");
 
@@ -38,100 +46,98 @@ WebInspector.ScopeBar = class ScopeBar extends WebInspector.NavigationItem
         this._populate();
     }
 
-    // Public
+    _inherits(ScopeBar, _WebInspector$NavigationItem);
 
-    get defaultItem()
-    {
-        return this._defaultItem;
-    }
-
-    item(id)
-    {
-        return this._itemsById[id];
-    }
-
-    get selectedItems()
-    {
-        return this._items.filter(function(item) {
-            return item.selected;
-        });
-    }
-
-    hasNonDefaultItemSelected()
-    {
-        return this._items.some(function(item) {
-            return item.selected && item !== this._defaultItem;
-        }, this);
-    }
-
-    updateLayout(expandOnly)
-    {
-        if (expandOnly)
-            return;
-
-        for (var i = 0; i < this._items.length; ++i) {
-            var item = this._items[i];
-            var isSelected = item.selected;
-
-            if (!isSelected)
-                item.element.classList.add(WebInspector.ScopeBarItem.SelectedStyleClassName);
-
-            var selectedWidth = item.element.offsetWidth;
-            if (selectedWidth)
-                item.element.style.minWidth = selectedWidth + "px";
-
-            if (!isSelected)
-                item.element.classList.remove(WebInspector.ScopeBarItem.SelectedStyleClassName);
+    _createClass(ScopeBar, [{
+        key: "item",
+        value: function item(id) {
+            return this._itemsById[id];
         }
-    }
-
-    // Private
-
-    _populate()
-    {
-        var item;
-        for (var i = 0; i < this._items.length; ++i) {
-            item = this._items[i];
-            this._itemsById[item.id] = item;
-            this._element.appendChild(item.element);
-
-            item.addEventListener(WebInspector.ScopeBarItem.Event.SelectionChanged, this._itemSelectionDidChange, this);
+    }, {
+        key: "hasNonDefaultItemSelected",
+        value: function hasNonDefaultItemSelected() {
+            return this._items.some(function (item) {
+                return item.selected && item !== this._defaultItem;
+            }, this);
         }
+    }, {
+        key: "updateLayout",
+        value: function updateLayout(expandOnly) {
+            if (expandOnly) return;
 
-        if (!this.selectedItems.length && this._defaultItem)
-            this._defaultItem.selected = true;
-    }
-
-    _itemSelectionDidChange(event)
-    {
-        var sender = event.target;
-        var item;
-
-        // An exclusive item was selected, unselect everything else.
-        if (sender.isExclusive && sender.selected) {
             for (var i = 0; i < this._items.length; ++i) {
-                item = this._items[i];
-                if (item !== sender)
-                    item.selected = false;
-            }
-        } else {
-            var replacesCurrentSelection = !event.data.withModifier;
-            for (var i = 0; i < this._items.length; ++i) {
-                item = this._items[i];
-                if (item.isExclusive && item !== sender && sender.selected)
-                    item.selected = false;
-                else if (sender.selected && replacesCurrentSelection && sender !== item)
-                    item.selected = false;
+                var item = this._items[i];
+                var isSelected = item.selected;
+
+                if (!isSelected) item.element.classList.add(WebInspector.ScopeBarItem.SelectedStyleClassName);
+
+                var selectedWidth = item.element.offsetWidth;
+                if (selectedWidth) item.element.style.minWidth = selectedWidth + "px";
+
+                if (!isSelected) item.element.classList.remove(WebInspector.ScopeBarItem.SelectedStyleClassName);
             }
         }
+    }, {
+        key: "_populate",
 
-        // If nothing is selected anymore, select the default item.
-        if (!this.selectedItems.length && this._defaultItem)
-            this._defaultItem.selected = true;
+        // Private
 
-        this.dispatchEventToListeners(WebInspector.ScopeBar.Event.SelectionChanged);
-    }
-};
+        value: function _populate() {
+            var item;
+            for (var i = 0; i < this._items.length; ++i) {
+                item = this._items[i];
+                this._itemsById[item.id] = item;
+                this._element.appendChild(item.element);
+
+                item.addEventListener(WebInspector.ScopeBarItem.Event.SelectionChanged, this._itemSelectionDidChange, this);
+            }
+
+            if (!this.selectedItems.length && this._defaultItem) this._defaultItem.selected = true;
+        }
+    }, {
+        key: "_itemSelectionDidChange",
+        value: function _itemSelectionDidChange(event) {
+            var sender = event.target;
+            var item;
+
+            // An exclusive item was selected, unselect everything else.
+            if (sender.isExclusive && sender.selected) {
+                for (var i = 0; i < this._items.length; ++i) {
+                    item = this._items[i];
+                    if (item !== sender) item.selected = false;
+                }
+            } else {
+                var replacesCurrentSelection = !event.data.withModifier;
+                for (var i = 0; i < this._items.length; ++i) {
+                    item = this._items[i];
+                    if (item.isExclusive && item !== sender && sender.selected) item.selected = false;else if (sender.selected && replacesCurrentSelection && sender !== item) item.selected = false;
+                }
+            }
+
+            // If nothing is selected anymore, select the default item.
+            if (!this.selectedItems.length && this._defaultItem) this._defaultItem.selected = true;
+
+            this.dispatchEventToListeners(WebInspector.ScopeBar.Event.SelectionChanged);
+        }
+    }, {
+        key: "defaultItem",
+
+        // Public
+
+        get: function () {
+            return this._defaultItem;
+        }
+    }, {
+        key: "selectedItems",
+        get: function () {
+            return this._items.filter(function (item) {
+                return item.selected;
+            });
+        }
+    }]);
+
+    return ScopeBar;
+})(WebInspector.NavigationItem);
 
 WebInspector.ScopeBar.Event = {
     SelectionChanged: "scopebar-selection-did-change"

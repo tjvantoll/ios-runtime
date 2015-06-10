@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DividerNavigationItem = function(identifier) {
+WebInspector.DividerNavigationItem = function (identifier) {
     WebInspector.NavigationItem.call(this, identifier);
 };
 
@@ -34,7 +34,7 @@ WebInspector.DividerNavigationItem.prototype = {
 
     // Private
 
-    _additionalClassNames: [WebInspector.DividerNavigationItem.StyleClassName],
+    _additionalClassNames: [WebInspector.DividerNavigationItem.StyleClassName]
 };
 
 WebInspector.DividerNavigationItem.prototype.__proto__ = WebInspector.NavigationItem.prototype;

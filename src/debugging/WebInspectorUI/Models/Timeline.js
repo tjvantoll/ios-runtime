@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Timeline = class Timeline extends WebInspector.Object
-{
-    constructor(type, recording)
-    {
-        super();
+WebInspector.Timeline = (function (_WebInspector$Object) {
+    function Timeline(type, recording) {
+        _classCallCheck(this, Timeline);
+
+        _get(Object.getPrototypeOf(Timeline.prototype), "constructor", this).call(this);
 
         this._type = type;
         this._recording = recording;
@@ -35,125 +43,123 @@ WebInspector.Timeline = class Timeline extends WebInspector.Object
         this.reset(true);
     }
 
-    // Static
+    _inherits(Timeline, _WebInspector$Object);
 
-    static create(type, recording)
-    {
-        if (type === WebInspector.TimelineRecord.Type.Network)
-            return new WebInspector.NetworkTimeline(type, recording);
+    _createClass(Timeline, [{
+        key: "reset",
+        value: function reset(suppressEvents) {
+            this._records = [];
+            this._startTime = NaN;
+            this._endTime = NaN;
 
-        return new WebInspector.Timeline(type, recording);
-    }
-
-    // Public
-
-    get startTime()
-    {
-        return this._startTime;
-    }
-
-    get endTime()
-    {
-        return this._endTime;
-    }
-
-    get records()
-    {
-        return this._records;
-    }
-
-    get type()
-    {
-        return this._type;
-    }
-
-    get recording()
-    {
-        return this._recording;
-    }
-
-    get displayName()
-    {
-        if (this._type === WebInspector.TimelineRecord.Type.Network)
-            return WebInspector.UIString("Network Requests");
-        if (this._type === WebInspector.TimelineRecord.Type.Layout)
-            return WebInspector.UIString("Layout & Rendering");
-        if (this._type === WebInspector.TimelineRecord.Type.Script)
-            return WebInspector.UIString("JavaScript & Events");
-        if (this._type === WebInspector.TimelineRecord.Type.RenderingFrame)
-            return WebInspector.UIString("Rendering Frames");
-
-        console.error("Timeline has unknown type:", this._type, this);
-    }
-
-    get iconClassName()
-    {
-        if (this._type === WebInspector.TimelineRecord.Type.Network)
-            return WebInspector.TimelineSidebarPanel.NetworkIconStyleClass;
-        if (this._type === WebInspector.TimelineRecord.Type.Layout)
-            return WebInspector.TimelineSidebarPanel.ColorsIconStyleClass;
-        if (this._type === WebInspector.TimelineRecord.Type.Script)
-            return WebInspector.TimelineSidebarPanel.ScriptIconStyleClass;
-        if (this._type === WebInspector.TimelineRecord.Type.RenderingFrame)
-            return WebInspector.TimelineSidebarPanel.RenderingFrameIconStyleClass;
-
-        console.error("Timeline has unknown type:", this._type, this);
-    }
-
-    reset(suppressEvents)
-    {
-        this._records = [];
-        this._startTime = NaN;
-        this._endTime = NaN;
-
-        if (!suppressEvents) {
-            this.dispatchEventToListeners(WebInspector.Timeline.Event.Reset);
-            this.dispatchEventToListeners(WebInspector.Timeline.Event.TimesUpdated);
+            if (!suppressEvents) {
+                this.dispatchEventToListeners(WebInspector.Timeline.Event.Reset);
+                this.dispatchEventToListeners(WebInspector.Timeline.Event.TimesUpdated);
+            }
         }
-    }
+    }, {
+        key: "addRecord",
+        value: function addRecord(record) {
+            if (record.updatesDynamically) record.addEventListener(WebInspector.TimelineRecord.Event.Updated, this._recordUpdated, this);
 
-    addRecord(record)
-    {
-        if (record.updatesDynamically)
-            record.addEventListener(WebInspector.TimelineRecord.Event.Updated, this._recordUpdated, this);
+            this._records.push(record);
 
-        this._records.push(record);
+            this._updateTimesIfNeeded(record);
 
-        this._updateTimesIfNeeded(record);
-
-        this.dispatchEventToListeners(WebInspector.Timeline.Event.RecordAdded, {record});
-    }
-
-    saveIdentityToCookie(cookie)
-    {
-        cookie[WebInspector.Timeline.TimelineTypeCookieKey] = this._type;
-    }
-
-    // Private
-
-    _updateTimesIfNeeded(record)
-    {
-        var changed = false;
-
-        if (isNaN(this._startTime) || record.startTime < this._startTime) {
-            this._startTime = record.startTime;
-            changed = true;
+            this.dispatchEventToListeners(WebInspector.Timeline.Event.RecordAdded, { record: record });
         }
-
-        if (isNaN(this._endTime) || this._endTime < record.endTime) {
-            this._endTime = record.endTime;
-            changed = true;
+    }, {
+        key: "saveIdentityToCookie",
+        value: function saveIdentityToCookie(cookie) {
+            cookie[WebInspector.Timeline.TimelineTypeCookieKey] = this._type;
         }
+    }, {
+        key: "_updateTimesIfNeeded",
 
-        if (changed)
-            this.dispatchEventToListeners(WebInspector.Timeline.Event.TimesUpdated);
-    }
+        // Private
 
-    _recordUpdated(event)
-    {
-        this._updateTimesIfNeeded(event.target);
-    }
-};
+        value: function _updateTimesIfNeeded(record) {
+            var changed = false;
+
+            if (isNaN(this._startTime) || record.startTime < this._startTime) {
+                this._startTime = record.startTime;
+                changed = true;
+            }
+
+            if (isNaN(this._endTime) || this._endTime < record.endTime) {
+                this._endTime = record.endTime;
+                changed = true;
+            }
+
+            if (changed) this.dispatchEventToListeners(WebInspector.Timeline.Event.TimesUpdated);
+        }
+    }, {
+        key: "_recordUpdated",
+        value: function _recordUpdated(event) {
+            this._updateTimesIfNeeded(event.target);
+        }
+    }, {
+        key: "startTime",
+
+        // Public
+
+        get: function () {
+            return this._startTime;
+        }
+    }, {
+        key: "endTime",
+        get: function () {
+            return this._endTime;
+        }
+    }, {
+        key: "records",
+        get: function () {
+            return this._records;
+        }
+    }, {
+        key: "type",
+        get: function () {
+            return this._type;
+        }
+    }, {
+        key: "recording",
+        get: function () {
+            return this._recording;
+        }
+    }, {
+        key: "displayName",
+        get: function () {
+            if (this._type === WebInspector.TimelineRecord.Type.Network) return WebInspector.UIString("Network Requests");
+            if (this._type === WebInspector.TimelineRecord.Type.Layout) return WebInspector.UIString("Layout & Rendering");
+            if (this._type === WebInspector.TimelineRecord.Type.Script) return WebInspector.UIString("JavaScript & Events");
+            if (this._type === WebInspector.TimelineRecord.Type.RenderingFrame) return WebInspector.UIString("Rendering Frames");
+
+            console.error("Timeline has unknown type:", this._type, this);
+        }
+    }, {
+        key: "iconClassName",
+        get: function () {
+            if (this._type === WebInspector.TimelineRecord.Type.Network) return WebInspector.TimelineSidebarPanel.NetworkIconStyleClass;
+            if (this._type === WebInspector.TimelineRecord.Type.Layout) return WebInspector.TimelineSidebarPanel.ColorsIconStyleClass;
+            if (this._type === WebInspector.TimelineRecord.Type.Script) return WebInspector.TimelineSidebarPanel.ScriptIconStyleClass;
+            if (this._type === WebInspector.TimelineRecord.Type.RenderingFrame) return WebInspector.TimelineSidebarPanel.RenderingFrameIconStyleClass;
+
+            console.error("Timeline has unknown type:", this._type, this);
+        }
+    }], [{
+        key: "create",
+
+        // Static
+
+        value: function create(type, recording) {
+            if (type === WebInspector.TimelineRecord.Type.Network) return new WebInspector.NetworkTimeline(type, recording);
+
+            return new WebInspector.Timeline(type, recording);
+        }
+    }]);
+
+    return Timeline;
+})(WebInspector.Object);
 
 WebInspector.Timeline.Event = {
     Reset: "timeline-reset",

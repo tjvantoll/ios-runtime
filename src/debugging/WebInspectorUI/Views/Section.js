@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Section = function(title, subtitle)
-{
+WebInspector.Section = function (title, subtitle) {
     // FIXME: Convert this to a WebInspector.Object subclass, and call super().
     // WebInspector.Object.call(this);
 
@@ -50,167 +49,157 @@ WebInspector.Section = function(title, subtitle)
 
         this.title = title;
         this.subtitle = subtitle;
-    } else
-        this.element.classList.add("no-header");
+    } else this.element.classList.add("no-header");
 
     this._expanded = false;
 
-    if (!this.headerElement)
-        this.expand();
+    if (!this.headerElement) this.expand();
 };
 
 WebInspector.Section.Event = {
     VisibleContentDidChange: "section-visible-content-did-change"
 };
 
-WebInspector.Section.prototype = {
-    get title()
-    {
-        return this._title;
-    },
+WebInspector.Section.prototype = Object.defineProperties({
 
-    set title(x)
-    {
-        if (this._title === x)
-            return;
-        this._title = x;
+    onpopulate: function onpopulate() {},
 
-        if (x instanceof Node) {
-            this.titleElement.removeChildren();
-            this.titleElement.appendChild(x);
-        } else
-          this.titleElement.textContent = x;
-    },
-
-    get subtitle()
-    {
-        return this._subtitle;
-    },
-
-    set subtitle(x)
-    {
-        if (this._subtitle === x)
-            return;
-        this._subtitle = x;
-        this.subtitleElement.textContent = x;
-    },
-
-    get expanded()
-    {
-        return this._expanded;
-    },
-
-    set expanded(x)
-    {
-        if (x)
-            this.expand();
-        else
-            this.collapse();
-    },
-
-    get populated()
-    {
-        return this._populated;
-    },
-
-    set populated(x)
-    {
-        this._populated = x;
-        if (!x && this._expanded) {
-            this.onpopulate();
-            this._populated = true;
-        }
-    },
-
-    onpopulate: function()
-    {
-        // Overriden by subclasses.
-    },
-
-    get firstSibling()
-    {
-        var parent = this.element.parentElement;
-        if (!parent)
-            return null;
-
-        var childElement = parent.firstChild;
-        while (childElement) {
-            if (childElement._section)
-                return childElement._section;
-            childElement = childElement.nextSibling;
-        }
-
-        return null;
-    },
-
-    get lastSibling()
-    {
-        var parent = this.element.parentElement;
-        if (!parent)
-            return null;
-
-        var childElement = parent.lastChild;
-        while (childElement) {
-            if (childElement._section)
-                return childElement._section;
-            childElement = childElement.previousSibling;
-        }
-
-        return null;
-    },
-
-    get nextSibling()
-    {
-        var curElement = this.element;
-        do {
-            curElement = curElement.nextSibling;
-        } while (curElement && !curElement._section);
-
-        return curElement ? curElement._section : null;
-    },
-
-    get previousSibling()
-    {
-        var curElement = this.element;
-        do {
-            curElement = curElement.previousSibling;
-        } while (curElement && !curElement._section);
-
-        return curElement ? curElement._section : null;
-    },
-
-    expand: function()
-    {
-        if (this._expanded)
-            return;
+    expand: function expand() {
+        if (this._expanded) return;
         this._expanded = true;
         this.element.classList.add("expanded");
 
         if (!this._populated) {
             this.onpopulate();
             this._populated = true;
-        } else
-            this.dispatchEventToListeners(WebInspector.Section.Event.VisibleContentDidChange);
+        } else this.dispatchEventToListeners(WebInspector.Section.Event.VisibleContentDidChange);
     },
 
-    collapse: function()
-    {
-        if (!this._expanded)
-            return;
+    collapse: function collapse() {
+        if (!this._expanded) return;
         this._expanded = false;
         this.element.classList.remove("expanded");
     },
 
-    toggleExpanded: function()
-    {
+    toggleExpanded: function toggleExpanded() {
         this.expanded = !this.expanded;
     },
 
-    handleClick: function(e)
-    {
+    handleClick: function handleClick(e) {
         this.toggleExpanded();
         e.stopPropagation();
     }
-};
+}, {
+    title: {
+        get: function () {
+            return this._title;
+        },
+        set: function (x) {
+            if (this._title === x) return;
+            this._title = x;
+
+            if (x instanceof Node) {
+                this.titleElement.removeChildren();
+                this.titleElement.appendChild(x);
+            } else this.titleElement.textContent = x;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    subtitle: {
+        get: function () {
+            return this._subtitle;
+        },
+        set: function (x) {
+            if (this._subtitle === x) return;
+            this._subtitle = x;
+            this.subtitleElement.textContent = x;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    expanded: {
+        get: function () {
+            return this._expanded;
+        },
+        set: function (x) {
+            if (x) this.expand();else this.collapse();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    populated: {
+        get: function () {
+            return this._populated;
+        },
+        set: function (x) {
+            this._populated = x;
+            if (!x && this._expanded) {
+                this.onpopulate();
+                this._populated = true;
+            }
+        },
+        configurable: true,
+        enumerable: true
+    },
+    firstSibling: {
+        get: function () {
+            var parent = this.element.parentElement;
+            if (!parent) return null;
+
+            var childElement = parent.firstChild;
+            while (childElement) {
+                if (childElement._section) return childElement._section;
+                childElement = childElement.nextSibling;
+            }
+
+            return null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    lastSibling: {
+        get: function () {
+            var parent = this.element.parentElement;
+            if (!parent) return null;
+
+            var childElement = parent.lastChild;
+            while (childElement) {
+                if (childElement._section) return childElement._section;
+                childElement = childElement.previousSibling;
+            }
+
+            return null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    nextSibling: {
+        get: function () {
+            var curElement = this.element;
+            do {
+                curElement = curElement.nextSibling;
+            } while (curElement && !curElement._section);
+
+            return curElement ? curElement._section : null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    previousSibling: {
+        get: function () {
+            var curElement = this.element;
+            do {
+                curElement = curElement.previousSibling;
+            } while (curElement && !curElement._section);
+
+            return curElement ? curElement._section : null;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.Section.prototype.__proto__ = WebInspector.Object.prototype;
+
+// Overriden by subclasses.

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.AnalyzerManager = class AnalyzerManager extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.AnalyzerManager = (function (_WebInspector$Object) {
+    function AnalyzerManager() {
+        _classCallCheck(this, AnalyzerManager);
+
+        _get(Object.getPrototypeOf(AnalyzerManager.prototype), "constructor", this).call(this);
 
         this._eslintConfig = {
             env: {
@@ -61,60 +69,89 @@ WebInspector.AnalyzerManager = class AnalyzerManager extends WebInspector.Object
             }
         };
 
-        this._sourceCodeMessagesMap = new WeakMap;
+        this._sourceCodeMessagesMap = new WeakMap();
 
         WebInspector.SourceCode.addEventListener(WebInspector.SourceCode.Event.ContentDidChange, this._handleSourceCodeContentDidChange, this);
     }
 
-    // Public
+    _inherits(AnalyzerManager, _WebInspector$Object);
 
-    getAnalyzerMessagesForSourceCode(sourceCode)
-    {
-        return new Promise(function(resolve, reject) {
-            var analyzer = WebInspector.AnalyzerManager._typeAnalyzerMap.get(sourceCode.type);
-            if (!analyzer) {
-                reject(new Error("This resource type cannot be analyzed."));
-                return;
-            }
+    _createClass(AnalyzerManager, [{
+        key: "getAnalyzerMessagesForSourceCode",
 
-            if (this._sourceCodeMessagesMap.has(sourceCode)) {
-                resolve(this._sourceCodeMessagesMap.get(sourceCode));
-                return;
-            }
+        // Public
 
-            function retrieveAnalyzerMessages(properties)
-            {
-                var analyzerMessages = [];
-                var rawAnalyzerMessages = analyzer.verify(sourceCode.content, this._eslintConfig);
+        value: function getAnalyzerMessagesForSourceCode(sourceCode) {
+            return new Promise((function (resolve, reject) {
+                var analyzer = WebInspector.AnalyzerManager._typeAnalyzerMap.get(sourceCode.type);
+                if (!analyzer) {
+                    reject(new Error("This resource type cannot be analyzed."));
+                    return;
+                }
 
-                // Raw line and column numbers are one-based. SourceCodeLocation expects them to be zero-based so we subtract 1 from each.
-                for (var rawAnalyzerMessage of rawAnalyzerMessages)
-                    analyzerMessages.push(new WebInspector.AnalyzerMessage(new WebInspector.SourceCodeLocation(sourceCode, rawAnalyzerMessage.line - 1, rawAnalyzerMessage.column - 1), rawAnalyzerMessage.message, rawAnalyzerMessage.ruleId));
+                if (this._sourceCodeMessagesMap.has(sourceCode)) {
+                    resolve(this._sourceCodeMessagesMap.get(sourceCode));
+                    return;
+                }
 
-                this._sourceCodeMessagesMap.set(sourceCode, analyzerMessages);
+                function retrieveAnalyzerMessages(properties) {
+                    var analyzerMessages = [];
+                    var rawAnalyzerMessages = analyzer.verify(sourceCode.content, this._eslintConfig);
 
-                resolve(analyzerMessages);
-            }
+                    // Raw line and column numbers are one-based. SourceCodeLocation expects them to be zero-based so we subtract 1 from each.
+                    var _iteratorNormalCompletion = true;
+                    var _didIteratorError = false;
+                    var _iteratorError = undefined;
 
-            sourceCode.requestContent().then(retrieveAnalyzerMessages.bind(this));
-        }.bind(this));
-    }
+                    try {
+                        for (var _iterator = rawAnalyzerMessages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                            var rawAnalyzerMessage = _step.value;
 
-    sourceCodeCanBeAnalyzed(sourceCode)
-    {
-        return sourceCode.type === WebInspector.Resource.Type.Script;
-    }
+                            analyzerMessages.push(new WebInspector.AnalyzerMessage(new WebInspector.SourceCodeLocation(sourceCode, rawAnalyzerMessage.line - 1, rawAnalyzerMessage.column - 1), rawAnalyzerMessage.message, rawAnalyzerMessage.ruleId));
+                        }
+                    } catch (err) {
+                        _didIteratorError = true;
+                        _iteratorError = err;
+                    } finally {
+                        try {
+                            if (!_iteratorNormalCompletion && _iterator["return"]) {
+                                _iterator["return"]();
+                            }
+                        } finally {
+                            if (_didIteratorError) {
+                                throw _iteratorError;
+                            }
+                        }
+                    }
 
-    // Private
+                    this._sourceCodeMessagesMap.set(sourceCode, analyzerMessages);
 
-    _handleSourceCodeContentDidChange(event)
-    {
-        var sourceCode = event.target;
+                    resolve(analyzerMessages);
+                }
 
-        // Since sourceCode has changed, remove it and its messages from the map so getAnalyzerMessagesForSourceCode will have to reanalyze the next time it is called.
-        this._sourceCodeMessagesMap.delete(sourceCode);
-    }
-};
+                sourceCode.requestContent().then(retrieveAnalyzerMessages.bind(this));
+            }).bind(this));
+        }
+    }, {
+        key: "sourceCodeCanBeAnalyzed",
+        value: function sourceCodeCanBeAnalyzed(sourceCode) {
+            return sourceCode.type === WebInspector.Resource.Type.Script;
+        }
+    }, {
+        key: "_handleSourceCodeContentDidChange",
 
-WebInspector.AnalyzerManager._typeAnalyzerMap = new Map;
+        // Private
+
+        value: function _handleSourceCodeContentDidChange(event) {
+            var sourceCode = event.target;
+
+            // Since sourceCode has changed, remove it and its messages from the map so getAnalyzerMessagesForSourceCode will have to reanalyze the next time it is called.
+            this._sourceCodeMessagesMap["delete"](sourceCode);
+        }
+    }]);
+
+    return AnalyzerManager;
+})(WebInspector.Object);
+
+WebInspector.AnalyzerManager._typeAnalyzerMap = new Map();
 WebInspector.AnalyzerManager._typeAnalyzerMap.set(WebInspector.Resource.Type.Script, eslint);

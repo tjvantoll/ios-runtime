@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,62 +27,70 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.PageObserver = class PageObserver
-{
-    // Events defined by the "Page" domain.
-
-    domContentEventFired(timestamp)
-    {
-        // Covered by Timeline "MarkDOMContent" record.
+WebInspector.PageObserver = (function () {
+    function PageObserver() {
+        _classCallCheck(this, PageObserver);
     }
 
-    loadEventFired(timestamp)
-    {
-        WebInspector.timelineManager.pageDidLoad(timestamp);
-    }
+    _createClass(PageObserver, [{
+        key: "domContentEventFired",
 
-    frameNavigated(frame, loaderId)
-    {
-        WebInspector.frameResourceManager.frameDidNavigate(frame, loaderId);
-    }
+        // Events defined by the "Page" domain.
 
-    frameDetached(frameId)
-    {
-        WebInspector.frameResourceManager.frameDidDetach(frameId);
-    }
+        value: function domContentEventFired(timestamp) {}
+    }, {
+        key: "loadEventFired",
+        value: function loadEventFired(timestamp) {
+            WebInspector.timelineManager.pageDidLoad(timestamp);
+        }
+    }, {
+        key: "frameNavigated",
+        value: function frameNavigated(frame, loaderId) {
+            WebInspector.frameResourceManager.frameDidNavigate(frame, loaderId);
+        }
+    }, {
+        key: "frameDetached",
+        value: function frameDetached(frameId) {
+            WebInspector.frameResourceManager.frameDidDetach(frameId);
+        }
+    }, {
+        key: "frameStartedLoading",
+        value: function frameStartedLoading(frameId) {}
+    }, {
+        key: "frameStoppedLoading",
+        value: function frameStoppedLoading(frameId) {}
+    }, {
+        key: "frameScheduledNavigation",
+        value: function frameScheduledNavigation(frameId, delay) {}
+    }, {
+        key: "frameClearedScheduledNavigation",
+        value: function frameClearedScheduledNavigation(frameId) {}
+    }, {
+        key: "javascriptDialogOpening",
+        value: function javascriptDialogOpening(message) {}
+    }, {
+        key: "javascriptDialogClosed",
+        value: function javascriptDialogClosed() {}
+    }, {
+        key: "scriptsEnabled",
+        value: function scriptsEnabled(enabled) {}
+    }]);
 
-    frameStartedLoading(frameId)
-    {
-        // Not handled yet.
-    }
+    return PageObserver;
+})();
 
-    frameStoppedLoading(frameId)
-    {
-        // Not handled yet.
-    }
+// Covered by Timeline "MarkDOMContent" record.
 
-    frameScheduledNavigation(frameId, delay)
-    {
-        // Not handled yet.
-    }
+// Not handled yet.
 
-    frameClearedScheduledNavigation(frameId)
-    {
-        // Not handled yet.
-    }
+// Not handled yet.
 
-    javascriptDialogOpening(message)
-    {
-        // Not handled yet.
-    }
+// Not handled yet.
 
-    javascriptDialogClosed()
-    {
-        // Not handled yet.
-    }
+// Not handled yet.
 
-    scriptsEnabled(enabled)
-    {
-        // Not handled yet.
-    }
-};
+// Not handled yet.
+
+// Not handled yet.
+
+// Not handled yet.

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ComputedStyleDetailsPanel = class ComputedStyleDetailsPanel extends WebInspector.StyleDetailsPanel
-{
-    constructor()
-    {
-        super(WebInspector.ComputedStyleDetailsPanel.StyleClassName, "computed", WebInspector.UIString("Computed"));
+WebInspector.ComputedStyleDetailsPanel = (function (_WebInspector$StyleDetailsPanel) {
+    function ComputedStyleDetailsPanel() {
+        _classCallCheck(this, ComputedStyleDetailsPanel);
+
+        _get(Object.getPrototypeOf(ComputedStyleDetailsPanel.prototype), "constructor", this).call(this, WebInspector.ComputedStyleDetailsPanel.StyleClassName, "computed", WebInspector.UIString("Computed"));
 
         this._computedStyleShowAllSetting = new WebInspector.Setting("computed-style-show-all", false);
 
@@ -45,7 +53,7 @@ WebInspector.ComputedStyleDetailsPanel = class ComputedStyleDetailsPanel extends
         this._propertiesTextEditor.alwaysShowPropertyNames = ["display", "width", "height"];
         this._propertiesTextEditor.sortProperties = true;
 
-        var propertiesRow = new WebInspector.DetailsSectionRow;
+        var propertiesRow = new WebInspector.DetailsSectionRow();
         var propertiesGroup = new WebInspector.DetailsSectionGroup([propertiesRow]);
         var propertiesSection = new WebInspector.DetailsSection("computed-style-properties", WebInspector.UIString("Properties"), [propertiesGroup], computedStyleShowAllLabel);
 
@@ -76,7 +84,7 @@ WebInspector.ComputedStyleDetailsPanel = class ComputedStyleDetailsPanel extends
         var flowNamesGroup = new WebInspector.DetailsSectionGroup([this._regionFlowNameRow, this._contentFlowNameRow]);
         this._flowNamesSection = new WebInspector.DetailsSection("content-flow", WebInspector.UIString("Flows"), [flowNamesGroup]);
 
-        this._containerRegionsDataGrid = new WebInspector.DOMTreeDataGrid;
+        this._containerRegionsDataGrid = new WebInspector.DOMTreeDataGrid();
         this._containerRegionsDataGrid.element.classList.add("no-header");
 
         var containerRegionsRow = new WebInspector.DetailsSectionDataGridRow(this._containerRegionsDataGrid);
@@ -90,127 +98,150 @@ WebInspector.ComputedStyleDetailsPanel = class ComputedStyleDetailsPanel extends
         this._resetFlowDetails();
     }
 
-    // Public
+    _inherits(ComputedStyleDetailsPanel, _WebInspector$StyleDetailsPanel);
 
-    get regionFlow()
-    {
-        return this._regionFlow;
-    }
-
-    set regionFlow(regionFlow)
-    {
-        this._regionFlow = regionFlow;
-        this._regionFlowNameLabelValue.textContent = regionFlow ? regionFlow.name : "";
-        this._regionFlowNameRow.value = regionFlow ? this._regionFlowFragment : null;
-        this._updateFlowNamesSectionVisibility();
-    }
-
-    get contentFlow()
-    {
-        return this._contentFlow;
-    }
-
-    set contentFlow(contentFlow)
-    {
-        this._contentFlow = contentFlow;
-        this._contentFlowNameLabelValue.textContent = contentFlow ? contentFlow.name : "";
-        this._contentFlowNameRow.value = contentFlow ? this._contentFlowFragment : null;
-        this._updateFlowNamesSectionVisibility();
-    }
-
-    get containerRegions()
-    {
-        return this._containerRegions;
-    }
-
-    set containerRegions(regions)
-    {
-        this._containerRegions = regions;
-
-        if (!regions || !regions.length) {
-            this._containerRegionsFlowSection.element.classList.add("hidden");
-            return;
+    _createClass(ComputedStyleDetailsPanel, [{
+        key: "refresh",
+        value: function refresh() {
+            this._propertiesTextEditor.style = this.nodeStyles.computedStyle;
+            this._refreshFlowDetails(this.nodeStyles.node);
         }
+    }, {
+        key: "shown",
 
-        this._containerRegionsDataGrid.removeChildren();
-        for (var regionNode of regions)
-            this._containerRegionsDataGrid.appendChild(new WebInspector.DOMTreeDataGridNode(regionNode));
+        // Protected
 
-        this._containerRegionsFlowSection.element.classList.remove("hidden");
-    }
+        value: function shown() {
+            WebInspector.StyleDetailsPanel.prototype.shown.call(this);
 
-    refresh()
-    {
-        this._propertiesTextEditor.style = this.nodeStyles.computedStyle;
-        this._refreshFlowDetails(this.nodeStyles.node);
-    }
+            this._propertiesTextEditor.updateLayout();
+        }
+    }, {
+        key: "widthDidChange",
+        value: function widthDidChange() {
+            this._propertiesTextEditor.updateLayout();
+        }
+    }, {
+        key: "_computedStyleShowAllCheckboxValueChanged",
 
-    // Protected
+        // Private
 
-    shown()
-    {
-        WebInspector.StyleDetailsPanel.prototype.shown.call(this);
+        value: function _computedStyleShowAllCheckboxValueChanged(event) {
+            var checked = this._computedStyleShowAllCheckbox.checked;
+            this._computedStyleShowAllSetting.value = checked;
+            this._propertiesTextEditor.showsImplicitProperties = checked;
+        }
+    }, {
+        key: "_updateFlowNamesSectionVisibility",
+        value: function _updateFlowNamesSectionVisibility() {
+            this._flowNamesSection.element.classList.toggle("hidden", !this._contentFlow && !this._regionFlow);
+        }
+    }, {
+        key: "_resetFlowDetails",
+        value: function _resetFlowDetails() {
+            this.regionFlow = null;
+            this.contentFlow = null;
+            this.containerRegions = null;
+        }
+    }, {
+        key: "_refreshFlowDetails",
+        value: function _refreshFlowDetails(domNode) {
+            this._resetFlowDetails();
+            if (!domNode) return;
 
-        this._propertiesTextEditor.updateLayout();
-    }
+            function contentFlowInfoReady(error, flowData) {
+                // Element is not part of any flow.
+                if (error || !flowData) {
+                    this._resetFlowDetails();
+                    return;
+                }
 
-    widthDidChange()
-    {
-        this._propertiesTextEditor.updateLayout();
-    }
+                this.regionFlow = flowData.regionFlow;
+                this.contentFlow = flowData.contentFlow;
+                this.containerRegions = flowData.regions;
+            }
 
-    // Private
+            WebInspector.domTreeManager.getNodeContentFlowInfo(domNode, contentFlowInfoReady.bind(this));
+        }
+    }, {
+        key: "_goToRegionFlowArrowWasClicked",
+        value: function _goToRegionFlowArrowWasClicked() {
+            WebInspector.showContentFlowDOMTree(this._regionFlow);
+        }
+    }, {
+        key: "_goToContentFlowArrowWasClicked",
+        value: function _goToContentFlowArrowWasClicked() {
+            WebInspector.showContentFlowDOMTree(this._contentFlow, this.nodeStyles.node, true);
+        }
+    }, {
+        key: "regionFlow",
 
-    _computedStyleShowAllCheckboxValueChanged(event)
-    {
-        var checked = this._computedStyleShowAllCheckbox.checked;
-        this._computedStyleShowAllSetting.value = checked;
-        this._propertiesTextEditor.showsImplicitProperties = checked;
-    }
+        // Public
 
-    _updateFlowNamesSectionVisibility()
-    {
-        this._flowNamesSection.element.classList.toggle("hidden", !this._contentFlow && !this._regionFlow);
-    }
+        get: function () {
+            return this._regionFlow;
+        },
+        set: function (regionFlow) {
+            this._regionFlow = regionFlow;
+            this._regionFlowNameLabelValue.textContent = regionFlow ? regionFlow.name : "";
+            this._regionFlowNameRow.value = regionFlow ? this._regionFlowFragment : null;
+            this._updateFlowNamesSectionVisibility();
+        }
+    }, {
+        key: "contentFlow",
+        get: function () {
+            return this._contentFlow;
+        },
+        set: function (contentFlow) {
+            this._contentFlow = contentFlow;
+            this._contentFlowNameLabelValue.textContent = contentFlow ? contentFlow.name : "";
+            this._contentFlowNameRow.value = contentFlow ? this._contentFlowFragment : null;
+            this._updateFlowNamesSectionVisibility();
+        }
+    }, {
+        key: "containerRegions",
+        get: function () {
+            return this._containerRegions;
+        },
+        set: function (regions) {
+            this._containerRegions = regions;
 
-    _resetFlowDetails ()
-    {
-        this.regionFlow = null;
-        this.contentFlow = null;
-        this.containerRegions = null;
-    }
-
-    _refreshFlowDetails(domNode)
-    {
-        this._resetFlowDetails();
-        if (!domNode)
-            return;
-
-        function contentFlowInfoReady(error, flowData)
-        {
-            // Element is not part of any flow.
-            if (error || !flowData) {
-                this._resetFlowDetails();
+            if (!regions || !regions.length) {
+                this._containerRegionsFlowSection.element.classList.add("hidden");
                 return;
             }
 
-            this.regionFlow = flowData.regionFlow;
-            this.contentFlow = flowData.contentFlow;
-            this.containerRegions = flowData.regions;
+            this._containerRegionsDataGrid.removeChildren();
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = regions[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var regionNode = _step.value;
+
+                    this._containerRegionsDataGrid.appendChild(new WebInspector.DOMTreeDataGridNode(regionNode));
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator["return"]) {
+                        _iterator["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            this._containerRegionsFlowSection.element.classList.remove("hidden");
         }
+    }]);
 
-        WebInspector.domTreeManager.getNodeContentFlowInfo(domNode, contentFlowInfoReady.bind(this));
-    }
-
-    _goToRegionFlowArrowWasClicked()
-    {
-        WebInspector.showContentFlowDOMTree(this._regionFlow);
-    }
-
-    _goToContentFlowArrowWasClicked()
-    {
-        WebInspector.showContentFlowDOMTree(this._contentFlow, this.nodeStyles.node, true);
-    }
-};
+    return ComputedStyleDetailsPanel;
+})(WebInspector.StyleDetailsPanel);
 
 WebInspector.ComputedStyleDetailsPanel.StyleClassName = "computed";

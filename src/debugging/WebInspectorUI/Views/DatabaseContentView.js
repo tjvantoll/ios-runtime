@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DatabaseContentView = function(representedObject)
-{
+WebInspector.DatabaseContentView = function (representedObject) {
     WebInspector.ContentView.call(this, representedObject);
 
     this.database = representedObject;
@@ -50,47 +49,39 @@ WebInspector.DatabaseContentView.prototype = {
 
     // Public
 
-    shown: function()
-    {
+    shown: function shown() {
         this.prompt.shown();
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         this.prompt.updateLayout();
 
         var results = this.element.querySelectorAll(".database-query-result");
         for (var i = 0; i < results.length; ++i) {
             var resultElement = results[i];
-            if (resultElement.dataGrid)
-                resultElement.dataGrid.updateLayout();
+            if (resultElement.dataGrid) resultElement.dataGrid.updateLayout();
         }
     },
 
-    saveToCookie: function(cookie)
-    {
+    saveToCookie: function saveToCookie(cookie) {
         cookie.type = WebInspector.ContentViewCookieType.Database;
         cookie.host = this.representedObject.host;
         cookie.name = this.representedObject.name;
     },
 
-    consolePromptCompletionsNeeded: function(prompt, defaultCompletions, base, prefix, suffix)
-    {
+    consolePromptCompletionsNeeded: function consolePromptCompletionsNeeded(prompt, defaultCompletions, base, prefix, suffix) {
         var results = [];
 
         prefix = prefix.toLowerCase();
 
-        function accumulateMatches(textArray)
-        {
+        function accumulateMatches(textArray) {
             for (var i = 0; i < textArray.length; ++i) {
                 var lowerCaseText = textArray[i].toLowerCase();
-                if (lowerCaseText.startsWith(prefix))
-                    results.push(textArray[i]);
+                if (lowerCaseText.startsWith(prefix)) results.push(textArray[i]);
             }
         }
 
-        function tableNamesCallback(tableNames)
-        {
+        function tableNamesCallback(tableNames) {
             accumulateMatches(tableNames);
             accumulateMatches(["SELECT", "FROM", "WHERE", "LIMIT", "DELETE FROM", "CREATE", "DROP", "TABLE", "INDEX", "UPDATE", "INSERT INTO", "VALUES"]);
 
@@ -100,20 +91,17 @@ WebInspector.DatabaseContentView.prototype = {
         this.database.getTableNames(tableNamesCallback.bind(this));
     },
 
-    consolePromptTextCommitted: function(prompt, query)
-    {
+    consolePromptTextCommitted: function consolePromptTextCommitted(prompt, query) {
         this.database.executeSQL(query, this._queryFinished.bind(this, query), this._queryError.bind(this, query));
     },
 
     // Private
 
-    _messagesClicked: function()
-    {
+    _messagesClicked: function _messagesClicked() {
         this.prompt.focus();
     },
 
-    _queryFinished: function(query, columnNames, values)
-    {
+    _queryFinished: function _queryFinished(query, columnNames, values) {
         var dataGrid = WebInspector.DataGrid.createSortableDataGrid(columnNames, values);
         var trimmedQuery = query.trim();
 
@@ -123,24 +111,16 @@ WebInspector.DatabaseContentView.prototype = {
             dataGrid.autoSizeColumns(5);
         }
 
-        if (trimmedQuery.match(/^create /i) || trimmedQuery.match(/^drop table /i))
-            this.dispatchEventToListeners(WebInspector.DatabaseContentView.Event.SchemaUpdated, this.database);
+        if (trimmedQuery.match(/^create /i) || trimmedQuery.match(/^drop table /i)) this.dispatchEventToListeners(WebInspector.DatabaseContentView.Event.SchemaUpdated, this.database);
     },
 
-    _queryError: function(query, error)
-    {
-        if (error.message)
-            var message = error.message;
-        else if (error.code === 2)
-            var message = WebInspector.UIString("Database no longer has expected version.");
-        else
-            var message = WebInspector.UIString("An unexpected error %s occurred.").format(error.code);
+    _queryError: function _queryError(query, error) {
+        if (error.message) var message = error.message;else if (error.code === 2) var message = WebInspector.UIString("Database no longer has expected version.");else var message = WebInspector.UIString("An unexpected error %s occurred.").format(error.code);
 
         this._appendErrorQueryResult(query, message);
     },
 
-    _appendViewQueryResult: function(query, view)
-    {
+    _appendViewQueryResult: function _appendViewQueryResult(query, view) {
         var resultElement = this._appendQueryResult(query);
 
         // Add our DataGrid with the results to the database query result div.
@@ -150,8 +130,7 @@ WebInspector.DatabaseContentView.prototype = {
         this._promptElement.scrollIntoView(false);
     },
 
-    _appendErrorQueryResult: function(query, errorText)
-    {
+    _appendErrorQueryResult: function _appendErrorQueryResult(query, errorText) {
         var resultElement = this._appendQueryResult(query);
         resultElement.classList.add("error");
         resultElement.textContent = errorText;
@@ -159,8 +138,7 @@ WebInspector.DatabaseContentView.prototype = {
         this._promptElement.scrollIntoView(false);
     },
 
-    _appendQueryResult: function(query)
-    {
+    _appendQueryResult: function _appendQueryResult(query) {
         var element = document.createElement("div");
         element.className = "database-user-query";
         this.element.insertBefore(element, this._promptElement);

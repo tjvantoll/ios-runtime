@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Branch = class Branch extends WebInspector.Object
-{
-    constructor(displayName, revisions, locked)
-    {
-        super();
+WebInspector.Branch = (function (_WebInspector$Object) {
+    function Branch(displayName, revisions, locked) {
+        _classCallCheck(this, Branch);
+
+        _get(Object.getPrototypeOf(Branch.prototype), "constructor", this).call(this);
 
         console.assert(displayName);
 
@@ -36,111 +44,109 @@ WebInspector.Branch = class Branch extends WebInspector.Object
         this._locked = locked || false;
     }
 
-    // Public
+    _inherits(Branch, _WebInspector$Object);
 
-    get displayName()
-    {
-        return this._displayName;
-    }
+    _createClass(Branch, [{
+        key: "revisionForRepresentedObject",
+        value: function revisionForRepresentedObject(representedObject, doNotCreateIfNeeded) {
+            for (var i = 0; i < this._revisions.length; ++i) {
+                var revision = this._revisions[i];
+                if (revision instanceof WebInspector.SourceCodeRevision && revision.sourceCode === representedObject) return revision;
+            }
 
-    set displayName(displayName)
-    {
-        console.assert(displayName);
-        if (!displayName)
-            return;
+            if (doNotCreateIfNeeded) return null;
 
-        this._displayName = displayName;
-    }
-
-    get revisions()
-    {
-        return this._revisions;
-    }
-
-    get locked()
-    {
-        return this._locked;
-    }
-
-    revisionForRepresentedObject(representedObject, doNotCreateIfNeeded)
-    {
-        for (var i = 0; i < this._revisions.length; ++i) {
-            var revision = this._revisions[i];
-            if (revision instanceof WebInspector.SourceCodeRevision && revision.sourceCode === representedObject)
+            if (representedObject instanceof WebInspector.SourceCode) {
+                var revision = representedObject.originalRevision.copy();
+                representedObject.currentRevision = revision;
+                this.addRevision(revision);
                 return revision;
-        }
+            }
 
-        if (doNotCreateIfNeeded)
             return null;
-
-        if (representedObject instanceof WebInspector.SourceCode) {
-            var revision = representedObject.originalRevision.copy();
-            representedObject.currentRevision = revision;
-            this.addRevision(revision);
-            return revision;
         }
+    }, {
+        key: "addRevision",
+        value: function addRevision(revision) {
+            console.assert(revision instanceof WebInspector.Revision);
 
-        return null;
-    }
+            if (this._locked) return;
 
-    addRevision(revision)
-    {
-        console.assert(revision instanceof WebInspector.Revision);
+            if (this._revisions.includes(revision)) return;
 
-        if (this._locked)
-            return;
+            this._revisions.push(revision);
+        }
+    }, {
+        key: "removeRevision",
+        value: function removeRevision(revision) {
+            console.assert(revision instanceof WebInspector.Revision);
 
-        if (this._revisions.includes(revision))
-            return;
+            if (this._locked) return;
 
-        this._revisions.push(revision);
-    }
+            this._revisions.remove(revision);
+        }
+    }, {
+        key: "reset",
+        value: function reset() {
+            if (this._locked) return;
 
-    removeRevision(revision)
-    {
-        console.assert(revision instanceof WebInspector.Revision);
+            this._revisions = [];
+        }
+    }, {
+        key: "fork",
+        value: function fork(displayName) {
+            var copiedRevisions = this._revisions.map(function (revision) {
+                return revision.copy();
+            });
+            return new WebInspector.Branch(displayName, copiedRevisions);
+        }
+    }, {
+        key: "apply",
+        value: function apply() {
+            for (var i = 0; i < this._revisions.length; ++i) this._revisions[i].apply();
+        }
+    }, {
+        key: "revert",
+        value: function revert() {
+            for (var i = this._revisions.length - 1; i >= 0; --i) this._revisions[i].revert();
+        }
+    }, {
+        key: "lock",
+        value: function lock() {
+            console.assert(!this._locked);
+            this._locked = true;
+        }
+    }, {
+        key: "unlock",
+        value: function unlock() {
+            console.assert(this._locked);
+            this._locked = false;
+        }
+    }, {
+        key: "displayName",
 
-        if (this._locked)
-            return;
+        // Public
 
-        this._revisions.remove(revision);
-    }
+        get: function () {
+            return this._displayName;
+        },
+        set: function (displayName) {
+            console.assert(displayName);
+            if (!displayName) return;
 
-    reset()
-    {
-        if (this._locked)
-            return;
+            this._displayName = displayName;
+        }
+    }, {
+        key: "revisions",
+        get: function () {
+            return this._revisions;
+        }
+    }, {
+        key: "locked",
+        get: function () {
+            return this._locked;
+        }
+    }]);
 
-        this._revisions = [];
-    }
-
-    fork(displayName)
-    {
-        var copiedRevisions = this._revisions.map(function(revision) { return revision.copy(); });
-        return new WebInspector.Branch(displayName, copiedRevisions);
-    }
-
-    apply()
-    {
-        for (var i = 0; i < this._revisions.length; ++i)
-            this._revisions[i].apply();
-    }
-
-    revert()
-    {
-        for (var i = this._revisions.length - 1; i >= 0; --i)
-            this._revisions[i].revert();
-    }
-
-    lock()
-    {
-        console.assert(!this._locked);
-        this._locked = true;
-    }
-
-    unlock()
-    {
-        console.assert(this._locked);
-        this._locked = false;
-    }
-};
+    return Branch;
+})(WebInspector.Object);

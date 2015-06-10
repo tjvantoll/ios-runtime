@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc.  All rights reserved.
  *
@@ -26,11 +34,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ConsoleSession = class ConsoleSession extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.ConsoleSession = (function (_WebInspector$Object) {
+    function ConsoleSession() {
+        _classCallCheck(this, ConsoleSession);
+
+        _get(Object.getPrototypeOf(ConsoleSession.prototype), "constructor", this).call(this);
 
         var element = document.createElement("div");
         element.className = "console-session";
@@ -38,22 +46,29 @@ WebInspector.ConsoleSession = class ConsoleSession extends WebInspector.Object
         this._messagesElement = element;
     }
 
-    // Public
+    _inherits(ConsoleSession, _WebInspector$Object);
 
-    addMessageView(messageView)
-    {
-        var messageElement = messageView.element;
-        messageElement.classList.add(WebInspector.LogContentView.ItemWrapperStyleClassName);
-        this._messagesElement.appendChild(messageElement);
-    }
+    _createClass(ConsoleSession, [{
+        key: "addMessageView",
 
-    append(messageOrGroupElement)
-    {
-        this._messagesElement.appendChild(messageOrGroupElement);
-    }
+        // Public
 
-    hasMessages()
-    {
-        return !!this._messagesElement.childNodes.length;
-    }
-};
+        value: function addMessageView(messageView) {
+            var messageElement = messageView.element;
+            messageElement.classList.add(WebInspector.LogContentView.ItemWrapperStyleClassName);
+            this._messagesElement.appendChild(messageElement);
+        }
+    }, {
+        key: "append",
+        value: function append(messageOrGroupElement) {
+            this._messagesElement.appendChild(messageOrGroupElement);
+        }
+    }, {
+        key: "hasMessages",
+        value: function hasMessages() {
+            return !!this._messagesElement.childNodes.length;
+        }
+    }]);
+
+    return ConsoleSession;
+})(WebInspector.Object);

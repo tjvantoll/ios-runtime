@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TimelineDataGridNode = function(graphOnly, graphDataSource, hasChildren)
-{
+WebInspector.TimelineDataGridNode = function (graphOnly, graphDataSource, hasChildren) {
     WebInspector.DataGridNode.call(this, {}, hasChildren);
 
     this.copyable = false;
@@ -41,49 +40,23 @@ WebInspector.TimelineDataGridNode = function(graphOnly, graphDataSource, hasChil
 // FIXME: Move to a WebInspector.Object subclass and we can remove this.
 WebInspector.Object.deprecatedAddConstructorFunctions(WebInspector.TimelineDataGridNode);
 
-WebInspector.TimelineDataGridNode.prototype = {
+WebInspector.TimelineDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.TimelineDataGridNode,
     __proto__: WebInspector.DataGridNode.prototype,
 
-    // Public
-
-    get records()
-    {
-        // Implemented by subclasses.
-        return [];
-    },
-
-    get graphDataSource()
-    {
-        return this._graphDataSource;
-    },
-
-    get data()
-    {
-        if (!this._graphDataSource)
-            return {};
-
-        var records = this.records || [];
-        return {graph: records.length ? records[0].startTime : 0};
-    },
-
-    collapse: function()
-    {
+    collapse: function collapse() {
         WebInspector.DataGridNode.prototype.collapse.call(this);
 
-        if (!this._graphDataSource || !this.revealed)
-            return;
+        if (!this._graphDataSource || !this.revealed) return;
 
         // Refresh to show child bars in our graph now that we collapsed.
         this.refreshGraph();
     },
 
-    expand: function()
-    {
+    expand: function expand() {
         WebInspector.DataGridNode.prototype.expand.call(this);
 
-        if (!this._graphDataSource || !this.revealed)
-            return;
+        if (!this._graphDataSource || !this.revealed) return;
 
         // Refresh to remove child bars from our graph now that we expanded.
         this.refreshGraph();
@@ -91,22 +64,19 @@ WebInspector.TimelineDataGridNode.prototype = {
         // Refresh child graphs since they haven't been updating while we were collapsed.
         var childNode = this.children[0];
         while (childNode) {
-            if (childNode instanceof WebInspector.TimelineDataGridNode)
-                childNode.refreshGraph();
+            if (childNode instanceof WebInspector.TimelineDataGridNode) childNode.refreshGraph();
             childNode = childNode.traverseNextNode(true, this);
         }
     },
 
-    createCellContent: function(columnIdentifier, cell)
-    {
+    createCellContent: function createCellContent(columnIdentifier, cell) {
         if (columnIdentifier === "graph" && this._graphDataSource) {
             this.needsGraphRefresh();
             return this._graphContainerElement;
         }
 
         var value = this.data[columnIdentifier];
-        if (!value)
-            return "\u2014";
+        if (!value) return "—";
 
         if (value instanceof WebInspector.SourceCodeLocation) {
             if (value.sourceCode instanceof WebInspector.Resource) {
@@ -116,10 +86,8 @@ WebInspector.TimelineDataGridNode.prototype = {
                 if (value.sourceCode.url) {
                     cell.classList.add(WebInspector.ResourceTreeElement.ResourceIconStyleClassName);
                     cell.classList.add(WebInspector.Resource.Type.Script);
-                } else
-                    cell.classList.add(WebInspector.ScriptTreeElement.AnonymousScriptIconStyleClassName);
-            } else
-                console.error("Unknown SourceCode subclass.");
+                } else cell.classList.add(WebInspector.ScriptTreeElement.AnonymousScriptIconStyleClassName);
+            } else console.error("Unknown SourceCode subclass.");
 
             // Give the whole cell a tooltip and keep it up to date.
             value.populateLiveDisplayLocationTooltip(cell);
@@ -174,10 +142,8 @@ WebInspector.TimelineDataGridNode.prototype = {
                         if (callFrame.sourceCodeLocation.sourceCode.url) {
                             cell.classList.add(WebInspector.ResourceTreeElement.ResourceIconStyleClassName);
                             cell.classList.add(WebInspector.Resource.Type.Script);
-                        } else
-                            cell.classList.add(WebInspector.ScriptTreeElement.AnonymousScriptIconStyleClassName);
-                    } else
-                        console.error("Unknown SourceCode subclass.");
+                        } else cell.classList.add(WebInspector.ScriptTreeElement.AnonymousScriptIconStyleClassName);
+                    } else console.error("Unknown SourceCode subclass.");
 
                     var titleElement = document.createElement("span");
                     callFrame.sourceCodeLocation.populateLiveDisplayLocationString(titleElement, "textContent");
@@ -211,8 +177,7 @@ WebInspector.TimelineDataGridNode.prototype = {
         return WebInspector.DataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
     },
 
-    refresh: function()
-    {
+    refresh: function refresh() {
         if (this._graphDataSource && this._graphOnly) {
             this.needsGraphRefresh();
             return;
@@ -221,10 +186,8 @@ WebInspector.TimelineDataGridNode.prototype = {
         WebInspector.DataGridNode.prototype.refresh.call(this);
     },
 
-    refreshGraph: function()
-    {
-        if (!this._graphDataSource)
-            return;
+    refreshGraph: function refreshGraph() {
+        if (!this._graphDataSource) return;
 
         if (this._scheduledGraphRefreshIdentifier) {
             cancelAnimationFrame(this._scheduledGraphRefreshIdentifier);
@@ -234,26 +197,21 @@ WebInspector.TimelineDataGridNode.prototype = {
         // We are not visible, but an ancestor will draw our graph.
         // They need notified by using our needsGraphRefresh.
         console.assert(this.revealed);
-        if (!this.revealed)
-            return;
+        if (!this.revealed) return;
 
         var secondsPerPixel = this._graphDataSource.secondsPerPixel;
         console.assert(isFinite(secondsPerPixel) && secondsPerPixel > 0);
 
         var recordBarIndex = 0;
 
-        function createBar(records, renderMode)
-        {
+        function createBar(records, renderMode) {
             var timelineRecordBar = this._timelineRecordBars[recordBarIndex];
-            if (!timelineRecordBar)
-                timelineRecordBar = this._timelineRecordBars[recordBarIndex] = new WebInspector.TimelineRecordBar(records, renderMode);
-            else {
+            if (!timelineRecordBar) timelineRecordBar = this._timelineRecordBars[recordBarIndex] = new WebInspector.TimelineRecordBar(records, renderMode);else {
                 timelineRecordBar.renderMode = renderMode;
                 timelineRecordBar.records = records;
             }
             timelineRecordBar.refresh(this._graphDataSource);
-            if (!timelineRecordBar.element.parentNode)
-                this._graphContainerElement.appendChild(timelineRecordBar.element);
+            if (!timelineRecordBar.element.parentNode) this._graphContainerElement.appendChild(timelineRecordBar.element);
             ++recordBarIndex;
         }
 
@@ -263,35 +221,76 @@ WebInspector.TimelineDataGridNode.prototype = {
             // When expanded just use the records for this node.
             WebInspector.TimelineRecordBar.createCombinedBars(this.records, secondsPerPixel, this._graphDataSource, boundCreateBar);
         } else {
+            var collectRecordsByType = function (records) {
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
+
+                try {
+                    for (var _iterator = records[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                        var record = _step.value;
+
+                        var typedRecords = recordTypeMap.get(record.type);
+                        if (!typedRecords) {
+                            typedRecords = [];
+                            recordTypeMap.set(record.type, typedRecords);
+                        }
+
+                        typedRecords.push(record);
+                    }
+                } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator["return"]) {
+                            _iterator["return"]();
+                        }
+                    } finally {
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
+                    }
+                }
+            };
+
             // When collapsed use the records for this node and its descendants.
             // To share bars better, group records by type.
 
-            var recordTypeMap = new Map;
-
-            function collectRecordsByType(records)
-            {
-                for (var record of records) {
-                    var typedRecords = recordTypeMap.get(record.type);
-                    if (!typedRecords) {
-                        typedRecords = [];
-                        recordTypeMap.set(record.type, typedRecords);
-                    }
-
-                    typedRecords.push(record);
-                }
-            }
+            var recordTypeMap = new Map();
 
             collectRecordsByType(this.records);
 
             var childNode = this.children[0];
             while (childNode) {
-                if (childNode instanceof WebInspector.TimelineDataGridNode)
-                    collectRecordsByType(childNode.records);
+                if (childNode instanceof WebInspector.TimelineDataGridNode) collectRecordsByType(childNode.records);
                 childNode = childNode.traverseNextNode(false, this);
             }
 
-            for (var records of recordTypeMap.values())
-                WebInspector.TimelineRecordBar.createCombinedBars(records, secondsPerPixel, this._graphDataSource, boundCreateBar);
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = recordTypeMap.values()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var records = _step2.value;
+
+                    WebInspector.TimelineRecordBar.createCombinedBars(records, secondsPerPixel, this._graphDataSource, boundCreateBar);
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+                        _iterator2["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
         }
 
         // Remove the remaining unused TimelineRecordBars.
@@ -301,8 +300,7 @@ WebInspector.TimelineDataGridNode.prototype = {
         }
     },
 
-    needsGraphRefresh: function()
-    {
+    needsGraphRefresh: function needsGraphRefresh() {
         if (!this.revealed) {
             // We are not visible, but an ancestor will be drawing our graph.
             // Notify the next visible ancestor that their graph needs to refresh.
@@ -319,30 +317,51 @@ WebInspector.TimelineDataGridNode.prototype = {
             return;
         }
 
-        if (!this._graphDataSource || this._scheduledGraphRefreshIdentifier)
-            return;
+        if (!this._graphDataSource || this._scheduledGraphRefreshIdentifier) return;
 
         this._scheduledGraphRefreshIdentifier = requestAnimationFrame(this.refreshGraph.bind(this));
     },
 
     // Protected
 
-    isRecordVisible: function(record)
-    {
-        if (!this._graphDataSource)
-            return false;
+    isRecordVisible: function isRecordVisible(record) {
+        if (!this._graphDataSource) return false;
 
-        if (isNaN(record.startTime))
-            return false;
+        if (isNaN(record.startTime)) return false;
 
         // If this bar is completely before the bounds of the graph, not visible.
-        if (record.endTime < this.graphDataSource.startTime)
-            return false;
+        if (record.endTime < this.graphDataSource.startTime) return false;
 
         // If this record is completely after the current time or end time, not visible.
-        if (record.startTime > this.graphDataSource.currentTime || record.startTime > this.graphDataSource.endTime)
-            return false;
+        if (record.startTime > this.graphDataSource.currentTime || record.startTime > this.graphDataSource.endTime) return false;
 
         return true;
     }
-};
+}, {
+    records: { // Public
+
+        get: function () {
+            // Implemented by subclasses.
+            return [];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    graphDataSource: {
+        get: function () {
+            return this._graphDataSource;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            if (!this._graphDataSource) return {};
+
+            var records = this.records || [];
+            return { graph: records.length ? records[0].startTime : 0 };
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

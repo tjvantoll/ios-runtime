@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.FrameDOMTreeContentView = function(domTree)
-{
+WebInspector.FrameDOMTreeContentView = function (domTree) {
     console.assert(domTree);
 
     WebInspector.DOMTreeContentView.call(this, domTree);
@@ -35,36 +34,25 @@ WebInspector.FrameDOMTreeContentView = function(domTree)
     this._requestRootDOMNode();
 };
 
-
-WebInspector.FrameDOMTreeContentView.prototype = {
+WebInspector.FrameDOMTreeContentView.prototype = Object.defineProperties({
     constructor: WebInspector.FrameDOMTreeContentView,
     __proto__: WebInspector.DOMTreeContentView.prototype,
 
-    // Public
-
-    get domTree()
-    {
-        return this._domTree;
-    },
-
-    closed: function()
-    {
+    closed: function closed() {
         this._domTree.removeEventListener(null, null, this);
 
         WebInspector.DOMTreeContentView.prototype.closed.call(this);
     },
 
-    getSearchContextNodes: function(callback)
-    {
-        this._domTree.requestRootDOMNode(function(rootDOMNode) {
+    getSearchContextNodes: function getSearchContextNodes(callback) {
+        this._domTree.requestRootDOMNode(function (rootDOMNode) {
             callback([rootDOMNode.id]);
         });
     },
 
     // Private
 
-    _rootDOMNodeAvailable: function(rootDOMNode)
-    {
+    _rootDOMNodeAvailable: function _rootDOMNodeAvailable(rootDOMNode) {
         this.domTreeOutline.rootDOMNode = rootDOMNode;
 
         if (!rootDOMNode) {
@@ -75,14 +63,21 @@ WebInspector.FrameDOMTreeContentView.prototype = {
         this._restoreSelectedNodeAfterUpdate(this._domTree.frame.url, rootDOMNode.body || rootDOMNode.documentElement || rootDOMNode.firstChild);
     },
 
-    _rootDOMNodeInvalidated: function(event)
-    {
+    _rootDOMNodeInvalidated: function _rootDOMNodeInvalidated(event) {
         this._requestRootDOMNode();
     },
 
-    _requestRootDOMNode: function()
-    {
+    _requestRootDOMNode: function _requestRootDOMNode() {
         this._domTree.requestRootDOMNode(this._rootDOMNodeAvailable.bind(this));
     }
 
-};
+}, {
+    domTree: { // Public
+
+        get: function () {
+            return this._domTree;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

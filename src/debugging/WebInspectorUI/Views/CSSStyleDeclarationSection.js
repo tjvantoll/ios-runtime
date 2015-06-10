@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CSSStyleDeclarationSection = function(style)
-{
+WebInspector.CSSStyleDeclarationSection = function (style) {
     // FIXME: Convert this to a WebInspector.Object subclass, and call super().
     // WebInspector.Object.call(this);
 
@@ -61,45 +60,30 @@ WebInspector.CSSStyleDeclarationSection = function(style)
 
     var iconClassName;
     switch (style.type) {
-    case WebInspector.CSSStyleDeclaration.Type.Rule:
-        console.assert(style.ownerRule);
+        case WebInspector.CSSStyleDeclaration.Type.Rule:
+            console.assert(style.ownerRule);
 
-        if (style.inherited)
-            iconClassName = WebInspector.CSSStyleDeclarationSection.InheritedStyleRuleIconStyleClassName;
-        else if (style.ownerRule.type === WebInspector.CSSRule.Type.Author)
-            iconClassName = WebInspector.CSSStyleDeclarationSection.AuthorStyleRuleIconStyleClassName;
-        else if (style.ownerRule.type === WebInspector.CSSRule.Type.User)
-            iconClassName = WebInspector.CSSStyleDeclarationSection.UserStyleRuleIconStyleClassName;
-        else if (style.ownerRule.type === WebInspector.CSSRule.Type.UserAgent)
-            iconClassName = WebInspector.CSSStyleDeclarationSection.UserAgentStyleRuleIconStyleClassName;
-        else if (style.ownerRule.type === WebInspector.CSSRule.Type.Inspector)
-            iconClassName = WebInspector.CSSStyleDeclarationSection.InspectorStyleRuleIconStyleClassName;
-        break;
+            if (style.inherited) iconClassName = WebInspector.CSSStyleDeclarationSection.InheritedStyleRuleIconStyleClassName;else if (style.ownerRule.type === WebInspector.CSSRule.Type.Author) iconClassName = WebInspector.CSSStyleDeclarationSection.AuthorStyleRuleIconStyleClassName;else if (style.ownerRule.type === WebInspector.CSSRule.Type.User) iconClassName = WebInspector.CSSStyleDeclarationSection.UserStyleRuleIconStyleClassName;else if (style.ownerRule.type === WebInspector.CSSRule.Type.UserAgent) iconClassName = WebInspector.CSSStyleDeclarationSection.UserAgentStyleRuleIconStyleClassName;else if (style.ownerRule.type === WebInspector.CSSRule.Type.Inspector) iconClassName = WebInspector.CSSStyleDeclarationSection.InspectorStyleRuleIconStyleClassName;
+            break;
 
-    case WebInspector.CSSStyleDeclaration.Type.Inline:
-    case WebInspector.CSSStyleDeclaration.Type.Attribute:
-        if (style.inherited)
-            iconClassName = WebInspector.CSSStyleDeclarationSection.InheritedElementStyleRuleIconStyleClassName;
-        else
-            iconClassName = WebInspector.DOMTreeElementPathComponent.DOMElementIconStyleClassName;
-        break;
+        case WebInspector.CSSStyleDeclaration.Type.Inline:
+        case WebInspector.CSSStyleDeclaration.Type.Attribute:
+            if (style.inherited) iconClassName = WebInspector.CSSStyleDeclarationSection.InheritedElementStyleRuleIconStyleClassName;else iconClassName = WebInspector.DOMTreeElementPathComponent.DOMElementIconStyleClassName;
+            break;
     }
 
     console.assert(iconClassName);
     this._element.classList.add(iconClassName);
 
-    if (!style.editable)
-        this._element.classList.add(WebInspector.CSSStyleDeclarationSection.LockedStyleClassName);
-    else if (style.ownerRule) {
+    if (!style.editable) this._element.classList.add(WebInspector.CSSStyleDeclarationSection.LockedStyleClassName);else if (style.ownerRule) {
         this._commitSelectorKeyboardShortcut = new WebInspector.KeyboardShortcut(null, WebInspector.KeyboardShortcut.Key.Enter, this._commitSelector.bind(this), this._selectorElement);
         this._selectorElement.addEventListener("blur", this._commitSelector.bind(this));
-    } else
-        this._element.classList.add(WebInspector.CSSStyleDeclarationSection.SelectorLockedStyleClassName);
+    } else this._element.classList.add(WebInspector.CSSStyleDeclarationSection.SelectorLockedStyleClassName);
 
     if (!WebInspector.CSSStyleDeclarationSection._generatedLockImages) {
         WebInspector.CSSStyleDeclarationSection._generatedLockImages = true;
 
-        var specifications = {"style-lock-normal": {fillColor: [0, 0, 0, 0.5]}};
+        var specifications = { "style-lock-normal": { fillColor: [0, 0, 0, 0.5] } };
         generateColoredImagesForCSS("Images/Locked.svg", specifications, 8, 10);
     }
 
@@ -124,70 +108,33 @@ WebInspector.CSSStyleDeclarationSection.InspectorStyleRuleIconStyleClassName = "
 WebInspector.CSSStyleDeclarationSection.InheritedStyleRuleIconStyleClassName = "inherited-style-rule-icon";
 WebInspector.CSSStyleDeclarationSection.InheritedElementStyleRuleIconStyleClassName = "inherited-element-style-rule-icon";
 
-WebInspector.CSSStyleDeclarationSection.prototype = {
+WebInspector.CSSStyleDeclarationSection.prototype = Object.defineProperties({
     constructor: WebInspector.CSSStyleDeclarationSection,
 
-    // Public
-
-    get element()
-    {
-        return this._element;
-    },
-
-    get style()
-    {
-        return this._style;
-    },
-
-    get lastInGroup()
-    {
-        return this._element.classList.contains(WebInspector.CSSStyleDeclarationSection.LastInGroupStyleClassName);
-    },
-
-    set lastInGroup(last)
-    {
-        if (last)
-            this._element.classList.add(WebInspector.CSSStyleDeclarationSection.LastInGroupStyleClassName);
-        else
-            this._element.classList.remove(WebInspector.CSSStyleDeclarationSection.LastInGroupStyleClassName);
-    },
-
-    get focused()
-    {
-        return this._propertiesTextEditor.focused;
-    },
-
-    focus: function()
-    {
+    focus: function focus() {
         this._propertiesTextEditor.focus();
     },
 
-    refresh: function()
-    {
+    refresh: function refresh() {
         this._selectorElement.removeChildren();
         this._originElement.removeChildren();
 
-        this._originElement.appendChild(document.createTextNode(" \u2014 "));
+        this._originElement.appendChild(document.createTextNode(" — "));
 
-        function appendSelector(selector, matched)
-        {
+        function appendSelector(selector, matched) {
             console.assert(selector instanceof WebInspector.CSSSelector);
 
             var selectorElement = document.createElement("span");
             selectorElement.textContent = selector.text;
 
-            if (matched)
-                selectorElement.className = WebInspector.CSSStyleDeclarationSection.MatchedSelectorElementStyleClassName;
+            if (matched) selectorElement.className = WebInspector.CSSStyleDeclarationSection.MatchedSelectorElementStyleClassName;
 
             var specificity = selector.specificity;
             if (specificity) {
                 var tooltip = WebInspector.UIString("Specificity: (%d, %d, %d)").format(specificity[0], specificity[1], specificity[2]);
                 if (selector.dynamic) {
                     tooltip += "\n";
-                    if (this._style.inherited)
-                        tooltip += WebInspector.UIString("Dynamically calculated for the parent element");
-                    else
-                        tooltip += WebInspector.UIString("Dynamically calculated for the selected element");
+                    if (this._style.inherited) tooltip += WebInspector.UIString("Dynamically calculated for the parent element");else tooltip += WebInspector.UIString("Dynamically calculated for the selected element");
                 }
                 selectorElement.title = tooltip;
             } else if (selector.dynamic) {
@@ -200,8 +147,7 @@ WebInspector.CSSStyleDeclarationSection.prototype = {
             this._selectorElement.appendChild(selectorElement);
         }
 
-        function appendSelectorTextKnownToMatch(selectorText)
-        {
+        function appendSelectorTextKnownToMatch(selectorText) {
             var selectorElement = document.createElement("span");
             selectorElement.textContent = selectorText;
             selectorElement.className = WebInspector.CSSStyleDeclarationSection.MatchedSelectorElementStyleClassName;
@@ -209,75 +155,69 @@ WebInspector.CSSStyleDeclarationSection.prototype = {
         }
 
         switch (this._style.type) {
-        case WebInspector.CSSStyleDeclaration.Type.Rule:
-            console.assert(this._style.ownerRule);
+            case WebInspector.CSSStyleDeclaration.Type.Rule:
+                console.assert(this._style.ownerRule);
 
-            var selectors = this._style.ownerRule.selectors;
-            var matchedSelectorIndices = this._style.ownerRule.matchedSelectorIndices;
-            var alwaysMatch = !matchedSelectorIndices.length;
-            if (selectors.length) {
-                for (var i = 0; i < selectors.length; ++i) {
-                    appendSelector.call(this, selectors[i], alwaysMatch || matchedSelectorIndices.includes(i));
-                    if (i < selectors.length - 1)
-                        this._selectorElement.appendChild(document.createTextNode(", "));
+                var selectors = this._style.ownerRule.selectors;
+                var matchedSelectorIndices = this._style.ownerRule.matchedSelectorIndices;
+                var alwaysMatch = !matchedSelectorIndices.length;
+                if (selectors.length) {
+                    for (var i = 0; i < selectors.length; ++i) {
+                        appendSelector.call(this, selectors[i], alwaysMatch || matchedSelectorIndices.includes(i));
+                        if (i < selectors.length - 1) this._selectorElement.appendChild(document.createTextNode(", "));
+                    }
+                } else appendSelectorTextKnownToMatch.call(this, this._style.ownerRule.selectorText);
+
+                if (this._style.ownerRule.sourceCodeLocation) {
+                    var sourceCodeLink = WebInspector.createSourceCodeLocationLink(this._style.ownerRule.sourceCodeLocation, true);
+                    this._originElement.appendChild(sourceCodeLink);
+                } else {
+                    var originString;
+                    switch (this._style.ownerRule.type) {
+                        case WebInspector.CSSRule.Type.Author:
+                            originString = WebInspector.UIString("Author Stylesheet");
+                            break;
+
+                        case WebInspector.CSSRule.Type.User:
+                            originString = WebInspector.UIString("User Stylesheet");
+                            break;
+
+                        case WebInspector.CSSRule.Type.UserAgent:
+                            originString = WebInspector.UIString("User Agent Stylesheet");
+                            break;
+
+                        case WebInspector.CSSRule.Type.Inspector:
+                            originString = WebInspector.UIString("Web Inspector");
+                            break;
+                    }
+
+                    console.assert(originString);
+                    if (originString) this._originElement.appendChild(document.createTextNode(originString));
                 }
-            } else
-                appendSelectorTextKnownToMatch.call(this, this._style.ownerRule.selectorText);
 
-            if (this._style.ownerRule.sourceCodeLocation) {
-                var sourceCodeLink = WebInspector.createSourceCodeLocationLink(this._style.ownerRule.sourceCodeLocation, true);
-                this._originElement.appendChild(sourceCodeLink);
-            } else {
-                var originString;
-                switch (this._style.ownerRule.type) {
-                case WebInspector.CSSRule.Type.Author:
-                    originString = WebInspector.UIString("Author Stylesheet");
-                    break;
+                break;
 
-                case WebInspector.CSSRule.Type.User:
-                    originString = WebInspector.UIString("User Stylesheet");
-                    break;
+            case WebInspector.CSSStyleDeclaration.Type.Inline:
+                appendSelectorTextKnownToMatch.call(this, WebInspector.displayNameForNode(this._style.node));
+                this._originElement.appendChild(document.createTextNode(WebInspector.UIString("Style Attribute")));
+                break;
 
-                case WebInspector.CSSRule.Type.UserAgent:
-                    originString = WebInspector.UIString("User Agent Stylesheet");
-                    break;
-
-                case WebInspector.CSSRule.Type.Inspector:
-                    originString = WebInspector.UIString("Web Inspector");
-                    break;
-                }
-
-                console.assert(originString);
-                if (originString)
-                    this._originElement.appendChild(document.createTextNode(originString));
-            }
-
-            break;
-
-        case WebInspector.CSSStyleDeclaration.Type.Inline:
-            appendSelectorTextKnownToMatch.call(this, WebInspector.displayNameForNode(this._style.node));
-            this._originElement.appendChild(document.createTextNode(WebInspector.UIString("Style Attribute")));
-            break;
-
-        case WebInspector.CSSStyleDeclaration.Type.Attribute:
-            appendSelectorTextKnownToMatch.call(this, WebInspector.displayNameForNode(this._style.node));
-            this._originElement.appendChild(document.createTextNode(WebInspector.UIString("HTML Attributes")));
-            break;
+            case WebInspector.CSSStyleDeclaration.Type.Attribute:
+                appendSelectorTextKnownToMatch.call(this, WebInspector.displayNameForNode(this._style.node));
+                this._originElement.appendChild(document.createTextNode(WebInspector.UIString("HTML Attributes")));
+                break;
         }
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         this._propertiesTextEditor.updateLayout();
     },
 
     // Private
 
-    _commitSelector: function(mutations)
-    {
+    _commitSelector: function _commitSelector(mutations) {
         console.assert(this._style.ownerRule);
-        if (!this._style.ownerRule)
-            return;
+        if (!this._style.ownerRule) return;
 
         var newSelectorText = this._selectorElement.textContent.trim();
         if (!newSelectorText) {
@@ -288,6 +228,39 @@ WebInspector.CSSStyleDeclarationSection.prototype = {
 
         this._style.ownerRule.selectorText = newSelectorText;
     }
-};
+}, {
+    element: { // Public
+
+        get: function () {
+            return this._element;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    style: {
+        get: function () {
+            return this._style;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    lastInGroup: {
+        get: function () {
+            return this._element.classList.contains(WebInspector.CSSStyleDeclarationSection.LastInGroupStyleClassName);
+        },
+        set: function (last) {
+            if (last) this._element.classList.add(WebInspector.CSSStyleDeclarationSection.LastInGroupStyleClassName);else this._element.classList.remove(WebInspector.CSSStyleDeclarationSection.LastInGroupStyleClassName);
+        },
+        configurable: true,
+        enumerable: true
+    },
+    focused: {
+        get: function () {
+            return this._propertiesTextEditor.focused;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.CSSStyleDeclarationSection.prototype.__proto__ = WebInspector.StyleDetailsPanel.prototype;

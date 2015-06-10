@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TextRange = class TextRange extends WebInspector.Object
-{
-    constructor(startLineOrStartOffset, startColumnOrEndOffset, endLine, endColumn)
-    {
-        super();
+WebInspector.TextRange = (function (_WebInspector$Object) {
+    function TextRange(startLineOrStartOffset, startColumnOrEndOffset, endLine, endColumn) {
+        _classCallCheck(this, TextRange);
+
+        _get(Object.getPrototypeOf(TextRange.prototype), "constructor", this).call(this);
 
         if (arguments.length === 4) {
             console.assert(startLineOrStartOffset <= endLine);
@@ -53,106 +61,105 @@ WebInspector.TextRange = class TextRange extends WebInspector.Object
         }
     }
 
-    // Public
+    _inherits(TextRange, _WebInspector$Object);
 
-    get startLine()
-    {
-        return this._startLine;
-    }
-
-    get startColumn()
-    {
-        return this._startColumn;
-    }
-
-    get endLine()
-    {
-        return this._endLine;
-    }
-
-    get endColumn()
-    {
-        return this._endColumn;
-    }
-
-    get startOffset()
-    {
-        return this._startOffset;
-    }
-
-    get endOffset()
-    {
-        return this._endOffset;
-    }
-
-    startPosition()
-    {
-        return new WebInspector.SourceCodePosition(this._startLine, this._startColumn);
-    }
-
-    endPosition()
-    {
-        return new WebInspector.SourceCodePosition(this._endLine, this._endColumn);
-    }
-
-    resolveLinesAndColumns(text)
-    {
-        console.assert(typeof text === "string");
-        if (typeof text !== "string")
-            return;
-
-        console.assert(!isNaN(this._startOffset));
-        console.assert(!isNaN(this._endOffset));
-        if (isNaN(this._startOffset) || isNaN(this._endOffset))
-            return;
-
-        function countNewLineCharacters(text)
-        {
-            var matches = text.match(/\n/g);
-            return matches ? matches.length : 0;
+    _createClass(TextRange, [{
+        key: "startPosition",
+        value: function startPosition() {
+            return new WebInspector.SourceCodePosition(this._startLine, this._startColumn);
         }
+    }, {
+        key: "endPosition",
+        value: function endPosition() {
+            return new WebInspector.SourceCodePosition(this._endLine, this._endColumn);
+        }
+    }, {
+        key: "resolveLinesAndColumns",
+        value: function resolveLinesAndColumns(text) {
+            console.assert(typeof text === "string");
+            if (typeof text !== "string") return;
 
-        var startSubstring = text.substring(0, this._startOffset);
-        var rangeSubstring = text.substring(this._startOffset, this._endOffset);
+            console.assert(!isNaN(this._startOffset));
+            console.assert(!isNaN(this._endOffset));
+            if (isNaN(this._startOffset) || isNaN(this._endOffset)) return;
 
-        var startNewLineCount = countNewLineCharacters(startSubstring);
-        var rangeNewLineCount = countNewLineCharacters(rangeSubstring);
+            function countNewLineCharacters(text) {
+                var matches = text.match(/\n/g);
+                return matches ? matches.length : 0;
+            }
 
-        this._startLine = startNewLineCount;
-        this._endLine = startNewLineCount + rangeNewLineCount;
+            var startSubstring = text.substring(0, this._startOffset);
+            var rangeSubstring = text.substring(this._startOffset, this._endOffset);
 
-        var lastNewLineOffset = startNewLineCount ? startSubstring.lastIndexOf("\n") + 1 : 0;
-        this._startColumn = startSubstring.length - lastNewLineOffset;
+            var startNewLineCount = countNewLineCharacters(startSubstring);
+            var rangeNewLineCount = countNewLineCharacters(rangeSubstring);
 
-        lastNewLineOffset = rangeNewLineCount ? rangeSubstring.lastIndexOf("\n") + 1 : 0;
-        this._endColumn = rangeSubstring.length - lastNewLineOffset;
+            this._startLine = startNewLineCount;
+            this._endLine = startNewLineCount + rangeNewLineCount;
 
-        if (this._startLine === this._endLine)
-            this._endColumn += this._startColumn;
-    }
+            var lastNewLineOffset = startNewLineCount ? startSubstring.lastIndexOf("\n") + 1 : 0;
+            this._startColumn = startSubstring.length - lastNewLineOffset;
 
-    resolveOffsets(text)
-    {
-        console.assert(typeof text === "string");
-        if (typeof text !== "string")
-            return;
+            lastNewLineOffset = rangeNewLineCount ? rangeSubstring.lastIndexOf("\n") + 1 : 0;
+            this._endColumn = rangeSubstring.length - lastNewLineOffset;
 
-        console.assert(!isNaN(this._startLine));
-        console.assert(!isNaN(this._startColumn));
-        console.assert(!isNaN(this._endLine));
-        console.assert(!isNaN(this._endColumn));
-        if (isNaN(this._startLine) || isNaN(this._startColumn) || isNaN(this._endLine) || isNaN(this._endColumn))
-            return;
+            if (this._startLine === this._endLine) this._endColumn += this._startColumn;
+        }
+    }, {
+        key: "resolveOffsets",
+        value: function resolveOffsets(text) {
+            console.assert(typeof text === "string");
+            if (typeof text !== "string") return;
 
-        var lastNewLineOffset = 0;
-        for (var i = 0; i < this._startLine; ++i)
-            lastNewLineOffset = text.indexOf("\n", lastNewLineOffset) + 1;
+            console.assert(!isNaN(this._startLine));
+            console.assert(!isNaN(this._startColumn));
+            console.assert(!isNaN(this._endLine));
+            console.assert(!isNaN(this._endColumn));
+            if (isNaN(this._startLine) || isNaN(this._startColumn) || isNaN(this._endLine) || isNaN(this._endColumn)) return;
 
-        this._startOffset = lastNewLineOffset + this._startColumn;
+            var lastNewLineOffset = 0;
+            for (var i = 0; i < this._startLine; ++i) lastNewLineOffset = text.indexOf("\n", lastNewLineOffset) + 1;
 
-        for (var i = this._startLine; i < this._endLine; ++i)
-            lastNewLineOffset = text.indexOf("\n", lastNewLineOffset) + 1;
+            this._startOffset = lastNewLineOffset + this._startColumn;
 
-        this._endOffset = lastNewLineOffset + this._endColumn;
-    }
-};
+            for (var i = this._startLine; i < this._endLine; ++i) lastNewLineOffset = text.indexOf("\n", lastNewLineOffset) + 1;
+
+            this._endOffset = lastNewLineOffset + this._endColumn;
+        }
+    }, {
+        key: "startLine",
+
+        // Public
+
+        get: function () {
+            return this._startLine;
+        }
+    }, {
+        key: "startColumn",
+        get: function () {
+            return this._startColumn;
+        }
+    }, {
+        key: "endLine",
+        get: function () {
+            return this._endLine;
+        }
+    }, {
+        key: "endColumn",
+        get: function () {
+            return this._endColumn;
+        }
+    }, {
+        key: "startOffset",
+        get: function () {
+            return this._startOffset;
+        }
+    }, {
+        key: "endOffset",
+        get: function () {
+            return this._endOffset;
+        }
+    }]);
+
+    return TextRange;
+})(WebInspector.Object);

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMTree = class DOMTree extends WebInspector.Object
-{
-    constructor(frame)
-    {
-        super();
+WebInspector.DOMTree = (function (_WebInspector$Object) {
+    function DOMTree(frame) {
+        _classCallCheck(this, DOMTree);
+
+        _get(Object.getPrototypeOf(DOMTree.prototype), "constructor", this).call(this);
 
         this._frame = frame;
 
@@ -50,277 +58,264 @@ WebInspector.DOMTree = class DOMTree extends WebInspector.Object
         WebInspector.domTreeManager.addEventListener(WebInspector.DOMTreeManager.Event.ContentFlowWasRemoved, this._contentFlowWasRemoved, this);
     }
 
-    // Public
+    _inherits(DOMTree, _WebInspector$Object);
 
-    get frame()
-    {
-        return this._frame;
-    }
+    _createClass(DOMTree, [{
+        key: "invalidate",
+        value: function invalidate() {
+            // Set to null so it is fetched again next time requestRootDOMNode is called.
+            this._rootDOMNode = null;
 
-    get flowMap()
-    {
-        return this._flowMap;
-    }
-
-    get flowsCount()
-    {
-        return Object.keys(this._flowMap).length;
-    }
-
-    invalidate()
-    {
-        // Set to null so it is fetched again next time requestRootDOMNode is called.
-        this._rootDOMNode = null;
-
-        // Clear the pending callbacks. It is the responsibility of the client to listen for
-        // the RootDOMNodeInvalidated event and request the root DOM node again.
-        delete this._pendingRootDOMNodeRequests;
-
-        if (this._invalidateTimeoutIdentifier)
-            return;
-
-        function performInvalidate()
-        {
-            delete this._invalidateTimeoutIdentifier;
-
-            this.dispatchEventToListeners(WebInspector.DOMTree.Event.RootDOMNodeInvalidated);
-        }
-
-        // Delay the invalidation on a timeout to coalesce multiple calls to invalidate.
-        this._invalidateTimeoutIdentifier = setTimeout(performInvalidate.bind(this), 0);
-    }
-
-    requestRootDOMNode(callback)
-    {
-        console.assert(typeof callback === "function");
-        if (typeof callback !== "function")
-            return;
-
-        if (this._rootDOMNode) {
-            callback(this._rootDOMNode);
-            return;
-        }
-
-        if (!this._frame.isMainFrame() && WebInspector.ExecutionContext.supported() && !this._frame.pageExecutionContext) {
-            this._rootDOMNodeRequestWaitingForExecutionContext = true;
-            if (!this._pendingRootDOMNodeRequests)
-                this._pendingRootDOMNodeRequests = [];
-            this._pendingRootDOMNodeRequests.push(callback);
-            return;
-        }
-
-        if (this._pendingRootDOMNodeRequests) {
-            this._pendingRootDOMNodeRequests.push(callback);
-            return;
-        }
-
-        this._pendingRootDOMNodeRequests = [callback];
-        this._requestRootDOMNode();
-    }
-
-    requestContentFlowList()
-    {
-        this.requestRootDOMNode(function(rootNode) {
-            // Let the backend know we are interested about the named flow events for this document.
-            WebInspector.domTreeManager.getNamedFlowCollection(rootNode.id);
-        });
-    }
-
-    // Private
-
-    _requestRootDOMNode()
-    {
-        console.assert(this._frame.isMainFrame() || !WebInspector.ExecutionContext.supported() || this._frame.pageExecutionContext);
-        console.assert(this._pendingRootDOMNodeRequests.length);
-
-        // Bump the request identifier. This prevents pending callbacks for previous requests from completing.
-        var requestIdentifier = ++this._requestIdentifier;
-
-        function rootObjectAvailable(error, result)
-        {
-            // Check to see if we have been invalidated (if the callbacks were cleared).
-            if (!this._pendingRootDOMNodeRequests || requestIdentifier !== this._requestIdentifier)
-                return;
-
-            if (error) {
-                console.error(JSON.stringify(error));
-
-                this._rootDOMNode = null;
-                dispatchCallbacks.call(this);
-                return;
-            }
-
-            // Convert the RemoteObject to a DOMNode by asking the backend to push it to us.
-            var remoteObject = WebInspector.RemoteObject.fromPayload(result);
-            remoteObject.pushNodeToFrontend(rootDOMNodeAvailable.bind(this, remoteObject));
-        }
-
-        function rootDOMNodeAvailable(remoteObject, nodeId)
-        {
-            remoteObject.release();
-
-            // Check to see if we have been invalidated (if the callbacks were cleared).
-            if (!this._pendingRootDOMNodeRequests || requestIdentifier !== this._requestIdentifier)
-                return;
-
-            if (!nodeId) {
-                this._rootDOMNode = null;
-                dispatchCallbacks.call(this);
-                return;
-            }
-
-            this._rootDOMNode = WebInspector.domTreeManager.nodeForId(nodeId);
-
-            console.assert(this._rootDOMNode);
-            if (!this._rootDOMNode) {
-                dispatchCallbacks.call(this);
-                return;
-            }
-
-            // Request the child nodes since the root node is often not shown in the UI,
-            // and the child nodes will be needed immediately.
-            this._rootDOMNode.getChildNodes(dispatchCallbacks.bind(this));
-        }
-
-        function mainDocumentAvailable(document)
-        {
-            this._rootDOMNode = document;
-
-            dispatchCallbacks.call(this);
-        }
-
-        function dispatchCallbacks()
-        {
-            // Check to see if we have been invalidated (if the callbacks were cleared).
-            if (!this._pendingRootDOMNodeRequests || requestIdentifier !== this._requestIdentifier)
-                return;
-
-            for (var i = 0; i < this._pendingRootDOMNodeRequests.length; ++i)
-                this._pendingRootDOMNodeRequests[i](this._rootDOMNode);
+            // Clear the pending callbacks. It is the responsibility of the client to listen for
+            // the RootDOMNodeInvalidated event and request the root DOM node again.
             delete this._pendingRootDOMNodeRequests;
+
+            if (this._invalidateTimeoutIdentifier) return;
+
+            function performInvalidate() {
+                delete this._invalidateTimeoutIdentifier;
+
+                this.dispatchEventToListeners(WebInspector.DOMTree.Event.RootDOMNodeInvalidated);
+            }
+
+            // Delay the invalidation on a timeout to coalesce multiple calls to invalidate.
+            this._invalidateTimeoutIdentifier = setTimeout(performInvalidate.bind(this), 0);
         }
+    }, {
+        key: "requestRootDOMNode",
+        value: function requestRootDOMNode(callback) {
+            console.assert(typeof callback === "function");
+            if (typeof callback !== "function") return;
 
-        // For the main frame we can use the more straight forward requestDocument function. For
-        // child frames we need to do a more roundabout approach since the protocol does not include
-        // a specific way to request a document given a frame identifier. The child frame approach
-        // involves evaluating the JavaScript "document" and resolving that into a DOMNode.
-        if (this._frame.isMainFrame())
-            WebInspector.domTreeManager.requestDocument(mainDocumentAvailable.bind(this));
-        else {
-            // COMPATIBILITY (iOS 6): Execution context identifiers (contextId) did not exist
-            // in iOS 6. Fallback to including the frame identifier (frameId).
-            var contextId = this._frame.pageExecutionContext ? this._frame.pageExecutionContext.id : undefined;
-            RuntimeAgent.evaluate.invoke({expression: "document", objectGroup: "", includeCommandLineAPI: false, doNotPauseOnExceptionsAndMuteConsole: true, contextId, frameId: this._frame.id, returnByValue: false, generatePreview: false}, rootObjectAvailable.bind(this));
-        }
-    }
+            if (this._rootDOMNode) {
+                callback(this._rootDOMNode);
+                return;
+            }
 
-    _nodeRemoved(event)
-    {
-        console.assert(!this._frame.isMainFrame());
+            if (!this._frame.isMainFrame() && WebInspector.ExecutionContext.supported() && !this._frame.pageExecutionContext) {
+                this._rootDOMNodeRequestWaitingForExecutionContext = true;
+                if (!this._pendingRootDOMNodeRequests) this._pendingRootDOMNodeRequests = [];
+                this._pendingRootDOMNodeRequests.push(callback);
+                return;
+            }
 
-        if (event.data.node !== this._rootDOMNode)
-            return;
+            if (this._pendingRootDOMNodeRequests) {
+                this._pendingRootDOMNodeRequests.push(callback);
+                return;
+            }
 
-        this.invalidate();
-    }
-
-    _documentUpdated(event)
-    {
-        this.invalidate();
-    }
-
-    _frameMainResourceDidChange(event)
-    {
-        console.assert(!this._frame.isMainFrame());
-
-        this.invalidate();
-    }
-
-    _framePageExecutionContextChanged(event)
-    {
-        if (this._rootDOMNodeRequestWaitingForExecutionContext) {
-            console.assert(this._frame.pageExecutionContext);
-            console.assert(this._pendingRootDOMNodeRequests && this._pendingRootDOMNodeRequests.length);
-
-            delete this._rootDOMNodeRequestWaitingForExecutionContext;
-
+            this._pendingRootDOMNodeRequests = [callback];
             this._requestRootDOMNode();
         }
-    }
+    }, {
+        key: "requestContentFlowList",
+        value: function requestContentFlowList() {
+            this.requestRootDOMNode(function (rootNode) {
+                // Let the backend know we are interested about the named flow events for this document.
+                WebInspector.domTreeManager.getNamedFlowCollection(rootNode.id);
+            });
+        }
+    }, {
+        key: "_requestRootDOMNode",
 
-    _isContentFlowInCurrentDocument(flow)
-    {
-        return this._rootDOMNode && this._rootDOMNode.id === flow.documentNodeIdentifier;
-    }
+        // Private
 
-    _contentFlowListWasUpdated(event)
-    {
-        if (!this._rootDOMNode || this._rootDOMNode.id !== event.data.documentNodeIdentifier)
-            return;
+        value: function _requestRootDOMNode() {
+            console.assert(this._frame.isMainFrame() || !WebInspector.ExecutionContext.supported() || this._frame.pageExecutionContext);
+            console.assert(this._pendingRootDOMNodeRequests.length);
 
-        // Assume that all the flows have been removed.
-        var deletedFlows = {};
-        for (var flowId in this._flowMap)
-            deletedFlows[flowId] = this._flowMap[flowId];
+            // Bump the request identifier. This prevents pending callbacks for previous requests from completing.
+            var requestIdentifier = ++this._requestIdentifier;
 
-        var newFlows = [];
+            function rootObjectAvailable(error, result) {
+                // Check to see if we have been invalidated (if the callbacks were cleared).
+                if (!this._pendingRootDOMNodeRequests || requestIdentifier !== this._requestIdentifier) return;
 
-        var flows = event.data.flows;
-        for (var i = 0; i < flows.length; ++i) {
-            var flow = flows[i];
-            // All the flows received from WebKit are part of the same document.
-            console.assert(this._isContentFlowInCurrentDocument(flow));
+                if (error) {
+                    console.error(JSON.stringify(error));
 
-            var flowId = flow.id;
-            if (this._flowMap.hasOwnProperty(flowId)) {
-                // Remove the flow name from the deleted list.
-                console.assert(deletedFlows.hasOwnProperty(flowId));
-                delete deletedFlows[flowId];
-            } else {
-                this._flowMap[flowId] = flow;
-                newFlows.push(flow);
+                    this._rootDOMNode = null;
+                    dispatchCallbacks.call(this);
+                    return;
+                }
+
+                // Convert the RemoteObject to a DOMNode by asking the backend to push it to us.
+                var remoteObject = WebInspector.RemoteObject.fromPayload(result);
+                remoteObject.pushNodeToFrontend(rootDOMNodeAvailable.bind(this, remoteObject));
+            }
+
+            function rootDOMNodeAvailable(remoteObject, nodeId) {
+                remoteObject.release();
+
+                // Check to see if we have been invalidated (if the callbacks were cleared).
+                if (!this._pendingRootDOMNodeRequests || requestIdentifier !== this._requestIdentifier) return;
+
+                if (!nodeId) {
+                    this._rootDOMNode = null;
+                    dispatchCallbacks.call(this);
+                    return;
+                }
+
+                this._rootDOMNode = WebInspector.domTreeManager.nodeForId(nodeId);
+
+                console.assert(this._rootDOMNode);
+                if (!this._rootDOMNode) {
+                    dispatchCallbacks.call(this);
+                    return;
+                }
+
+                // Request the child nodes since the root node is often not shown in the UI,
+                // and the child nodes will be needed immediately.
+                this._rootDOMNode.getChildNodes(dispatchCallbacks.bind(this));
+            }
+
+            function mainDocumentAvailable(document) {
+                this._rootDOMNode = document;
+
+                dispatchCallbacks.call(this);
+            }
+
+            function dispatchCallbacks() {
+                // Check to see if we have been invalidated (if the callbacks were cleared).
+                if (!this._pendingRootDOMNodeRequests || requestIdentifier !== this._requestIdentifier) return;
+
+                for (var i = 0; i < this._pendingRootDOMNodeRequests.length; ++i) this._pendingRootDOMNodeRequests[i](this._rootDOMNode);
+                delete this._pendingRootDOMNodeRequests;
+            }
+
+            // For the main frame we can use the more straight forward requestDocument function. For
+            // child frames we need to do a more roundabout approach since the protocol does not include
+            // a specific way to request a document given a frame identifier. The child frame approach
+            // involves evaluating the JavaScript "document" and resolving that into a DOMNode.
+            if (this._frame.isMainFrame()) WebInspector.domTreeManager.requestDocument(mainDocumentAvailable.bind(this));else {
+                // COMPATIBILITY (iOS 6): Execution context identifiers (contextId) did not exist
+                // in iOS 6. Fallback to including the frame identifier (frameId).
+                var contextId = this._frame.pageExecutionContext ? this._frame.pageExecutionContext.id : undefined;
+                RuntimeAgent.evaluate.invoke({ expression: "document", objectGroup: "", includeCommandLineAPI: false, doNotPauseOnExceptionsAndMuteConsole: true, contextId: contextId, frameId: this._frame.id, returnByValue: false, generatePreview: false }, rootObjectAvailable.bind(this));
             }
         }
+    }, {
+        key: "_nodeRemoved",
+        value: function _nodeRemoved(event) {
+            console.assert(!this._frame.isMainFrame());
 
-        for (var flowId in deletedFlows) {
-            delete this._flowMap[flowId];
+            if (event.data.node !== this._rootDOMNode) return;
+
+            this.invalidate();
         }
+    }, {
+        key: "_documentUpdated",
+        value: function _documentUpdated(event) {
+            this.invalidate();
+        }
+    }, {
+        key: "_frameMainResourceDidChange",
+        value: function _frameMainResourceDidChange(event) {
+            console.assert(!this._frame.isMainFrame());
 
-        // Send update events to listeners.
+            this.invalidate();
+        }
+    }, {
+        key: "_framePageExecutionContextChanged",
+        value: function _framePageExecutionContextChanged(event) {
+            if (this._rootDOMNodeRequestWaitingForExecutionContext) {
+                console.assert(this._frame.pageExecutionContext);
+                console.assert(this._pendingRootDOMNodeRequests && this._pendingRootDOMNodeRequests.length);
 
-        for (var flowId in deletedFlows)
-            this.dispatchEventToListeners(WebInspector.DOMTree.Event.ContentFlowWasRemoved, {flow: deletedFlows[flowId]});
+                delete this._rootDOMNodeRequestWaitingForExecutionContext;
 
-        for (var i = 0; i < newFlows.length; ++i)
-            this.dispatchEventToListeners(WebInspector.DOMTree.Event.ContentFlowWasAdded, {flow: newFlows[i]});
-    }
+                this._requestRootDOMNode();
+            }
+        }
+    }, {
+        key: "_isContentFlowInCurrentDocument",
+        value: function _isContentFlowInCurrentDocument(flow) {
+            return this._rootDOMNode && this._rootDOMNode.id === flow.documentNodeIdentifier;
+        }
+    }, {
+        key: "_contentFlowListWasUpdated",
+        value: function _contentFlowListWasUpdated(event) {
+            if (!this._rootDOMNode || this._rootDOMNode.id !== event.data.documentNodeIdentifier) return;
 
-    _contentFlowWasAdded(event)
-    {
-        var flow = event.data.flow;
-        if (!this._isContentFlowInCurrentDocument(flow))
-            return;
+            // Assume that all the flows have been removed.
+            var deletedFlows = {};
+            for (var flowId in this._flowMap) deletedFlows[flowId] = this._flowMap[flowId];
 
-        var flowId = flow.id;
-        console.assert(!this._flowMap.hasOwnProperty(flowId));
-        this._flowMap[flowId] = flow;
+            var newFlows = [];
 
-        this.dispatchEventToListeners(WebInspector.DOMTree.Event.ContentFlowWasAdded, {flow});
-    }
+            var flows = event.data.flows;
+            for (var i = 0; i < flows.length; ++i) {
+                var flow = flows[i];
+                // All the flows received from WebKit are part of the same document.
+                console.assert(this._isContentFlowInCurrentDocument(flow));
 
-    _contentFlowWasRemoved(event)
-    {
-        var flow = event.data.flow;
-        if (!this._isContentFlowInCurrentDocument(flow))
-            return;
+                var flowId = flow.id;
+                if (this._flowMap.hasOwnProperty(flowId)) {
+                    // Remove the flow name from the deleted list.
+                    console.assert(deletedFlows.hasOwnProperty(flowId));
+                    delete deletedFlows[flowId];
+                } else {
+                    this._flowMap[flowId] = flow;
+                    newFlows.push(flow);
+                }
+            }
 
-        var flowId = flow.id;
-        console.assert(this._flowMap.hasOwnProperty(flowId));
-        delete this._flowMap[flowId];
+            for (var flowId in deletedFlows) {
+                delete this._flowMap[flowId];
+            }
 
-        this.dispatchEventToListeners(WebInspector.DOMTree.Event.ContentFlowWasRemoved, {flow});
-    }
-};
+            // Send update events to listeners.
+
+            for (var flowId in deletedFlows) this.dispatchEventToListeners(WebInspector.DOMTree.Event.ContentFlowWasRemoved, { flow: deletedFlows[flowId] });
+
+            for (var i = 0; i < newFlows.length; ++i) this.dispatchEventToListeners(WebInspector.DOMTree.Event.ContentFlowWasAdded, { flow: newFlows[i] });
+        }
+    }, {
+        key: "_contentFlowWasAdded",
+        value: function _contentFlowWasAdded(event) {
+            var flow = event.data.flow;
+            if (!this._isContentFlowInCurrentDocument(flow)) return;
+
+            var flowId = flow.id;
+            console.assert(!this._flowMap.hasOwnProperty(flowId));
+            this._flowMap[flowId] = flow;
+
+            this.dispatchEventToListeners(WebInspector.DOMTree.Event.ContentFlowWasAdded, { flow: flow });
+        }
+    }, {
+        key: "_contentFlowWasRemoved",
+        value: function _contentFlowWasRemoved(event) {
+            var flow = event.data.flow;
+            if (!this._isContentFlowInCurrentDocument(flow)) return;
+
+            var flowId = flow.id;
+            console.assert(this._flowMap.hasOwnProperty(flowId));
+            delete this._flowMap[flowId];
+
+            this.dispatchEventToListeners(WebInspector.DOMTree.Event.ContentFlowWasRemoved, { flow: flow });
+        }
+    }, {
+        key: "frame",
+
+        // Public
+
+        get: function () {
+            return this._frame;
+        }
+    }, {
+        key: "flowMap",
+        get: function () {
+            return this._flowMap;
+        }
+    }, {
+        key: "flowsCount",
+        get: function () {
+            return Object.keys(this._flowMap).length;
+        }
+    }]);
+
+    return DOMTree;
+})(WebInspector.Object);
 
 WebInspector.DOMTree.Event = {
     RootDOMNodeInvalidated: "dom-tree-root-dom-node-invalidated",

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ProfileNodeCall = class ProfileNodeCall extends WebInspector.Object
-{
-    constructor(startTime, totalTime)
-    {
-        super();
+WebInspector.ProfileNodeCall = (function (_WebInspector$Object) {
+    function ProfileNodeCall(startTime, totalTime) {
+        _classCallCheck(this, ProfileNodeCall);
+
+        _get(Object.getPrototypeOf(ProfileNodeCall.prototype), "constructor", this).call(this);
 
         console.assert(startTime);
 
@@ -38,29 +46,37 @@ WebInspector.ProfileNodeCall = class ProfileNodeCall extends WebInspector.Object
         this._nextSibling = null;
     }
 
-    // Public
+    _inherits(ProfileNodeCall, _WebInspector$Object);
 
-    get startTime()
-    {
-        return this._startTime;
-    }
+    _createClass(ProfileNodeCall, [{
+        key: "establishRelationships",
 
-    get totalTime()
-    {
-        return this._totalTime;
-    }
+        // Protected
 
-    get endTime()
-    {
-        return this._startTime + this._totalTime;
-    }
+        value: function establishRelationships(parentNode, previousSibling, nextSibling) {
+            this._parentNode = parentNode || null;
+            this._previousSibling = previousSibling || null;
+            this._nextSibling = nextSibling || null;
+        }
+    }, {
+        key: "startTime",
 
-    // Protected
+        // Public
 
-    establishRelationships(parentNode, previousSibling, nextSibling)
-    {
-        this._parentNode = parentNode || null;
-        this._previousSibling = previousSibling || null;
-        this._nextSibling = nextSibling || null;
-    }
-};
+        get: function () {
+            return this._startTime;
+        }
+    }, {
+        key: "totalTime",
+        get: function () {
+            return this._totalTime;
+        }
+    }, {
+        key: "endTime",
+        get: function () {
+            return this._startTime + this._totalTime;
+        }
+    }]);
+
+    return ProfileNodeCall;
+})(WebInspector.Object);

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,15 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ObjectTreeBaseTreeElement = class ObjectTreeBaseTreeElement extends WebInspector.GeneralTreeElement
-{
-    constructor(representedObject, propertyPath, property)
-    {
+WebInspector.ObjectTreeBaseTreeElement = (function (_WebInspector$GeneralTreeElement) {
+    function ObjectTreeBaseTreeElement(representedObject, propertyPath, property) {
+        _classCallCheck(this, ObjectTreeBaseTreeElement);
+
         console.assert(representedObject);
         console.assert(propertyPath instanceof WebInspector.PropertyPath);
         console.assert(!property || property instanceof WebInspector.PropertyDescriptor);
 
-        super(null, null, null, representedObject, false);
+        _get(Object.getPrototypeOf(ObjectTreeBaseTreeElement.prototype), "constructor", this).call(this, null, null, null, representedObject, false);
 
         this._property = property;
         this._propertyPath = propertyPath;
@@ -42,209 +50,201 @@ WebInspector.ObjectTreeBaseTreeElement = class ObjectTreeBaseTreeElement extends
         this.tooltipHandledSeparately = true;
     }
 
-    // Public
+    _inherits(ObjectTreeBaseTreeElement, _WebInspector$GeneralTreeElement);
 
-    get property()
-    {
-        return this._property;
-    }
+    _createClass(ObjectTreeBaseTreeElement, [{
+        key: "oncontextmenu",
 
-    get propertyPath()
-    {
-        return this._propertyPath;
-    }
+        // Protected
 
-    // Protected
-
-    oncontextmenu(event)
-    {
-        this._contextMenuHandler(event);
-    }
-
-    resolvedValue()
-    {
-        console.assert(this._property);
-        if (this._getterValue)
-            return this._getterValue;
-        if (this._property.hasValue())
-            return this._property.value;
-        return null;
-    }
-
-    resolvedValuePropertyPath()
-    {
-        console.assert(this._property);
-        if (this._getterValue)
-            return this._propertyPath.appendPropertyDescriptor(this._getterValue, this._property, WebInspector.PropertyPath.Type.Value);
-        if (this._property.hasValue())
-            return this._propertyPath.appendPropertyDescriptor(this._property.value, this._property, WebInspector.PropertyPath.Type.Value);
-        return null;
-    }
-
-    thisPropertyPath()
-    {
-        console.assert(this._property);
-        return this._propertyPath.appendPropertyDescriptor(null, this._property, this.propertyPathType());
-    }
-
-    hadError()
-    {
-        console.assert(this._property);
-        return this._property.wasThrown || this._getterHadError;
-    }
-
-    propertyPathType()
-    {
-        console.assert(this._property);
-        if (this._getterValue || this._property.hasValue())
+        value: function oncontextmenu(event) {
+            this._contextMenuHandler(event);
+        }
+    }, {
+        key: "resolvedValue",
+        value: function resolvedValue() {
+            console.assert(this._property);
+            if (this._getterValue) return this._getterValue;
+            if (this._property.hasValue()) return this._property.value;
+            return null;
+        }
+    }, {
+        key: "resolvedValuePropertyPath",
+        value: function resolvedValuePropertyPath() {
+            console.assert(this._property);
+            if (this._getterValue) return this._propertyPath.appendPropertyDescriptor(this._getterValue, this._property, WebInspector.PropertyPath.Type.Value);
+            if (this._property.hasValue()) return this._propertyPath.appendPropertyDescriptor(this._property.value, this._property, WebInspector.PropertyPath.Type.Value);
+            return null;
+        }
+    }, {
+        key: "thisPropertyPath",
+        value: function thisPropertyPath() {
+            console.assert(this._property);
+            return this._propertyPath.appendPropertyDescriptor(null, this._property, this.propertyPathType());
+        }
+    }, {
+        key: "hadError",
+        value: function hadError() {
+            console.assert(this._property);
+            return this._property.wasThrown || this._getterHadError;
+        }
+    }, {
+        key: "propertyPathType",
+        value: function propertyPathType() {
+            console.assert(this._property);
+            if (this._getterValue || this._property.hasValue()) return WebInspector.PropertyPath.Type.Value;
+            if (this._property.hasGetter()) return WebInspector.PropertyPath.Type.Getter;
+            if (this._property.hasSetter()) return WebInspector.PropertyPath.Type.Setter;
             return WebInspector.PropertyPath.Type.Value;
-        if (this._property.hasGetter())
-            return WebInspector.PropertyPath.Type.Getter;
-        if (this._property.hasSetter())
-            return WebInspector.PropertyPath.Type.Setter;
-        return WebInspector.PropertyPath.Type.Value;
-    }
+        }
+    }, {
+        key: "propertyPathString",
+        value: function propertyPathString(propertyPath) {
+            if (propertyPath.isFullPathImpossible()) return WebInspector.UIString("Unable to determine path to property from root");
 
-    propertyPathString(propertyPath)
-    {
-        if (propertyPath.isFullPathImpossible())
-            return WebInspector.UIString("Unable to determine path to property from root");
+            return propertyPath.displayPath(this.propertyPathType());
+        }
+    }, {
+        key: "createGetterElement",
+        value: function createGetterElement(interactive) {
+            var getterElement = document.createElement("img");
+            getterElement.className = "getter";
 
-        return propertyPath.displayPath(this.propertyPathType());
-    }
+            if (!interactive) {
+                getterElement.classList.add("disabled");
+                getterElement.title = WebInspector.UIString("Getter");
+                return getterElement;
+            }
 
-    createGetterElement(interactive)
-    {
-        var getterElement = document.createElement("img");
-        getterElement.className = "getter";
+            getterElement.title = WebInspector.UIString("Invoke getter");
+            getterElement.addEventListener("click", (function (event) {
+                event.stopPropagation();
+                var lastNonPrototypeObject = this._propertyPath.lastNonPrototypeObject;
+                var getterObject = this._property.get;
+                lastNonPrototypeObject.invokeGetter(getterObject, (function (error, result, wasThrown) {
+                    this._getterHadError = !!(error || wasThrown);
+                    this._getterValue = result;
+                    if (this.invokedGetter && typeof this.invokedGetter === "function") this.invokedGetter();
+                }).bind(this));
+            }).bind(this));
 
-        if (!interactive) {
-            getterElement.classList.add("disabled");
-            getterElement.title = WebInspector.UIString("Getter");
             return getterElement;
         }
+    }, {
+        key: "createSetterElement",
+        value: function createSetterElement(interactive) {
+            var setterElement = document.createElement("img");
+            setterElement.className = "setter";
+            setterElement.title = WebInspector.UIString("Setter");
 
-        getterElement.title = WebInspector.UIString("Invoke getter");
-        getterElement.addEventListener("click", function(event) {
-            event.stopPropagation();
-            var lastNonPrototypeObject = this._propertyPath.lastNonPrototypeObject;
-            var getterObject = this._property.get;
-            lastNonPrototypeObject.invokeGetter(getterObject, function(error, result, wasThrown) {
-                this._getterHadError = !!(error || wasThrown);
-                this._getterValue = result;
-                if (this.invokedGetter && typeof this.invokedGetter === "function")
-                    this.invokedGetter();
-            }.bind(this));
-        }.bind(this));
+            if (!interactive) setterElement.classList.add("disabled");
 
-        return getterElement;
-    }
-
-    createSetterElement(interactive)
-    {
-        var setterElement = document.createElement("img");
-        setterElement.className = "setter";
-        setterElement.title = WebInspector.UIString("Setter");
-
-        if (!interactive)
-            setterElement.classList.add("disabled");
-
-        return setterElement;
-    }
-
-    // Private
-
-    _logSymbolProperty()
-    {
-        var symbol = this._property.symbol;
-        if (!symbol)
-            return;
-
-        var text = WebInspector.UIString("Selected Symbol");
-        WebInspector.consoleLogViewController.appendImmediateExecutionWithResult(text, symbol);
-    }
-
-    _logValue(value)
-    {
-        var resolvedValue = value || this.resolvedValue();
-        if (!resolvedValue)
-            return;
-
-        var propertyPath = this.resolvedValuePropertyPath();
-        var isImpossible = propertyPath.isFullPathImpossible();
-        var text = isImpossible ? WebInspector.UIString("Selected Value") : propertyPath.displayPath(this.propertyPathType());
-
-        if (!isImpossible)
-            WebInspector.quickConsole.prompt.pushHistoryItem(text);
-
-        WebInspector.consoleLogViewController.appendImmediateExecutionWithResult(text, resolvedValue);
-    }
-
-    _contextMenuHandler(event)
-    {
-        var resolvedValue = this.resolvedValue();
-        if (!resolvedValue)
-            return;
-
-        var contextMenu = new WebInspector.ContextMenu(event);
-
-        if (this._property && this._property.symbol)
-            contextMenu.appendItem(WebInspector.UIString("Log Symbol"), this._logSymbolProperty.bind(this));
-
-        contextMenu.appendItem(WebInspector.UIString("Log Value"), this._logValue.bind(this));
-
-        var propertyPath = this.resolvedValuePropertyPath();
-        if (propertyPath && !propertyPath.isFullPathImpossible()) {
-            contextMenu.appendItem(WebInspector.UIString("Copy Path to Property"), function() {
-                InspectorFrontendHost.copyText(propertyPath.displayPath(WebInspector.PropertyPath.Type.Value));
-            }.bind(this));
+            return setterElement;
         }
+    }, {
+        key: "_logSymbolProperty",
 
-        contextMenu.appendSeparator();
+        // Private
 
-        this._appendMenusItemsForObject(contextMenu, resolvedValue);
+        value: function _logSymbolProperty() {
+            var symbol = this._property.symbol;
+            if (!symbol) return;
 
-        contextMenu.show();
-    }
+            var text = WebInspector.UIString("Selected Symbol");
+            WebInspector.consoleLogViewController.appendImmediateExecutionWithResult(text, symbol);
+        }
+    }, {
+        key: "_logValue",
+        value: function _logValue(value) {
+            var resolvedValue = value || this.resolvedValue();
+            if (!resolvedValue) return;
 
-    _appendMenusItemsForObject(contextMenu, resolvedValue)
-    {
-        if (resolvedValue.type === "function") {
-            // FIXME: We should better handle bound functions.
-            if (!isFunctionStringNativeCode(resolvedValue.description)) {
-                contextMenu.appendItem(WebInspector.UIString("Jump to Definition"), function() {
-                    DebuggerAgent.getFunctionDetails(resolvedValue.objectId, function(error, response) {
-                        if (error)
-                            return;
+            var propertyPath = this.resolvedValuePropertyPath();
+            var isImpossible = propertyPath.isFullPathImpossible();
+            var text = isImpossible ? WebInspector.UIString("Selected Value") : propertyPath.displayPath(this.propertyPathType());
 
-                        var location = response.location;
-                        var sourceCode = WebInspector.debuggerManager.scriptForIdentifier(location.scriptId);
-                        if (!sourceCode)
-                            return;
+            if (!isImpossible) WebInspector.quickConsole.prompt.pushHistoryItem(text);
 
-                        var sourceCodeLocation = sourceCode.createSourceCodeLocation(location.lineNumber, location.columnNumber || 0);
-                        WebInspector.showSourceCodeLocation(sourceCodeLocation);
-                    });
-                });
+            WebInspector.consoleLogViewController.appendImmediateExecutionWithResult(text, resolvedValue);
+        }
+    }, {
+        key: "_contextMenuHandler",
+        value: function _contextMenuHandler(event) {
+            var resolvedValue = this.resolvedValue();
+            if (!resolvedValue) return;
+
+            var contextMenu = new WebInspector.ContextMenu(event);
+
+            if (this._property && this._property.symbol) contextMenu.appendItem(WebInspector.UIString("Log Symbol"), this._logSymbolProperty.bind(this));
+
+            contextMenu.appendItem(WebInspector.UIString("Log Value"), this._logValue.bind(this));
+
+            var propertyPath = this.resolvedValuePropertyPath();
+            if (propertyPath && !propertyPath.isFullPathImpossible()) {
+                contextMenu.appendItem(WebInspector.UIString("Copy Path to Property"), (function () {
+                    InspectorFrontendHost.copyText(propertyPath.displayPath(WebInspector.PropertyPath.Type.Value));
+                }).bind(this));
             }
-            return;
-        }
-
-        if (resolvedValue.subtype === "node") {
-            contextMenu.appendItem(WebInspector.UIString("Copy as HTML"), function() {
-                resolvedValue.pushNodeToFrontend(function(nodeId) {
-                    WebInspector.domTreeManager.nodeForId(nodeId).copyNode();
-                });
-            });
 
             contextMenu.appendSeparator();
 
-            contextMenu.appendItem(WebInspector.UIString("Reveal in DOM Tree"), function() {
-                resolvedValue.pushNodeToFrontend(function(nodeId) {
-                    WebInspector.domTreeManager.inspectElement(nodeId);
-                });
-            });
-            return;
+            this._appendMenusItemsForObject(contextMenu, resolvedValue);
+
+            contextMenu.show();
         }
-    }
-};
+    }, {
+        key: "_appendMenusItemsForObject",
+        value: function _appendMenusItemsForObject(contextMenu, resolvedValue) {
+            if (resolvedValue.type === "function") {
+                // FIXME: We should better handle bound functions.
+                if (!isFunctionStringNativeCode(resolvedValue.description)) {
+                    contextMenu.appendItem(WebInspector.UIString("Jump to Definition"), function () {
+                        DebuggerAgent.getFunctionDetails(resolvedValue.objectId, function (error, response) {
+                            if (error) return;
+
+                            var location = response.location;
+                            var sourceCode = WebInspector.debuggerManager.scriptForIdentifier(location.scriptId);
+                            if (!sourceCode) return;
+
+                            var sourceCodeLocation = sourceCode.createSourceCodeLocation(location.lineNumber, location.columnNumber || 0);
+                            WebInspector.showSourceCodeLocation(sourceCodeLocation);
+                        });
+                    });
+                }
+                return;
+            }
+
+            if (resolvedValue.subtype === "node") {
+                contextMenu.appendItem(WebInspector.UIString("Copy as HTML"), function () {
+                    resolvedValue.pushNodeToFrontend(function (nodeId) {
+                        WebInspector.domTreeManager.nodeForId(nodeId).copyNode();
+                    });
+                });
+
+                contextMenu.appendSeparator();
+
+                contextMenu.appendItem(WebInspector.UIString("Reveal in DOM Tree"), function () {
+                    resolvedValue.pushNodeToFrontend(function (nodeId) {
+                        WebInspector.domTreeManager.inspectElement(nodeId);
+                    });
+                });
+                return;
+            }
+        }
+    }, {
+        key: "property",
+
+        // Public
+
+        get: function () {
+            return this._property;
+        }
+    }, {
+        key: "propertyPath",
+        get: function () {
+            return this._propertyPath;
+        }
+    }]);
+
+    return ObjectTreeBaseTreeElement;
+})(WebInspector.GeneralTreeElement);

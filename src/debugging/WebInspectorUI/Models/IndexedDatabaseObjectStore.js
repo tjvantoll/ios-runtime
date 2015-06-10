@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.IndexedDatabaseObjectStore = class IndexedDatabaseObjectStore extends WebInspector.Object
-{
-    constructor(name, keyPath, autoIncrement, indexes)
-    {
-        super();
+WebInspector.IndexedDatabaseObjectStore = (function (_WebInspector$Object) {
+    function IndexedDatabaseObjectStore(name, keyPath, autoIncrement, indexes) {
+        _classCallCheck(this, IndexedDatabaseObjectStore);
+
+        _get(Object.getPrototypeOf(IndexedDatabaseObjectStore.prototype), "constructor", this).call(this);
 
         this._name = name;
         this._keyPath = keyPath;
@@ -35,50 +43,80 @@ WebInspector.IndexedDatabaseObjectStore = class IndexedDatabaseObjectStore exten
         this._indexes = indexes || [];
         this._parentDatabase = null;
 
-        for (var index of this._indexes)
-            index.establishRelationship(this);
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = this._indexes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var index = _step.value;
+
+                index.establishRelationship(this);
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
     }
 
-    // Public
+    _inherits(IndexedDatabaseObjectStore, _WebInspector$Object);
 
-    get name()
-    {
-        return this._name;
-    }
+    _createClass(IndexedDatabaseObjectStore, [{
+        key: "saveIdentityToCookie",
+        value: function saveIdentityToCookie(cookie) {
+            cookie[WebInspector.IndexedDatabaseObjectStore.NameCookieKey] = this._name;
+            cookie[WebInspector.IndexedDatabaseObjectStore.KeyPathCookieKey] = this._keyPath;
+        }
+    }, {
+        key: "establishRelationship",
 
-    get keyPath()
-    {
-        return this._keyPath;
-    }
+        // Protected
 
-    get autoIncrement()
-    {
-        return this._autoIncrement;
-    }
+        value: function establishRelationship(parentDatabase) {
+            this._parentDatabase = parentDatabase || null;
+        }
+    }, {
+        key: "name",
 
-    get parentDatabase()
-    {
-        return this._parentDatabase;
-    }
+        // Public
 
-    get indexes()
-    {
-        return this._indexes;
-    }
+        get: function () {
+            return this._name;
+        }
+    }, {
+        key: "keyPath",
+        get: function () {
+            return this._keyPath;
+        }
+    }, {
+        key: "autoIncrement",
+        get: function () {
+            return this._autoIncrement;
+        }
+    }, {
+        key: "parentDatabase",
+        get: function () {
+            return this._parentDatabase;
+        }
+    }, {
+        key: "indexes",
+        get: function () {
+            return this._indexes;
+        }
+    }]);
 
-    saveIdentityToCookie(cookie)
-    {
-        cookie[WebInspector.IndexedDatabaseObjectStore.NameCookieKey] = this._name;
-        cookie[WebInspector.IndexedDatabaseObjectStore.KeyPathCookieKey] = this._keyPath;
-    }
-
-    // Protected
-
-    establishRelationship(parentDatabase)
-    {
-        this._parentDatabase = parentDatabase || null;
-    }
-};
+    return IndexedDatabaseObjectStore;
+})(WebInspector.Object);
 
 WebInspector.IndexedDatabaseObjectStore.TypeIdentifier = "indexed-database-object-store";
 WebInspector.IndexedDatabaseObjectStore.NameCookieKey = "indexed-database-object-store-name";

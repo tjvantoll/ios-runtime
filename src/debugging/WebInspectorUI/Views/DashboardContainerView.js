@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013-2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DashboardContainerView = class DashboardContainerView extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.DashboardContainerView = (function (_WebInspector$Object) {
+    function DashboardContainerView() {
+        _classCallCheck(this, DashboardContainerView);
+
+        _get(Object.getPrototypeOf(DashboardContainerView.prototype), "constructor", this).call(this);
 
         this._toolbarItem = new WebInspector.NavigationItem("dashboard-container", "group", WebInspector.UIString("Activity Viewer"));
 
@@ -46,227 +54,234 @@ WebInspector.DashboardContainerView = class DashboardContainerView extends WebIn
         this._updateAdvanceArrowVisibility();
     }
 
-    // Public
+    _inherits(DashboardContainerView, _WebInspector$Object);
 
-    get toolbarItem()
-    {
-        return this._toolbarItem;
-    }
+    _createClass(DashboardContainerView, [{
+        key: "showDashboardViewForRepresentedObject",
+        value: function showDashboardViewForRepresentedObject(representedObject) {
+            var dashboardView = this._dashboardViewForRepresentedObject(representedObject);
+            if (!dashboardView) return null;
 
-    get currentDashboardView()
-    {
-        if (this._currentIndex === -1)
-            return null;
+            if (this.currentDashboardView === dashboardView) return;
 
-        return this._dashboardStack[this._currentIndex];
-    }
-
-    showDashboardViewForRepresentedObject(representedObject)
-    {
-        var dashboardView = this._dashboardViewForRepresentedObject(representedObject);
-        if (!dashboardView)
-            return null;
-
-        if (this.currentDashboardView === dashboardView)
-            return;
-
-        var index = this._dashboardStack.indexOf(dashboardView);
-        this._showDashboardAtIndex(index);
-        return dashboardView;
-    }
-
-    hideDashboardViewForRepresentedObject(representedObject)
-    {
-        var onlyReturnExistingViews = true;
-        var dashboardView = this._dashboardViewForRepresentedObject(representedObject, onlyReturnExistingViews);
-
-        if (this.currentDashboardView !== dashboardView)
-            return;
-
-        console.assert(this._currentIndex > 0);
-        this._showDashboardAtIndex(this._currentIndex - 1);
-    }
-
-    closeDashboardViewForRepresentedObject(representedObject)
-    {
-        var onlyReturnExistingViews = true;
-        var dashboardView = this._dashboardViewForRepresentedObject(representedObject, onlyReturnExistingViews);
-        if (!dashboardView)
-            return null;
-
-        this._closeDashboardView(dashboardView);
-    }
-
-    // Private
-
-    _advanceForwardArrowClicked()
-    {
-        this._showDashboardAtIndex(this._currentIndex + 1);
-    }
-
-    _advanceBackwardArrowClicked()
-    {
-        this._showDashboardAtIndex(this._currentIndex - 1);
-    }
-
-    _dismissAdvanceArrows()
-    {
-        this._advanceForwardArrowElement.classList.add(WebInspector.DashboardContainerView.InactiveStyleClassName);
-        this._advanceBackwardArrowElement.classList.add(WebInspector.DashboardContainerView.InactiveStyleClassName);
-    }
-
-    _updateAdvanceArrowVisibility()
-    {
-        var canAdvanceForward = this._currentIndex < this._dashboardStack.length - 1;
-        var canAdvanceBackward = this._currentIndex > 0;
-        this._advanceForwardArrowElement.classList.toggle(WebInspector.DashboardContainerView.InactiveStyleClassName, !canAdvanceForward);
-        this._advanceBackwardArrowElement.classList.toggle(WebInspector.DashboardContainerView.InactiveStyleClassName, !canAdvanceBackward);
-    }
-
-    _dashboardViewForRepresentedObject(representedObject, onlyReturnExistingViews)
-    {
-        console.assert(representedObject);
-
-        // Iterate over all known dashboard views and see if any are for this object.
-        for (var dashboardView of this._dashboardStack) {
-            if (dashboardView.representedObject === representedObject)
-                return dashboardView;
+            var index = this._dashboardStack.indexOf(dashboardView);
+            this._showDashboardAtIndex(index);
+            return dashboardView;
         }
+    }, {
+        key: "hideDashboardViewForRepresentedObject",
+        value: function hideDashboardViewForRepresentedObject(representedObject) {
+            var onlyReturnExistingViews = true;
+            var dashboardView = this._dashboardViewForRepresentedObject(representedObject, onlyReturnExistingViews);
 
-        if (onlyReturnExistingViews)
-            return null;
+            if (this.currentDashboardView !== dashboardView) return;
 
-        // No existing content view found, make a new one.
-        dashboardView = WebInspector.DashboardView.create(representedObject);
+            console.assert(this._currentIndex > 0);
+            this._showDashboardAtIndex(this._currentIndex - 1);
+        }
+    }, {
+        key: "closeDashboardViewForRepresentedObject",
+        value: function closeDashboardViewForRepresentedObject(representedObject) {
+            var onlyReturnExistingViews = true;
+            var dashboardView = this._dashboardViewForRepresentedObject(representedObject, onlyReturnExistingViews);
+            if (!dashboardView) return null;
 
-        console.assert(dashboardView, "Unknown representedObject", representedObject);
-        if (!dashboardView)
-            return null;
+            this._closeDashboardView(dashboardView);
+        }
+    }, {
+        key: "_advanceForwardArrowClicked",
 
-        this._dashboardStack.push(dashboardView);
-        this._toolbarItem.element.appendChild(dashboardView.element);
+        // Private
 
-        return dashboardView;
-    }
+        value: function _advanceForwardArrowClicked() {
+            this._showDashboardAtIndex(this._currentIndex + 1);
+        }
+    }, {
+        key: "_advanceBackwardArrowClicked",
+        value: function _advanceBackwardArrowClicked() {
+            this._showDashboardAtIndex(this._currentIndex - 1);
+        }
+    }, {
+        key: "_dismissAdvanceArrows",
+        value: function _dismissAdvanceArrows() {
+            this._advanceForwardArrowElement.classList.add(WebInspector.DashboardContainerView.InactiveStyleClassName);
+            this._advanceBackwardArrowElement.classList.add(WebInspector.DashboardContainerView.InactiveStyleClassName);
+        }
+    }, {
+        key: "_updateAdvanceArrowVisibility",
+        value: function _updateAdvanceArrowVisibility() {
+            var canAdvanceForward = this._currentIndex < this._dashboardStack.length - 1;
+            var canAdvanceBackward = this._currentIndex > 0;
+            this._advanceForwardArrowElement.classList.toggle(WebInspector.DashboardContainerView.InactiveStyleClassName, !canAdvanceForward);
+            this._advanceBackwardArrowElement.classList.toggle(WebInspector.DashboardContainerView.InactiveStyleClassName, !canAdvanceBackward);
+        }
+    }, {
+        key: "_dashboardViewForRepresentedObject",
+        value: function _dashboardViewForRepresentedObject(representedObject, onlyReturnExistingViews) {
+            console.assert(representedObject);
 
-    _showDashboardAtIndex(index)
-    {
-        console.assert(index >= 0 && index <= this._dashboardStack.length - 1);
+            // Iterate over all known dashboard views and see if any are for this object.
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
 
-        if (this._currentIndex === index)
-            return;
+            try {
+                for (var _iterator = this._dashboardStack[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var dashboardView = _step.value;
 
-        var advanceDirection = null;
-        if (this._currentIndex < index)
-            advanceDirection = WebInspector.DashboardContainerView.AdvanceDirection.Forward;
-        else
-            advanceDirection = WebInspector.DashboardContainerView.AdvanceDirection.Backward;
-        var initialDirection = WebInspector.DashboardContainerView.AdvanceDirection.None;
-        var isInitialDashboard = this._currentIndex === -1;
-        if (!isInitialDashboard)
-            this._hideDashboardView(this.currentDashboardView, advanceDirection);
+                    if (dashboardView.representedObject === representedObject) return dashboardView;
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator["return"]) {
+                        _iterator["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
 
-        this._currentIndex = index;
-        this._showDashboardView(this.currentDashboardView, isInitialDashboard ? initialDirection : advanceDirection);
-    }
+            if (onlyReturnExistingViews) return null;
 
-    _showDashboardView(dashboardView, advanceDirection)
-    {
-        console.assert(dashboardView instanceof WebInspector.DashboardView);
+            // No existing content view found, make a new one.
+            dashboardView = WebInspector.DashboardView.create(representedObject);
 
-        dashboardView.shown();
-        this._dismissAdvanceArrows();
+            console.assert(dashboardView, "Unknown representedObject", representedObject);
+            if (!dashboardView) return null;
 
-        var animationClass = null;
-        if (advanceDirection === WebInspector.DashboardContainerView.AdvanceDirection.Forward)
-            animationClass = WebInspector.DashboardContainerView.ForwardIncomingDashboardStyleClassName;
-        if (advanceDirection === WebInspector.DashboardContainerView.AdvanceDirection.Backward)
-            animationClass = WebInspector.DashboardContainerView.BackwardIncomingDashboardStyleClassName;
+            this._dashboardStack.push(dashboardView);
+            this._toolbarItem.element.appendChild(dashboardView.element);
 
-        var container = this;
-        dashboardView.element.classList.add(WebInspector.DashboardContainerView.VisibleDashboardStyleClassName);
+            return dashboardView;
+        }
+    }, {
+        key: "_showDashboardAtIndex",
+        value: function _showDashboardAtIndex(index) {
+            console.assert(index >= 0 && index <= this._dashboardStack.length - 1);
 
-        function animationEnded(event) {
-            if (event.target !== dashboardView.element)
+            if (this._currentIndex === index) return;
+
+            var advanceDirection = null;
+            if (this._currentIndex < index) advanceDirection = WebInspector.DashboardContainerView.AdvanceDirection.Forward;else advanceDirection = WebInspector.DashboardContainerView.AdvanceDirection.Backward;
+            var initialDirection = WebInspector.DashboardContainerView.AdvanceDirection.None;
+            var isInitialDashboard = this._currentIndex === -1;
+            if (!isInitialDashboard) this._hideDashboardView(this.currentDashboardView, advanceDirection);
+
+            this._currentIndex = index;
+            this._showDashboardView(this.currentDashboardView, isInitialDashboard ? initialDirection : advanceDirection);
+        }
+    }, {
+        key: "_showDashboardView",
+        value: function _showDashboardView(dashboardView, advanceDirection) {
+            console.assert(dashboardView instanceof WebInspector.DashboardView);
+
+            dashboardView.shown();
+            this._dismissAdvanceArrows();
+
+            var animationClass = null;
+            if (advanceDirection === WebInspector.DashboardContainerView.AdvanceDirection.Forward) animationClass = WebInspector.DashboardContainerView.ForwardIncomingDashboardStyleClassName;
+            if (advanceDirection === WebInspector.DashboardContainerView.AdvanceDirection.Backward) animationClass = WebInspector.DashboardContainerView.BackwardIncomingDashboardStyleClassName;
+
+            var container = this;
+            dashboardView.element.classList.add(WebInspector.DashboardContainerView.VisibleDashboardStyleClassName);
+
+            function animationEnded(event) {
+                if (event.target !== dashboardView.element) return;
+
+                dashboardView.element.removeEventListener("webkitAnimationEnd", animationEnded);
+                dashboardView.element.classList.remove(animationClass);
+                container._updateAdvanceArrowVisibility();
+            }
+
+            if (animationClass) {
+                dashboardView.element.classList.add(animationClass);
+                dashboardView.element.addEventListener("webkitAnimationEnd", animationEnded);
+            }
+
+            return dashboardView;
+        }
+    }, {
+        key: "_hideDashboardView",
+        value: function _hideDashboardView(dashboardView, advanceDirection, callback) {
+            console.assert(dashboardView instanceof WebInspector.DashboardView);
+            console.assert(this.currentDashboardView === dashboardView);
+
+            dashboardView.hidden();
+            this._dismissAdvanceArrows();
+
+            var animationClass = null;
+            if (advanceDirection === WebInspector.DashboardContainerView.AdvanceDirection.Forward) animationClass = WebInspector.DashboardContainerView.ForwardOutgoingDashboardStyleClassName;
+            if (advanceDirection === WebInspector.DashboardContainerView.AdvanceDirection.Backward) animationClass = WebInspector.DashboardContainerView.BackwardOutgoingDashboardStyleClassName;
+
+            var container = this;
+
+            function animationEnded(event) {
+                if (event.target !== dashboardView.element) return;
+
+                dashboardView.element.removeEventListener("webkitAnimationEnd", animationEnded);
+                dashboardView.element.classList.remove(animationClass);
+                dashboardView.element.classList.remove(WebInspector.DashboardContainerView.VisibleDashboardStyleClassName);
+                container._updateAdvanceArrowVisibility();
+
+                if (typeof callback === "function") callback();
+            }
+
+            if (animationClass) {
+                dashboardView.element.classList.add(animationClass);
+                dashboardView.element.addEventListener("webkitAnimationEnd", animationEnded);
+            } else dashboardView.element.classList.remove(WebInspector.DashboardContainerView.VisibleDashboardStyleClassName);
+        }
+    }, {
+        key: "_closeDashboardView",
+        value: function _closeDashboardView(dashboardView) {
+            console.assert(dashboardView instanceof WebInspector.DashboardView);
+
+            function dissociateDashboardView() {
+                dashboardView.closed();
+                dashboardView.element.parentNode.removeChild(dashboardView.element);
+            }
+
+            var index = this._dashboardStack.indexOf(dashboardView);
+
+            if (this.currentDashboardView === dashboardView) {
+                var direction = WebInspector.DashboardContainerView.AdvanceDirection.Backward;
+                this._hideDashboardView(this.currentDashboardView, direction, dissociateDashboardView);
+                this._dashboardStack.splice(index, 1);
+                --this._currentIndex;
+                this._showDashboardView(this.currentDashboardView, direction);
                 return;
+            }
 
-            dashboardView.element.removeEventListener("webkitAnimationEnd", animationEnded);
-            dashboardView.element.classList.remove(animationClass);
-            container._updateAdvanceArrowVisibility();
-        }
-
-        if (animationClass) {
-            dashboardView.element.classList.add(animationClass);
-            dashboardView.element.addEventListener("webkitAnimationEnd", animationEnded);
-        }
-
-        return dashboardView;
-    }
-
-    _hideDashboardView(dashboardView, advanceDirection, callback)
-    {
-        console.assert(dashboardView instanceof WebInspector.DashboardView);
-        console.assert(this.currentDashboardView === dashboardView);
-
-        dashboardView.hidden();
-        this._dismissAdvanceArrows();
-
-        var animationClass = null;
-        if (advanceDirection === WebInspector.DashboardContainerView.AdvanceDirection.Forward)
-            animationClass = WebInspector.DashboardContainerView.ForwardOutgoingDashboardStyleClassName;
-        if (advanceDirection === WebInspector.DashboardContainerView.AdvanceDirection.Backward)
-            animationClass = WebInspector.DashboardContainerView.BackwardOutgoingDashboardStyleClassName;
-
-        var container = this;
-
-        function animationEnded(event) {
-            if (event.target !== dashboardView.element)
-                return;
-
-            dashboardView.element.removeEventListener("webkitAnimationEnd", animationEnded);
-            dashboardView.element.classList.remove(animationClass);
-            dashboardView.element.classList.remove(WebInspector.DashboardContainerView.VisibleDashboardStyleClassName);
-            container._updateAdvanceArrowVisibility();
-
-            if (typeof callback === "function")
-                callback();
-        }
-
-        if (animationClass) {
-            dashboardView.element.classList.add(animationClass);
-            dashboardView.element.addEventListener("webkitAnimationEnd", animationEnded);
-        } else
-            dashboardView.element.classList.remove(WebInspector.DashboardContainerView.VisibleDashboardStyleClassName);
-    }
-
-    _closeDashboardView(dashboardView)
-    {
-        console.assert(dashboardView instanceof WebInspector.DashboardView);
-
-        function dissociateDashboardView() {
-            dashboardView.closed();
-            dashboardView.element.parentNode.removeChild(dashboardView.element);
-        }
-
-        var index = this._dashboardStack.indexOf(dashboardView);
-
-        if (this.currentDashboardView === dashboardView) {
-            var direction = WebInspector.DashboardContainerView.AdvanceDirection.Backward;
-            this._hideDashboardView(this.currentDashboardView, direction, dissociateDashboardView);
             this._dashboardStack.splice(index, 1);
-            --this._currentIndex;
-            this._showDashboardView(this.currentDashboardView, direction);
-            return;
+            if (this._currentIndex > index) --this._currentIndex;
+            dissociateDashboardView.call(this);
+
+            this._updateAdvanceArrowVisibility();
         }
+    }, {
+        key: "toolbarItem",
 
-        this._dashboardStack.splice(index, 1);
-        if (this._currentIndex > index)
-            --this._currentIndex;
-        dissociateDashboardView.call(this);
+        // Public
 
-        this._updateAdvanceArrowVisibility();
-    }
-};
+        get: function () {
+            return this._toolbarItem;
+        }
+    }, {
+        key: "currentDashboardView",
+        get: function () {
+            if (this._currentIndex === -1) return null;
+
+            return this._dashboardStack[this._currentIndex];
+        }
+    }]);
+
+    return DashboardContainerView;
+})(WebInspector.Object);
 
 WebInspector.DashboardContainerView.VisibleDashboardStyleClassName = "visible";
 WebInspector.DashboardContainerView.InactiveStyleClassName = "inactive";

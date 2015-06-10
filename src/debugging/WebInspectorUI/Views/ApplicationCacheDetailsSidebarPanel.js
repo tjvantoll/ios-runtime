@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ApplicationCacheDetailsSidebarPanel = class ApplicationCacheDetailsSidebarPanel extends WebInspector.DetailsSidebarPanel
-{
-    constructor()
-    {
-        super("application-cache-details", WebInspector.UIString("Storage"), WebInspector.UIString("Storage"));
+WebInspector.ApplicationCacheDetailsSidebarPanel = (function (_WebInspector$DetailsSidebarPanel) {
+    function ApplicationCacheDetailsSidebarPanel() {
+        _classCallCheck(this, ApplicationCacheDetailsSidebarPanel);
+
+        _get(Object.getPrototypeOf(ApplicationCacheDetailsSidebarPanel.prototype), "constructor", this).call(this, "application-cache-details", WebInspector.UIString("Storage"), WebInspector.UIString("Storage"));
 
         this.element.classList.add("application-cache");
 
@@ -54,88 +62,88 @@ WebInspector.ApplicationCacheDetailsSidebarPanel = class ApplicationCacheDetails
         WebInspector.applicationCacheManager.addEventListener(WebInspector.ApplicationCacheManager.Event.FrameManifestStatusChanged, this._frameManifestStatusChanged, this);
     }
 
-    // Public
+    _inherits(ApplicationCacheDetailsSidebarPanel, _WebInspector$DetailsSidebarPanel);
 
-    inspect(objects)
-    {
-        // Convert to a single item array if needed.
-        if (!(objects instanceof Array))
-            objects = [objects];
+    _createClass(ApplicationCacheDetailsSidebarPanel, [{
+        key: "inspect",
 
-        var applicationCacheFrameToInspect = null;
+        // Public
 
-        // Iterate over the objects to find a WebInspector.ApplicationCacheFrame to inspect.
-        for (var i = 0; i < objects.length; ++i) {
-            if (objects[i] instanceof WebInspector.ApplicationCacheFrame) {
-                applicationCacheFrameToInspect = objects[i];
-                break;
+        value: function inspect(objects) {
+            // Convert to a single item array if needed.
+            if (!(objects instanceof Array)) objects = [objects];
+
+            var applicationCacheFrameToInspect = null;
+
+            // Iterate over the objects to find a WebInspector.ApplicationCacheFrame to inspect.
+            for (var i = 0; i < objects.length; ++i) {
+                if (objects[i] instanceof WebInspector.ApplicationCacheFrame) {
+                    applicationCacheFrameToInspect = objects[i];
+                    break;
+                }
             }
+
+            this.applicationCacheFrame = applicationCacheFrameToInspect;
+
+            return !!this.applicationCacheFrame;
         }
+    }, {
+        key: "refresh",
+        value: function refresh() {
+            if (!this.applicationCacheFrame) return;
 
-        this.applicationCacheFrame = applicationCacheFrameToInspect;
+            this._locationFrameURLRow.value = this.applicationCacheFrame.frame.url;
+            this._locationManifestURLRow.value = this.applicationCacheFrame.manifest.manifestURL;
 
-        return !!this.applicationCacheFrame;
-    }
+            this._refreshOnlineRow();
+            this._refreshStatusRow();
+        }
+    }, {
+        key: "_networkStateUpdated",
 
-    get applicationCacheFrame()
-    {
-        return this._applicationCacheFrame;
-    }
+        // Private
 
-    set applicationCacheFrame(applicationCacheFrame)
-    {
-        if (this._applicationCacheFrame === applicationCacheFrame)
-            return;
+        value: function _networkStateUpdated(event) {
+            if (!this.applicationCacheFrame) return;
 
-        this._applicationCacheFrame = applicationCacheFrame;
+            this._refreshOnlineRow();
+        }
+    }, {
+        key: "_frameManifestStatusChanged",
+        value: function _frameManifestStatusChanged(event) {
+            if (!this.applicationCacheFrame) return;
 
-        this.needsRefresh();
-    }
+            console.assert(event.data.frameManifest instanceof WebInspector.ApplicationCacheFrame);
+            if (event.data.frameManifest !== this.applicationCacheFrame) return;
 
-    refresh()
-    {
-        if (!this.applicationCacheFrame)
-            return;
+            this._refreshStatusRow();
+        }
+    }, {
+        key: "_refreshOnlineRow",
+        value: function _refreshOnlineRow() {
+            this._onlineRow.value = WebInspector.applicationCacheManager.online ? WebInspector.UIString("Yes") : WebInspector.UIString("No");
+        }
+    }, {
+        key: "_refreshStatusRow",
+        value: function _refreshStatusRow() {
+            this._statusRow.value = WebInspector.ApplicationCacheDetailsSidebarPanel.Status[this.applicationCacheFrame.status];
+        }
+    }, {
+        key: "applicationCacheFrame",
+        get: function () {
+            return this._applicationCacheFrame;
+        },
+        set: function (applicationCacheFrame) {
+            if (this._applicationCacheFrame === applicationCacheFrame) return;
 
-        this._locationFrameURLRow.value = this.applicationCacheFrame.frame.url;
-        this._locationManifestURLRow.value = this.applicationCacheFrame.manifest.manifestURL;
+            this._applicationCacheFrame = applicationCacheFrame;
 
-        this._refreshOnlineRow();
-        this._refreshStatusRow();
-    }
+            this.needsRefresh();
+        }
+    }]);
 
-    // Private
-
-    _networkStateUpdated(event)
-    {
-        if (!this.applicationCacheFrame)
-            return;
-
-        this._refreshOnlineRow();
-    }
-
-    _frameManifestStatusChanged(event)
-    {
-        if (!this.applicationCacheFrame)
-            return;
-
-        console.assert(event.data.frameManifest instanceof WebInspector.ApplicationCacheFrame);
-        if (event.data.frameManifest !== this.applicationCacheFrame)
-            return;
-
-        this._refreshStatusRow();
-    }
-
-    _refreshOnlineRow()
-    {
-        this._onlineRow.value = WebInspector.applicationCacheManager.online ? WebInspector.UIString("Yes") : WebInspector.UIString("No");
-    }
-
-    _refreshStatusRow()
-    {
-        this._statusRow.value = WebInspector.ApplicationCacheDetailsSidebarPanel.Status[this.applicationCacheFrame.status];
-    }
-};
+    return ApplicationCacheDetailsSidebarPanel;
+})(WebInspector.DetailsSidebarPanel);
 
 // This needs to be kept in sync with ApplicationCacheManager.js.
 WebInspector.ApplicationCacheDetailsSidebarPanel.Status = {

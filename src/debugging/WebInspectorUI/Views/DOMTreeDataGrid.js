@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMTreeDataGrid = function() {
+WebInspector.DOMTreeDataGrid = function () {
     WebInspector.DataGrid.call(this, {
         name: { title: WebInspector.UIString("Node"), sortable: false }
     });
@@ -40,18 +40,15 @@ WebInspector.DOMTreeDataGrid.prototype = {
     constructor: WebInspector.DOMTreeDataGrid,
     __proto__: WebInspector.DataGrid.prototype,
 
-    _onmousemove: function(event)
-    {
+    _onmousemove: function _onmousemove(event) {
         var gridNode = this.dataGridNodeFromNode(event.target);
-        if (!gridNode || this._previousHoveredElement === gridNode.domNode)
-            return;
+        if (!gridNode || this._previousHoveredElement === gridNode.domNode) return;
         this._previousHoveredElement = gridNode.domNode;
         WebInspector.domTreeManager.highlightDOMNode(gridNode.domNode.id);
     },
 
-    _onmouseout: function(event) {
-        if (!this._previousHoveredElement)
-            return;
+    _onmouseout: function _onmouseout(event) {
+        if (!this._previousHoveredElement) return;
         WebInspector.domTreeManager.hideDOMNodeHighlight();
         this._previousHoveredElement = null;
     }

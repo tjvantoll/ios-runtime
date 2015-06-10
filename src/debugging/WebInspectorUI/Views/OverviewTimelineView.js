@@ -23,13 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.OverviewTimelineView = function(recording, extraArguments)
-{
+WebInspector.OverviewTimelineView = function (recording, extraArguments) {
     WebInspector.TimelineView.call(this, recording, extraArguments);
 
     this._recording = recording;
 
-    var columns = {"graph": {width: "100%"}};
+    var columns = { "graph": { width: "100%" } };
 
     this._dataGrid = new WebInspector.DataGrid(columns);
     this._dataGrid.addEventListener(WebInspector.DataGrid.Event.SelectedNodeChanged, this._dataGridNodeSelected, this);
@@ -37,7 +36,7 @@ WebInspector.OverviewTimelineView = function(recording, extraArguments)
 
     this._treeOutlineDataGridSynchronizer = new WebInspector.TreeOutlineDataGridSynchronizer(this.navigationSidebarTreeOutline, this._dataGrid);
 
-    this._timelineRuler = new WebInspector.TimelineRuler;
+    this._timelineRuler = new WebInspector.TimelineRuler();
     this._timelineRuler.allowsClippedLabels = true;
     this.element.appendChild(this._timelineRuler.element);
 
@@ -57,42 +56,22 @@ WebInspector.OverviewTimelineView = function(recording, extraArguments)
 
 WebInspector.OverviewTimelineView.StyleClassName = "overview";
 
-WebInspector.OverviewTimelineView.prototype = {
+WebInspector.OverviewTimelineView.prototype = Object.defineProperties({
     constructor: WebInspector.OverviewTimelineView,
     __proto__: WebInspector.TimelineView.prototype,
 
-    // Public
-
-    get navigationSidebarTreeOutlineLabel()
-    {
-        return WebInspector.UIString("Timeline Events");
-    },
-
-    get secondsPerPixel()
-    {
-        return this._timelineRuler.secondsPerPixel;
-    },
-
-    set secondsPerPixel(x)
-    {
-        this._timelineRuler.secondsPerPixel = x;
-    },
-
-    shown: function()
-    {
+    shown: function shown() {
         WebInspector.ContentView.prototype.shown.call(this);
 
         this._treeOutlineDataGridSynchronizer.synchronize();
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         this._networkTimeline.removeEventListener(null, null, this);
         this._recording.removeEventListener(null, null, this);
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         WebInspector.TimelineView.prototype.updateLayout.call(this);
 
         var oldZeroTime = this._timelineRuler.zeroTime;
@@ -120,51 +99,20 @@ WebInspector.OverviewTimelineView.prototype = {
         this._processPendingRepresentedObjects();
     },
 
-    get selectionPathComponents()
-    {
-        var dataGridNode = this._dataGrid.selectedNode;
-        if (!dataGridNode)
-            return null;
-
-        var pathComponents = [];
-
-        while (dataGridNode && !dataGridNode.root) {
-            var treeElement = this._treeOutlineDataGridSynchronizer.treeElementForDataGridNode(dataGridNode);
-            console.assert(treeElement);
-            if (!treeElement)
-                break;
-
-            if (treeElement.hidden)
-                return null;
-
-            var pathComponent = new WebInspector.GeneralTreeElementPathComponent(treeElement);
-            pathComponent.addEventListener(WebInspector.HierarchicalPathComponent.Event.SiblingWasSelected, this.treeElementPathComponentSelected, this);
-            pathComponents.unshift(pathComponent);
-            dataGridNode = dataGridNode.parent;
-        }
-
-        return pathComponents;
-    },
-
     // Protected
 
-    treeElementPathComponentSelected: function(event)
-    {
+    treeElementPathComponentSelected: function treeElementPathComponentSelected(event) {
         var dataGridNode = this._treeOutlineDataGridSynchronizer.dataGridNodeForTreeElement(event.data.pathComponent.generalTreeElement);
-        if (!dataGridNode)
-            return;
+        if (!dataGridNode) return;
         dataGridNode.revealAndSelect();
     },
 
-    canShowContentViewForTreeElement: function(treeElement)
-    {
-        if (treeElement instanceof WebInspector.ResourceTreeElement || treeElement instanceof WebInspector.ScriptTreeElement)
-            return true;
+    canShowContentViewForTreeElement: function canShowContentViewForTreeElement(treeElement) {
+        if (treeElement instanceof WebInspector.ResourceTreeElement || treeElement instanceof WebInspector.ScriptTreeElement) return true;
         return WebInspector.TimelineView.prototype.canShowContentViewForTreeElement(treeElement);
     },
 
-    showContentViewForTreeElement: function(treeElement)
-    {
+    showContentViewForTreeElement: function showContentViewForTreeElement(treeElement) {
         if (treeElement instanceof WebInspector.ResourceTreeElement || treeElement instanceof WebInspector.ScriptTreeElement) {
             WebInspector.showSourceCode(treeElement.representedObject);
             return;
@@ -185,30 +133,24 @@ WebInspector.OverviewTimelineView.prototype = {
 
     // Private
 
-    _compareTreeElementsByDetails: function(a, b)
-    {
-        if (a instanceof WebInspector.SourceCodeTimelineTreeElement && b instanceof WebInspector.ResourceTreeElement)
-            return -1;
+    _compareTreeElementsByDetails: function _compareTreeElementsByDetails(a, b) {
+        if (a instanceof WebInspector.SourceCodeTimelineTreeElement && b instanceof WebInspector.ResourceTreeElement) return -1;
 
-        if (a instanceof WebInspector.ResourceTreeElement && b instanceof WebInspector.SourceCodeTimelineTreeElement)
-            return 1;
+        if (a instanceof WebInspector.ResourceTreeElement && b instanceof WebInspector.SourceCodeTimelineTreeElement) return 1;
 
         if (a instanceof WebInspector.SourceCodeTimelineTreeElement && b instanceof WebInspector.SourceCodeTimelineTreeElement) {
             var aTimeline = a.sourceCodeTimeline;
             var bTimeline = b.sourceCodeTimeline;
 
             if (!aTimeline.sourceCodeLocation && !bTimeline.sourceCodeLocation) {
-                if (aTimeline.recordType !== bTimeline.recordType)
-                    return aTimeline.recordType.localeCompare(bTimeline.recordType);
+                if (aTimeline.recordType !== bTimeline.recordType) return aTimeline.recordType.localeCompare(bTimeline.recordType);
 
                 return a.mainTitle.localeCompare(b.mainTitle);
             }
 
-            if (!aTimeline.sourceCodeLocation || !bTimeline.sourceCodeLocation)
-                return !!aTimeline.sourceCodeLocation - !!bTimeline.sourceCodeLocation;
+            if (!aTimeline.sourceCodeLocation || !bTimeline.sourceCodeLocation) return !!aTimeline.sourceCodeLocation - !!bTimeline.sourceCodeLocation;
 
-            if (aTimeline.sourceCodeLocation.lineNumber !== bTimeline.sourceCodeLocation.lineNumber)
-                return aTimeline.sourceCodeLocation.lineNumber - bTimeline.sourceCodeLocation.lineNumber;
+            if (aTimeline.sourceCodeLocation.lineNumber !== bTimeline.sourceCodeLocation.lineNumber) return aTimeline.sourceCodeLocation.lineNumber - bTimeline.sourceCodeLocation.lineNumber;
 
             return aTimeline.sourceCodeLocation.columnNumber - bTimeline.sourceCodeLocation.columnNumber;
         }
@@ -217,29 +159,23 @@ WebInspector.OverviewTimelineView.prototype = {
         return this._compareTreeElementsByStartTime(a, b);
     },
 
-    _compareTreeElementsByStartTime: function(a, b)
-    {
-        function getStartTime(treeElement)
-        {
-            if (treeElement instanceof WebInspector.ResourceTreeElement)
-                return treeElement.resource.firstTimestamp;
-            if (treeElement instanceof WebInspector.SourceCodeTimelineTreeElement)
-                return treeElement.sourceCodeTimeline.startTime;
+    _compareTreeElementsByStartTime: function _compareTreeElementsByStartTime(a, b) {
+        function getStartTime(treeElement) {
+            if (treeElement instanceof WebInspector.ResourceTreeElement) return treeElement.resource.firstTimestamp;
+            if (treeElement instanceof WebInspector.SourceCodeTimelineTreeElement) return treeElement.sourceCodeTimeline.startTime;
 
             console.error("Unknown tree element.");
             return 0;
         }
 
         var result = getStartTime(a) - getStartTime(b);
-        if (result)
-            return result;
+        if (result) return result;
 
         // Fallback to comparing titles.
         return a.mainTitle.localeCompare(b.mainTitle);
     },
 
-    _insertTreeElement: function(treeElement, parentTreeElement)
-    {
+    _insertTreeElement: function _insertTreeElement(treeElement, parentTreeElement) {
         console.assert(treeElement);
         console.assert(!treeElement.parent);
         console.assert(parentTreeElement);
@@ -247,19 +183,15 @@ WebInspector.OverviewTimelineView.prototype = {
         parentTreeElement.insertChild(treeElement, insertionIndexForObjectInListSortedByFunction(treeElement, parentTreeElement.children, this._compareTreeElementsByStartTime.bind(this)));
     },
 
-    _addResourceToTreeIfNeeded: function(resource)
-    {
+    _addResourceToTreeIfNeeded: function _addResourceToTreeIfNeeded(resource) {
         console.assert(resource);
-        if (!resource)
-            return null;
+        if (!resource) return null;
 
         var treeElement = this.navigationSidebarTreeOutline.findTreeElement(resource);
-        if (treeElement)
-            return treeElement;
+        if (treeElement) return treeElement;
 
         var parentFrame = resource.parentFrame;
-        if (!parentFrame)
-            return;
+        if (!parentFrame) return;
 
         var expandedByDefault = false;
         if (parentFrame.mainResource === resource || parentFrame.provisionalMainResource === resource) {
@@ -268,12 +200,10 @@ WebInspector.OverviewTimelineView.prototype = {
         }
 
         var resourceTreeElement = new WebInspector.ResourceTreeElement(resource);
-        if (expandedByDefault)
-            resourceTreeElement.expand();
+        if (expandedByDefault) resourceTreeElement.expand();
 
         var resourceTimelineRecord = this._networkTimeline ? this._networkTimeline.recordForResource(resource) : null;
-        if (!resourceTimelineRecord)
-            resourceTimelineRecord = new WebInspector.ResourceTimelineRecord(resource);
+        if (!resourceTimelineRecord) resourceTimelineRecord = new WebInspector.ResourceTimelineRecord(resource);
 
         var resourceDataGridNode = new WebInspector.ResourceTimelineDataGridNode(resourceTimelineRecord, true, this);
         this._treeOutlineDataGridSynchronizer.associate(resourceTreeElement, resourceDataGridNode);
@@ -285,8 +215,7 @@ WebInspector.OverviewTimelineView.prototype = {
 
             parentTreeElement = this._addResourceToTreeIfNeeded(parentResource);
             console.assert(parentTreeElement);
-            if (!parentTreeElement)
-                return;
+            if (!parentTreeElement) return;
         }
 
         this._insertTreeElement(resourceTreeElement, parentTreeElement);
@@ -294,12 +223,10 @@ WebInspector.OverviewTimelineView.prototype = {
         return resourceTreeElement;
     },
 
-    _addSourceCodeTimeline: function(sourceCodeTimeline)
-    {
+    _addSourceCodeTimeline: function _addSourceCodeTimeline(sourceCodeTimeline) {
         var parentTreeElement = sourceCodeTimeline.sourceCodeLocation ? this._addResourceToTreeIfNeeded(sourceCodeTimeline.sourceCode) : this.navigationSidebarTreeOutline;
         console.assert(parentTreeElement);
-        if (!parentTreeElement)
-            return;
+        if (!parentTreeElement) return;
 
         var sourceCodeTimelineTreeElement = new WebInspector.SourceCodeTimelineTreeElement(sourceCodeTimeline);
         var sourceCodeTimelineDataGridNode = new WebInspector.SourceCodeTimelineTimelineDataGridNode(sourceCodeTimeline, this);
@@ -308,25 +235,38 @@ WebInspector.OverviewTimelineView.prototype = {
         this._insertTreeElement(sourceCodeTimelineTreeElement, parentTreeElement);
     },
 
-    _processPendingRepresentedObjects: function()
-    {
-        if (!this._pendingRepresentedObjects || !this._pendingRepresentedObjects.length)
-            return;
+    _processPendingRepresentedObjects: function _processPendingRepresentedObjects() {
+        if (!this._pendingRepresentedObjects || !this._pendingRepresentedObjects.length) return;
 
-        for (var representedObject of this._pendingRepresentedObjects) {
-            if (representedObject instanceof WebInspector.Resource)
-                this._addResourceToTreeIfNeeded(representedObject);
-            else if (representedObject instanceof WebInspector.SourceCodeTimeline)
-                this._addSourceCodeTimeline(representedObject);
-            else
-                console.error("Unknown represented object");
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = this._pendingRepresentedObjects[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var representedObject = _step.value;
+
+                if (representedObject instanceof WebInspector.Resource) this._addResourceToTreeIfNeeded(representedObject);else if (representedObject instanceof WebInspector.SourceCodeTimeline) this._addSourceCodeTimeline(representedObject);else console.error("Unknown represented object");
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
 
         this._pendingRepresentedObjects = [];
     },
 
-    _networkTimelineRecordAdded: function(event)
-    {
+    _networkTimelineRecordAdded: function _networkTimelineRecordAdded(event) {
         var resourceTimelineRecord = event.data.record;
         console.assert(resourceTimelineRecord instanceof WebInspector.ResourceTimelineRecord);
 
@@ -338,20 +278,61 @@ WebInspector.OverviewTimelineView.prototype = {
         console.assert(!this._recording.sourceCodeTimelinesForSourceCode(resourceTimelineRecord.resource).length);
     },
 
-    _sourceCodeTimelineAdded: function(event)
-    {
+    _sourceCodeTimelineAdded: function _sourceCodeTimelineAdded(event) {
         var sourceCodeTimeline = event.data.sourceCodeTimeline;
         console.assert(sourceCodeTimeline);
-        if (!sourceCodeTimeline)
-            return;
+        if (!sourceCodeTimeline) return;
 
         this._pendingRepresentedObjects.push(sourceCodeTimeline);
 
         this.needsLayout();
     },
 
-    _dataGridNodeSelected: function(event)
-    {
+    _dataGridNodeSelected: function _dataGridNodeSelected(event) {
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SelectionPathComponentsDidChange);
     }
-};
+}, {
+    navigationSidebarTreeOutlineLabel: { // Public
+
+        get: function () {
+            return WebInspector.UIString("Timeline Events");
+        },
+        configurable: true,
+        enumerable: true
+    },
+    secondsPerPixel: {
+        get: function () {
+            return this._timelineRuler.secondsPerPixel;
+        },
+        set: function (x) {
+            this._timelineRuler.secondsPerPixel = x;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    selectionPathComponents: {
+        get: function () {
+            var dataGridNode = this._dataGrid.selectedNode;
+            if (!dataGridNode) return null;
+
+            var pathComponents = [];
+
+            while (dataGridNode && !dataGridNode.root) {
+                var treeElement = this._treeOutlineDataGridSynchronizer.treeElementForDataGridNode(dataGridNode);
+                console.assert(treeElement);
+                if (!treeElement) break;
+
+                if (treeElement.hidden) return null;
+
+                var pathComponent = new WebInspector.GeneralTreeElementPathComponent(treeElement);
+                pathComponent.addEventListener(WebInspector.HierarchicalPathComponent.Event.SiblingWasSelected, this.treeElementPathComponentSelected, this);
+                pathComponents.unshift(pathComponent);
+                dataGridNode = dataGridNode.parent;
+            }
+
+            return pathComponents;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

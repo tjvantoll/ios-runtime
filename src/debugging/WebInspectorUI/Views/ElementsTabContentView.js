@@ -23,13 +23,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ElementsTabContentView = function(identifier)
-{
+WebInspector.ElementsTabContentView = function (identifier) {
     var tabBarItem = new WebInspector.TabBarItem("Images/Elements.svg", WebInspector.UIString("Elements"));
     var detailsSidebarPanels = [WebInspector.domNodeDetailsSidebarPanel, WebInspector.cssStyleDetailsSidebarPanel];
 
-    if (WebInspector.layerTreeDetailsSidebarPanel)
-        detailsSidebarPanels.push(WebInspector.layerTreeDetailsSidebarPanel);
+    if (WebInspector.layerTreeDetailsSidebarPanel) detailsSidebarPanels.push(WebInspector.layerTreeDetailsSidebarPanel);
 
     WebInspector.ContentBrowserTabContentView.call(this, identifier || "elements", "elements", tabBarItem, null, detailsSidebarPanels, true);
 
@@ -39,24 +37,15 @@ WebInspector.ElementsTabContentView = function(identifier)
     this._showDOMTreeContentView();
 };
 
-WebInspector.ElementsTabContentView.prototype = {
+WebInspector.ElementsTabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ElementsTabContentView,
     __proto__: WebInspector.ContentBrowserTabContentView.prototype,
 
-    // Public
-
-    get type()
-    {
-        return WebInspector.ElementsTabContentView.Type;
-    },
-
-    canShowRepresentedObject: function(representedObject)
-    {
+    canShowRepresentedObject: function canShowRepresentedObject(representedObject) {
         return representedObject instanceof WebInspector.DOMTree;
     },
 
-    showRepresentedObject: function(representedObject, cookie)
-    {
+    showRepresentedObject: function showRepresentedObject(representedObject, cookie) {
         var domTreeContentView = this.contentBrowser.currentContentView;
         console.assert(!domTreeContentView || domTreeContentView instanceof WebInspector.DOMTreeContentView);
         if (!domTreeContentView || !(domTreeContentView instanceof WebInspector.DOMTreeContentView)) {
@@ -64,8 +53,7 @@ WebInspector.ElementsTabContentView.prototype = {
             return;
         }
 
-        if (!cookie || !cookie.nodeToSelect)
-            return;
+        if (!cookie || !cookie.nodeToSelect) return;
 
         domTreeContentView.selectAndRevealDOMNode(cookie.nodeToSelect);
 
@@ -74,8 +62,7 @@ WebInspector.ElementsTabContentView.prototype = {
         cookie.nodeToSelect = undefined;
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         WebInspector.ContentBrowserTabContentView.prototype.closed.call(this);
 
         WebInspector.frameResourceManager.removeEventListener(null, null, this);
@@ -84,27 +71,31 @@ WebInspector.ElementsTabContentView.prototype = {
 
     // Private
 
-    _showDOMTreeContentView: function()
-    {
+    _showDOMTreeContentView: function _showDOMTreeContentView() {
         this.contentBrowser.contentViewContainer.closeAllContentViews();
 
         var mainFrame = WebInspector.frameResourceManager.mainFrame;
-        if (mainFrame)
-            this.contentBrowser.showContentViewForRepresentedObject(mainFrame.domTree);
+        if (mainFrame) this.contentBrowser.showContentViewForRepresentedObject(mainFrame.domTree);
     },
 
-    _mainFrameDidChange: function(event)
-    {
+    _mainFrameDidChange: function _mainFrameDidChange(event) {
         this._showDOMTreeContentView();
     },
 
-    _mainResourceDidChange: function(event)
-    {
-        if (!event.target.isMainFrame())
-            return;
+    _mainResourceDidChange: function _mainResourceDidChange(event) {
+        if (!event.target.isMainFrame()) return;
 
         this._showDOMTreeContentView();
     }
-};
+}, {
+    type: { // Public
+
+        get: function () {
+            return WebInspector.ElementsTabContentView.Type;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ElementsTabContentView.Type = "elements";

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,52 +31,60 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ResourceTimelineRecord = class ResourceTimelineRecord extends WebInspector.TimelineRecord
-{
-    constructor(resource)
-    {
-        super(WebInspector.TimelineRecord.Type.Network);
+WebInspector.ResourceTimelineRecord = (function (_WebInspector$TimelineRecord) {
+    function ResourceTimelineRecord(resource) {
+        _classCallCheck(this, ResourceTimelineRecord);
+
+        _get(Object.getPrototypeOf(ResourceTimelineRecord.prototype), "constructor", this).call(this, WebInspector.TimelineRecord.Type.Network);
 
         this._resource = resource;
         this._resource.addEventListener(WebInspector.Resource.Event.TimestampsDidChange, this._dispatchUpdatedEvent, this);
     }
 
-    // Public
+    _inherits(ResourceTimelineRecord, _WebInspector$TimelineRecord);
 
-    get resource()
-    {
-        return this._resource;
-    }
+    _createClass(ResourceTimelineRecord, [{
+        key: "_dispatchUpdatedEvent",
 
-    get updatesDynamically()
-    {
-        return true;
-    }
+        // Private
 
-    get usesActiveStartTime()
-    {
-        return true;
-    }
+        value: function _dispatchUpdatedEvent() {
+            this.dispatchEventToListeners(WebInspector.TimelineRecord.Event.Updated);
+        }
+    }, {
+        key: "resource",
 
-    get startTime()
-    {
-        return this._resource.requestSentTimestamp;
-    }
+        // Public
 
-    get activeStartTime()
-    {
-        return this._resource.responseReceivedTimestamp;
-    }
+        get: function () {
+            return this._resource;
+        }
+    }, {
+        key: "updatesDynamically",
+        get: function () {
+            return true;
+        }
+    }, {
+        key: "usesActiveStartTime",
+        get: function () {
+            return true;
+        }
+    }, {
+        key: "startTime",
+        get: function () {
+            return this._resource.requestSentTimestamp;
+        }
+    }, {
+        key: "activeStartTime",
+        get: function () {
+            return this._resource.responseReceivedTimestamp;
+        }
+    }, {
+        key: "endTime",
+        get: function () {
+            return this._resource.finishedOrFailedTimestamp;
+        }
+    }]);
 
-    get endTime()
-    {
-        return this._resource.finishedOrFailedTimestamp;
-    }
-
-    // Private
-
-    _dispatchUpdatedEvent()
-    {
-        this.dispatchEventToListeners(WebInspector.TimelineRecord.Event.Updated);
-    }
-};
+    return ResourceTimelineRecord;
+})(WebInspector.TimelineRecord);

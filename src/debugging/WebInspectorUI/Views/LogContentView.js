@@ -25,8 +25,7 @@
 
 // FIXME: <https://webkit.org/b/143545> Web Inspector: LogContentView should use higher level objects
 
-WebInspector.LogContentView = function(representedObject)
-{
+WebInspector.LogContentView = function (representedObject) {
     WebInspector.ContentView.call(this, representedObject);
 
     this._nestingLevel = 0;
@@ -58,12 +57,7 @@ WebInspector.LogContentView = function(representedObject)
     this._searchBar = new WebInspector.SearchBar("log-search-bar", WebInspector.UIString("Filter Console Log"), this);
     this._searchBar.addEventListener(WebInspector.SearchBar.Event.TextChanged, this._searchTextDidChange, this);
 
-    var scopeBarItems = [
-        new WebInspector.ScopeBarItem(WebInspector.LogContentView.Scopes.All, WebInspector.UIString("All")),
-        new WebInspector.ScopeBarItem(WebInspector.LogContentView.Scopes.Errors, WebInspector.UIString("Errors")),
-        new WebInspector.ScopeBarItem(WebInspector.LogContentView.Scopes.Warnings, WebInspector.UIString("Warnings")),
-        new WebInspector.ScopeBarItem(WebInspector.LogContentView.Scopes.Logs, WebInspector.UIString("Logs"))
-    ];
+    var scopeBarItems = [new WebInspector.ScopeBarItem(WebInspector.LogContentView.Scopes.All, WebInspector.UIString("All")), new WebInspector.ScopeBarItem(WebInspector.LogContentView.Scopes.Errors, WebInspector.UIString("Errors")), new WebInspector.ScopeBarItem(WebInspector.LogContentView.Scopes.Warnings, WebInspector.UIString("Warnings")), new WebInspector.ScopeBarItem(WebInspector.LogContentView.Scopes.Logs, WebInspector.UIString("Logs"))];
 
     this._scopeBar = new WebInspector.ScopeBar("log-scope-bar", scopeBarItems, scopeBarItems[0]);
     this._scopeBar.addEventListener(WebInspector.ScopeBar.Event.SelectionChanged, this._scopeBarSelectionDidChange, this);
@@ -102,65 +96,25 @@ WebInspector.LogContentView.SearchInProgressStyleClassName = "search-in-progress
 WebInspector.LogContentView.FilteredOutBySearchStyleClassName = "filtered-out-by-search";
 WebInspector.LogContentView.HighlightedStyleClassName = "highlighted";
 
-WebInspector.LogContentView.prototype = {
+WebInspector.LogContentView.prototype = Object.defineProperties({
     constructor: WebInspector.LogContentView,
 
-    // Public
-
-    get navigationItems()
-    {
-        var navigationItems = [this._searchBar, this._scopeBar, this._clearLogNavigationItem];
-        if (WebInspector.isShowingSplitConsole())
-            navigationItems.push(this._showConsoleTabNavigationItem);
-        return navigationItems;
-    },
-
-    get scopeBar()
-    {
-        return this._scopeBar;
-    },
-
-    get logViewController()
-    {
-        return this._logViewController;
-    },
-
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         WebInspector.ContentView.prototype.updateLayout.call(this);
 
         this._scrollElementHeight = this.messagesElement.getBoundingClientRect().height;
     },
 
-    shown: function()
-    {
+    shown: function shown() {
         this.prompt.focus();
     },
 
-    get scrollableElements()
-    {
-        return [this.element];
-    },
-
-    get shouldKeepElementsScrolledToBottom()
-    {
-        return true;
-    },
-
-    get searchInProgress()
-    {
-        return this.messagesElement.classList.contains(WebInspector.LogContentView.SearchInProgressStyleClassName);
-    },
-
-    didClearMessages: function()
-    {
-        if (this._ignoreDidClearMessages)
-            return;
+    didClearMessages: function didClearMessages() {
+        if (this._ignoreDidClearMessages) return;
         WebInspector.logManager.requestClearMessages();
     },
 
-    didAppendConsoleMessageView: function(messageView)
-    {
+    didAppendConsoleMessageView: function didAppendConsoleMessageView(messageView) {
         console.assert(messageView instanceof WebInspector.ConsoleMessageView || messageView instanceof WebInspector.ConsoleCommandView);
 
         WebInspector.quickConsole.updateLayout();
@@ -176,13 +130,13 @@ WebInspector.LogContentView.prototype = {
 
         // Update the nesting level.
         switch (type) {
-        case WebInspector.ConsoleMessage.MessageType.StartGroup:
-        case WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed:
-            ++this._nestingLevel;
-            break;
-        case WebInspector.ConsoleMessage.MessageType.EndGroup:
-            --this._nestingLevel;
-            break;
+            case WebInspector.ConsoleMessage.MessageType.StartGroup:
+            case WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed:
+                ++this._nestingLevel;
+                break;
+            case WebInspector.ConsoleMessage.MessageType.EndGroup:
+                --this._nestingLevel;
+                break;
         }
 
         this._clearFocusableChildren();
@@ -193,86 +147,59 @@ WebInspector.LogContentView.prototype = {
 
         // We only auto show the console if the message is a result.
         // This is when the user evaluated something directly in the prompt.
-        if (type !== WebInspector.ConsoleMessage.MessageType.Result)
-            return;
+        if (type !== WebInspector.ConsoleMessage.MessageType.Result) return;
 
-        if (!WebInspector.isShowingConsoleTab())
-            WebInspector.showSplitConsole();
+        if (!WebInspector.isShowingConsoleTab()) WebInspector.showSplitConsole();
 
         this._logViewController.scrollToBottom();
     },
 
-    promptDidChangeHeight: function()
-    {
+    promptDidChangeHeight: function promptDidChangeHeight() {
         WebInspector.quickConsole.updateLayout();
     },
 
-    get supportsSave()
-    {
-        return true;
-    },
-
-    get saveData()
-    {
-        return {url: "web-inspector:///Console.txt", content: this._formatMessagesAsData(false), forceSaveAs: true};
-    },
-
-    handleCopyEvent: function(event)
-    {
-        if (!this._selectedMessages.length)
-            return;
+    handleCopyEvent: function handleCopyEvent(event) {
+        if (!this._selectedMessages.length) return;
 
         event.clipboardData.setData("text/plain", this._formatMessagesAsData(true));
         event.stopPropagation();
         event.preventDefault();
     },
 
-    focusSearchBar: function()
-    {
+    focusSearchBar: function focusSearchBar() {
         this._searchBar.focus();
     },
 
-    highlightPreviousSearchMatch: function()
-    {
-        if (!this.searchInProgress || isEmptyObject(this._searchMatches))
-            return;
+    highlightPreviousSearchMatch: function highlightPreviousSearchMatch() {
+        if (!this.searchInProgress || isEmptyObject(this._searchMatches)) return;
 
         var index = this._selectedSearchMatch ? this._searchMatches.indexOf(this._selectedSearchMatch) : this._searchMatches.length;
         this._highlightSearchMatchAtIndex(index - 1);
     },
 
-    highlightNextSearchMatch: function()
-    {
-        if (!this.searchInProgress || isEmptyObject(this._searchMatches))
-            return;
+    highlightNextSearchMatch: function highlightNextSearchMatch() {
+        if (!this.searchInProgress || isEmptyObject(this._searchMatches)) return;
 
         var index = this._selectedSearchMatch ? this._searchMatches.indexOf(this._selectedSearchMatch) + 1 : 0;
         this._highlightSearchMatchAtIndex(index);
     },
 
-    searchBarWantsToLoseFocus: function(searchBar)
-    {
-        if (this._selectedMessages.length)
-            this.messagesElement.focus();
-        else
-            this.prompt.focus();
+    searchBarWantsToLoseFocus: function searchBarWantsToLoseFocus(searchBar) {
+        if (this._selectedMessages.length) this.messagesElement.focus();else this.prompt.focus();
     },
 
-    searchBarDidActivate: function(searchBar)
-    {
-        if (!isEmptyObject(this._searchMatches))
-            this._highlightSearchMatchAtIndex(0);
+    searchBarDidActivate: function searchBarDidActivate(searchBar) {
+        if (!isEmptyObject(this._searchMatches)) this._highlightSearchMatchAtIndex(0);
         this.prompt.focus();
     },
 
     // Private
 
-    _formatMessagesAsData: function(onlySelected)
-    {
+    _formatMessagesAsData: function _formatMessagesAsData(onlySelected) {
         var messages = this._allMessageElements();
 
         if (onlySelected) {
-            messages = messages.filter(function(message) {
+            messages = messages.filter(function (message) {
                 return message.classList.contains(WebInspector.LogContentView.SelectedStyleClassName);
             });
         }
@@ -280,29 +207,25 @@ WebInspector.LogContentView.prototype = {
         var data = "";
 
         var isPrefixOptional = messages.length <= 1 && onlySelected;
-        messages.forEach(function(messageElement, index) {
+        messages.forEach(function (messageElement, index) {
             var messageView = messageElement.__messageView || messageElement.__commandView;
-            if (!messageView)
-                return;
+            if (!messageView) return;
 
-            if (index > 0)
-                data += "\n";
+            if (index > 0) data += "\n";
             data += messageView.toClipboardString(isPrefixOptional);
         });
 
         return data;
     },
 
-    _sessionsCleared: function(event)
-    {
+    _sessionsCleared: function _sessionsCleared(event) {
         this._ignoreDidClearMessages = true;
         this._logViewController.clear();
         this._ignoreDidClearMessages = false;
     },
 
-    _sessionStarted: function(event)
-    {
-        if (this._clearLogOnReloadSetting.value)  {
+    _sessionStarted: function _sessionStarted(event) {
+        if (this._clearLogOnReloadSetting.value) {
             this._clearLog();
             this._reappendProvisionalMessages();
             return;
@@ -313,23 +236,18 @@ WebInspector.LogContentView.prototype = {
         this._clearProvisionalState();
     },
 
-    _messageAdded: function(event)
-    {
-        if (this._startedProvisionalLoad)
-            this._provisionalMessages.push(event.data.message);
+    _messageAdded: function _messageAdded(event) {
+        if (this._startedProvisionalLoad) this._provisionalMessages.push(event.data.message);
 
         var messageView = this._logViewController.appendConsoleMessage(event.data.message);
-        if (messageView.message.type !== WebInspector.ConsoleMessage.MessageType.EndGroup)
-            this._filterMessageElements([messageView.element]);
+        if (messageView.message.type !== WebInspector.ConsoleMessage.MessageType.EndGroup) this._filterMessageElements([messageView.element]);
     },
 
-    _previousMessageRepeatCountUpdated: function(event)
-    {
+    _previousMessageRepeatCountUpdated: function _previousMessageRepeatCountUpdated(event) {
         this._logViewController.updatePreviousMessageRepeatCount(event.data.count);
     },
 
-    _handleContextMenuEvent: function(event)
-    {
+    _handleContextMenuEvent: function _handleContextMenuEvent(event) {
         if (!window.getSelection().isCollapsed) {
             // If there is a selection, we want to show our normal context menu
             // (with Copy, etc.), and not Clear Log.
@@ -337,8 +255,7 @@ WebInspector.LogContentView.prototype = {
         }
 
         // We don't want to show the custom menu for links in the console.
-        if (event.target.enclosingNodeOrSelfWithNodeName("a"))
-            return;
+        if (event.target.enclosingNodeOrSelfWithNodeName("a")) return;
 
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem(WebInspector.UIString("Clear Log"), this._clearLog.bind(this));
@@ -351,10 +268,8 @@ WebInspector.LogContentView.prototype = {
         contextMenu.show();
     },
 
-    _mousedown: function(event)
-    {
-        if (event.button !== 0 || event.ctrlKey)
-            return;
+    _mousedown: function _mousedown(event) {
+        if (event.button !== 0 || event.ctrlKey) return;
 
         if (event.defaultPrevented) {
             // Default was prevented on the event, so this means something deeper (like a disclosure triangle)
@@ -363,8 +278,7 @@ WebInspector.LogContentView.prototype = {
             return;
         }
 
-        if (!this._focused)
-            this.messagesElement.focus();
+        if (!this._focused) this.messagesElement.focus();
 
         this._mouseDownWrapper = event.target.enclosingNodeOrSelfWithClass(WebInspector.LogContentView.ItemWrapperStyleClassName);
         this._mouseDownShiftKey = event.shiftKey;
@@ -375,15 +289,12 @@ WebInspector.LogContentView.prototype = {
         window.addEventListener("mouseup", this);
     },
 
-    _targetInMessageCanBeSelected: function(target, message)
-    {
-        if (target.enclosingNodeOrSelfWithNodeName("a"))
-            return false;
+    _targetInMessageCanBeSelected: function _targetInMessageCanBeSelected(target, message) {
+        if (target.enclosingNodeOrSelfWithNodeName("a")) return false;
         return true;
     },
 
-    _mousemove: function(event)
-    {
+    _mousemove: function _mousemove(event) {
         var selection = window.getSelection();
         var wrapper = event.target.enclosingNodeOrSelfWithClass(WebInspector.LogContentView.ItemWrapperStyleClassName);
 
@@ -394,20 +305,16 @@ WebInspector.LogContentView.prototype = {
                 selection.removeAllRanges();
             }
 
-            if (!wrapper)
-                return;
+            if (!wrapper) return;
         }
 
-        if (!selection.isCollapsed)
-            this._clearMessagesSelection();
+        if (!selection.isCollapsed) this._clearMessagesSelection();
 
-        if (wrapper === this._mouseDownWrapper && !this._mouseMoveIsRowSelection)
-            return;
+        if (wrapper === this._mouseDownWrapper && !this._mouseMoveIsRowSelection) return;
 
         selection.removeAllRanges();
 
-        if (!this._mouseMoveIsRowSelection)
-            this._updateMessagesSelection(this._mouseDownWrapper, this._mouseDownCommandKey, this._mouseDownShiftKey, false);
+        if (!this._mouseMoveIsRowSelection) this._updateMessagesSelection(this._mouseDownWrapper, this._mouseDownCommandKey, this._mouseDownShiftKey, false);
 
         this._updateMessagesSelection(wrapper, false, true, false);
 
@@ -417,8 +324,7 @@ WebInspector.LogContentView.prototype = {
         event.stopPropagation();
     },
 
-    _mouseup: function(event)
-    {
+    _mouseup: function _mouseup(event) {
         window.removeEventListener("mousemove", this);
         window.removeEventListener("mouseup", this);
 
@@ -440,7 +346,9 @@ WebInspector.LogContentView.prototype = {
             this._clearMessagesSelection();
 
             // Focus the prompt. Focusing the prompt needs to happen after the click to work.
-            setTimeout(function () { this.prompt.focus(); }.bind(this), 0);
+            setTimeout((function () {
+                this.prompt.focus();
+            }).bind(this), 0);
         }
 
         delete this._mouseMoveIsRowSelection;
@@ -449,31 +357,27 @@ WebInspector.LogContentView.prototype = {
         delete this._mouseDownCommandKey;
     },
 
-    _ondragstart: function(event)
-    {
+    _ondragstart: function _ondragstart(event) {
         if (event.target.enclosingNodeOrSelfWithClass(WebInspector.DOMTreeOutline.StyleClassName)) {
             event.stopPropagation();
             event.preventDefault();
         }
     },
 
-    handleEvent: function(event)
-    {
+    handleEvent: function handleEvent(event) {
         switch (event.type) {
-        case "mousemove":
-            this._mousemove(event);
-            break;
-        case "mouseup":
-            this._mouseup(event);
-            break;
+            case "mousemove":
+                this._mousemove(event);
+                break;
+            case "mouseup":
+                this._mouseup(event);
+                break;
         }
     },
 
-    _updateMessagesSelection: function(message, multipleSelection, rangeSelection, shouldScrollIntoView)
-    {
+    _updateMessagesSelection: function _updateMessagesSelection(message, multipleSelection, rangeSelection, shouldScrollIntoView) {
         console.assert(message);
-        if (!message)
-            return;
+        if (!message) return;
 
         var alreadySelectedMessage = this._selectedMessages.includes(message);
         if (alreadySelectedMessage && this._selectedMessages.length && multipleSelection) {
@@ -482,8 +386,7 @@ WebInspector.LogContentView.prototype = {
             return;
         }
 
-        if (!multipleSelection && !rangeSelection)
-            this._clearMessagesSelection();
+        if (!multipleSelection && !rangeSelection) this._clearMessagesSelection();
 
         if (rangeSelection) {
             var messages = this._visibleMessageElements();
@@ -493,8 +396,7 @@ WebInspector.LogContentView.prototype = {
 
             var newRange = [Math.min(refIndex, targetIndex), Math.max(refIndex, targetIndex)];
 
-            if (this._selectionRange && this._selectionRange[0] === newRange[0] && this._selectionRange[1] === newRange[1])
-                return;
+            if (this._selectionRange && this._selectionRange[0] === newRange[0] && this._selectionRange[1] === newRange[1]) return;
 
             var startIndex = this._selectionRange ? Math.min(this._selectionRange[0], newRange[0]) : newRange[0];
             var endIndex = this._selectionRange ? Math.max(this._selectionRange[1], newRange[1]) : newRange[1];
@@ -516,17 +418,13 @@ WebInspector.LogContentView.prototype = {
             this._selectedMessages.push(message);
         }
 
-        if (!rangeSelection)
-            this._referenceMessageForRangeSelection = message;
+        if (!rangeSelection) this._referenceMessageForRangeSelection = message;
 
-        if (shouldScrollIntoView && !alreadySelectedMessage)
-            this._ensureMessageIsVisible(this._selectedMessages.lastValue);
+        if (shouldScrollIntoView && !alreadySelectedMessage) this._ensureMessageIsVisible(this._selectedMessages.lastValue);
     },
 
-    _ensureMessageIsVisible: function(message)
-    {
-        if (!message)
-            return;
+    _ensureMessageIsVisible: function _ensureMessageIsVisible(message) {
+        if (!message) return;
 
         var y = this._positionForMessage(message).y;
         if (y < 0) {
@@ -537,59 +435,48 @@ WebInspector.LogContentView.prototype = {
         var nextMessage = this._nextMessage(message);
         if (nextMessage) {
             y = this._positionForMessage(nextMessage).y;
-            if (y > this._scrollElementHeight)
-                this.element.scrollTop += y - this._scrollElementHeight;
+            if (y > this._scrollElementHeight) this.element.scrollTop += y - this._scrollElementHeight;
         } else {
             y += message.getBoundingClientRect().height;
-            if (y > this._scrollElementHeight)
-                this.element.scrollTop += y - this._scrollElementHeight;
+            if (y > this._scrollElementHeight) this.element.scrollTop += y - this._scrollElementHeight;
         }
     },
 
-    _positionForMessage: function(message)
-    {
+    _positionForMessage: function _positionForMessage(message) {
         var pagePoint = window.webkitConvertPointFromNodeToPage(message, new WebKitPoint(0, 0));
         return window.webkitConvertPointFromPageToNode(this.element, pagePoint);
     },
 
-    _isMessageVisible: function(message)
-    {
+    _isMessageVisible: function _isMessageVisible(message) {
         var node = message;
 
-        if (node.classList.contains(WebInspector.LogContentView.FilteredOutStyleClassName))
-            return false;
+        if (node.classList.contains(WebInspector.LogContentView.FilteredOutStyleClassName)) return false;
 
-        if (this.searchInProgress && node.classList.contains(WebInspector.LogContentView.FilteredOutBySearchStyleClassName))
-            return false;
+        if (this.searchInProgress && node.classList.contains(WebInspector.LogContentView.FilteredOutBySearchStyleClassName)) return false;
 
-        if (message.classList.contains("console-group-title"))
-            node = node.parentNode.parentNode;
+        if (message.classList.contains("console-group-title")) node = node.parentNode.parentNode;
 
         while (node && node !== this.messagesElement) {
-            if (node.classList.contains("collapsed"))
-                return false;
+            if (node.classList.contains("collapsed")) return false;
             node = node.parentNode;
         }
 
         return true;
     },
 
-    _isMessageSelected: function(message)
-    {
+    _isMessageSelected: function _isMessageSelected(message) {
         return message.classList.contains(WebInspector.LogContentView.SelectedStyleClassName);
     },
 
-    _clearMessagesSelection: function()
-    {
-        this._selectedMessages.forEach(function(message) {
+    _clearMessagesSelection: function _clearMessagesSelection() {
+        this._selectedMessages.forEach(function (message) {
             message.classList.remove(WebInspector.LogContentView.SelectedStyleClassName);
         });
         this._selectedMessages = [];
         delete this._referenceMessageForRangeSelection;
     },
 
-    _selectAllMessages: function()
-    {
+    _selectAllMessages: function _selectAllMessages() {
         this._clearMessagesSelection();
 
         var messages = this._visibleMessageElements();
@@ -600,88 +487,76 @@ WebInspector.LogContentView.prototype = {
         }
     },
 
-    _allMessageElements: function()
-    {
+    _allMessageElements: function _allMessageElements() {
         return Array.from(this.messagesElement.querySelectorAll(".console-message, .console-user-command"));
     },
 
-    _unfilteredMessageElements: function()
-    {
-        return this._allMessageElements().filter(function(message) {
+    _unfilteredMessageElements: function _unfilteredMessageElements() {
+        return this._allMessageElements().filter(function (message) {
             return !message.classList.contains(WebInspector.LogContentView.FilteredOutStyleClassName);
         });
     },
 
-    _visibleMessageElements: function()
-    {
+    _visibleMessageElements: function _visibleMessageElements() {
         var unfilteredMessages = this._unfilteredMessageElements();
 
-        if (!this.searchInProgress)
-            return unfilteredMessages;
+        if (!this.searchInProgress) return unfilteredMessages;
 
-        return unfilteredMessages.filter(function(message) {
+        return unfilteredMessages.filter(function (message) {
             return !message.classList.contains(WebInspector.LogContentView.FilteredOutBySearchStyleClassName);
         });
     },
 
-    _activeLogCleared: function(event)
-    {
+    _activeLogCleared: function _activeLogCleared(event) {
         this._ignoreDidClearMessages = true;
         this._logViewController.clear();
         this._ignoreDidClearMessages = false;
     },
 
-    _showConsoleTab: function()
-    {
+    _showConsoleTab: function _showConsoleTab() {
         WebInspector.showConsoleTab();
     },
 
-    _toggleClearLogOnReloadSetting: function()
-    {
+    _toggleClearLogOnReloadSetting: function _toggleClearLogOnReloadSetting() {
         this._clearLogOnReloadSetting.value = !this._clearLogOnReloadSetting.value;
     },
 
-    _clearLog: function()
-    {
+    _clearLog: function _clearLog() {
         this._ignoreDidClearMessages = true;
         this._logViewController.clear();
         this._ignoreDidClearMessages = false;
     },
 
-    _scopeBarSelectionDidChange: function(event)
-    {
+    _scopeBarSelectionDidChange: function _scopeBarSelectionDidChange(event) {
         this._filterMessageElements(this._allMessageElements());
     },
 
-    _filterMessageElements: function(messageElements)
-    {
+    _filterMessageElements: function _filterMessageElements(messageElements) {
         var showsAll = this._scopeBar.item(WebInspector.LogContentView.Scopes.All).selected;
         var showsErrors = this._scopeBar.item(WebInspector.LogContentView.Scopes.Errors).selected;
         var showsWarnings = this._scopeBar.item(WebInspector.LogContentView.Scopes.Warnings).selected;
         var showsLogs = this._scopeBar.item(WebInspector.LogContentView.Scopes.Logs).selected;
 
-        messageElements.forEach(function(messageElement) {
+        messageElements.forEach(function (messageElement) {
             var visible = showsAll || messageElement.__commandView instanceof WebInspector.ConsoleCommandView || messageElement.__message instanceof WebInspector.ConsoleCommandResultMessage;
             if (!visible) {
-                switch(messageElement.__message.level) {
-                case WebInspector.ConsoleMessage.MessageLevel.Warning:
-                    visible = showsWarnings;
-                    break;
-                case WebInspector.ConsoleMessage.MessageLevel.Error:
-                    visible = showsErrors;
-                    break;
-                case WebInspector.ConsoleMessage.MessageLevel.Log:
-                case WebInspector.ConsoleMessage.MessageLevel.Info:
-                case WebInspector.ConsoleMessage.MessageLevel.Debug:
-                    visible = showsLogs;
-                    break;
+                switch (messageElement.__message.level) {
+                    case WebInspector.ConsoleMessage.MessageLevel.Warning:
+                        visible = showsWarnings;
+                        break;
+                    case WebInspector.ConsoleMessage.MessageLevel.Error:
+                        visible = showsErrors;
+                        break;
+                    case WebInspector.ConsoleMessage.MessageLevel.Log:
+                    case WebInspector.ConsoleMessage.MessageLevel.Info:
+                    case WebInspector.ConsoleMessage.MessageLevel.Debug:
+                        visible = showsLogs;
+                        break;
                 }
             }
 
             var classList = messageElement.classList;
-            if (visible)
-                classList.remove(WebInspector.LogContentView.FilteredOutStyleClassName);
-            else {
+            if (visible) classList.remove(WebInspector.LogContentView.FilteredOutStyleClassName);else {
                 this._selectedMessages.remove(messageElement);
                 classList.remove(WebInspector.LogContentView.SelectedStyleClassName);
                 classList.add(WebInspector.LogContentView.FilteredOutStyleClassName);
@@ -691,63 +566,40 @@ WebInspector.LogContentView.prototype = {
         this._performSearch();
     },
 
-    _didFocus: function(event)
-    {
+    _didFocus: function _didFocus(event) {
         this._focused = true;
     },
 
-    _didBlur: function(event)
-    {
+    _didBlur: function _didBlur(event) {
         this._focused = false;
     },
 
-    _keyDown: function(event)
-    {
-        if (this._keyboardShortcutCommandA.matchesEvent(event))
-            this._commandAWasPressed(event);
-        else if (this._keyboardShortcutEsc.matchesEvent(event))
-            this._escapeWasPressed(event);
-        else if (event.keyIdentifier === "Up")
-            this._upArrowWasPressed(event);
-        else if (event.keyIdentifier === "Down")
-            this._downArrowWasPressed(event);
-        else if (event.keyIdentifier === "Left")
-            this._leftArrowWasPressed(event);
-        else if (event.keyIdentifier === "Right")
-            this._rightArrowWasPressed(event);
+    _keyDown: function _keyDown(event) {
+        if (this._keyboardShortcutCommandA.matchesEvent(event)) this._commandAWasPressed(event);else if (this._keyboardShortcutEsc.matchesEvent(event)) this._escapeWasPressed(event);else if (event.keyIdentifier === "Up") this._upArrowWasPressed(event);else if (event.keyIdentifier === "Down") this._downArrowWasPressed(event);else if (event.keyIdentifier === "Left") this._leftArrowWasPressed(event);else if (event.keyIdentifier === "Right") this._rightArrowWasPressed(event);
     },
 
-    _commandAWasPressed: function(event)
-    {
+    _commandAWasPressed: function _commandAWasPressed(event) {
         this._selectAllMessages();
         event.preventDefault();
     },
 
-    _escapeWasPressed: function(event)
-    {
-        if (this._selectedMessages.length)
-            this._clearMessagesSelection();
-        else
-            this.prompt.focus();
+    _escapeWasPressed: function _escapeWasPressed(event) {
+        if (this._selectedMessages.length) this._clearMessagesSelection();else this.prompt.focus();
 
         event.preventDefault();
     },
 
-    _upArrowWasPressed: function(event)
-    {
+    _upArrowWasPressed: function _upArrowWasPressed(event) {
         var messages = this._visibleMessageElements();
 
         if (!this._selectedMessages.length) {
-            if (messages.length)
-                this._updateMessagesSelection(messages.lastValue, false, false, true);
+            if (messages.length) this._updateMessagesSelection(messages.lastValue, false, false, true);
             return;
         }
 
         var lastMessage = this._selectedMessages.lastValue;
         var previousMessage = this._previousMessage(lastMessage);
-        if (previousMessage)
-            this._updateMessagesSelection(previousMessage, false, event.shiftKey, true);
-        else if (!event.shiftKey) {
+        if (previousMessage) this._updateMessagesSelection(previousMessage, false, event.shiftKey, true);else if (!event.shiftKey) {
             this._clearMessagesSelection();
             this._updateMessagesSelection(messages[0], false, false, true);
         }
@@ -755,21 +607,17 @@ WebInspector.LogContentView.prototype = {
         event.preventDefault();
     },
 
-    _downArrowWasPressed: function(event)
-    {
+    _downArrowWasPressed: function _downArrowWasPressed(event) {
         var messages = this._visibleMessageElements();
 
         if (!this._selectedMessages.length) {
-            if (messages.length)
-                this._updateMessagesSelection(messages[0], false, false, true);
+            if (messages.length) this._updateMessagesSelection(messages[0], false, false, true);
             return;
         }
 
         var lastMessage = this._selectedMessages.lastValue;
         var nextMessage = this._nextMessage(lastMessage);
-        if (nextMessage)
-            this._updateMessagesSelection(nextMessage, false, event.shiftKey, true);
-        else if (!event.shiftKey) {
+        if (nextMessage) this._updateMessagesSelection(nextMessage, false, event.shiftKey, true);else if (!event.shiftKey) {
             this._clearMessagesSelection();
             this._updateMessagesSelection(messages.lastValue, false, false, true);
         }
@@ -777,68 +625,45 @@ WebInspector.LogContentView.prototype = {
         event.preventDefault();
     },
 
-    _leftArrowWasPressed: function(event)
-    {
-        if (this._selectedMessages.length !== 1)
-            return;
+    _leftArrowWasPressed: function _leftArrowWasPressed(event) {
+        if (this._selectedMessages.length !== 1) return;
 
         var currentMessage = this._selectedMessages[0];
-        if (currentMessage.classList.contains("console-group-title"))
-            currentMessage.parentNode.classList.add("collapsed");
-        else {
-            // FIXME: Web Inspector: Right/Left arrow no longer works in console to expand/collapse ConsoleMessages
-            // FIXME: <https://webkit.org/b/141949> Web Inspector: Right/Left arrow no longer works in console to expand/collapse ObjectTrees
-        }
+        if (currentMessage.classList.contains("console-group-title")) currentMessage.parentNode.classList.add("collapsed");else {}
     },
 
-    _rightArrowWasPressed: function(event)
-    {
-        if (this._selectedMessages.length !== 1)
-            return;
+    _rightArrowWasPressed: function _rightArrowWasPressed(event) {
+        if (this._selectedMessages.length !== 1) return;
 
         var currentMessage = this._selectedMessages[0];
-        if (currentMessage.classList.contains("console-group-title"))
-            currentMessage.parentNode.classList.remove("collapsed");
-        else {
-            // FIXME: Web Inspector: Right/Left arrow no longer works in console to expand/collapse ConsoleMessages
-            // FIXME: <https://webkit.org/b/141949> Web Inspector: Right/Left arrow no longer works in console to expand/collapse ObjectTrees
-        }
+        if (currentMessage.classList.contains("console-group-title")) currentMessage.parentNode.classList.remove("collapsed");else {}
     },
 
-    _previousMessage: function(message)
-    {
+    _previousMessage: function _previousMessage(message) {
         var messages = this._visibleMessageElements();
         for (var i = messages.indexOf(message) - 1; i >= 0; --i) {
-            if (this._isMessageVisible(messages[i]))
-                return messages[i];
+            if (this._isMessageVisible(messages[i])) return messages[i];
         }
     },
 
-    _nextMessage: function(message)
-    {
+    _nextMessage: function _nextMessage(message) {
         var messages = this._visibleMessageElements();
         for (var i = messages.indexOf(message) + 1; i < messages.length; ++i) {
-            if (this._isMessageVisible(messages[i]))
-                return messages[i];
+            if (this._isMessageVisible(messages[i])) return messages[i];
         }
     },
 
-    _clearFocusableChildren: function()
-    {
+    _clearFocusableChildren: function _clearFocusableChildren() {
         var focusableElements = this.messagesElement.querySelectorAll("[tabindex]");
-        for (var i = 0, count = focusableElements.length; i < count; ++i)
-            focusableElements[i].removeAttribute("tabindex");
+        for (var i = 0, count = focusableElements.length; i < count; ++i) focusableElements[i].removeAttribute("tabindex");
     },
 
-    _searchTextDidChange: function(event)
-    {
+    _searchTextDidChange: function _searchTextDidChange(event) {
         this._performSearch();
     },
 
-    _performSearch: function()
-    {
-        if (!isEmptyObject(this._searchHighlightDOMChanges))
-            WebInspector.revertDomChanges(this._searchHighlightDOMChanges);
+    _performSearch: function _performSearch() {
+        if (!isEmptyObject(this._searchHighlightDOMChanges)) WebInspector.revertDomChanges(this._searchHighlightDOMChanges);
 
         var searchTerms = this._searchBar.text;
 
@@ -856,7 +681,7 @@ WebInspector.LogContentView.prototype = {
         this._selectedSearchMathIsValid = false;
 
         var searchRegex = new RegExp(searchTerms.escapeForRegExp(), "gi");
-        this._unfilteredMessageElements().forEach(function(message) {
+        this._unfilteredMessageElements().forEach(function (message) {
             var matchRanges = [];
             var text = message.textContent;
             var match = searchRegex.exec(text);
@@ -865,14 +690,10 @@ WebInspector.LogContentView.prototype = {
                 match = searchRegex.exec(text);
             }
 
-            if (!isEmptyObject(matchRanges))
-                this._highlightRanges(message, matchRanges);
+            if (!isEmptyObject(matchRanges)) this._highlightRanges(message, matchRanges);
 
             var classList = message.classList;
-            if (!isEmptyObject(matchRanges) || message.__commandView instanceof WebInspector.ConsoleCommandView || message.__message instanceof WebInspector.ConsoleCommandResultMessage)
-                classList.remove(WebInspector.LogContentView.FilteredOutBySearchStyleClassName);
-            else
-                classList.add(WebInspector.LogContentView.FilteredOutBySearchStyleClassName);
+            if (!isEmptyObject(matchRanges) || message.__commandView instanceof WebInspector.ConsoleCommandView || message.__message instanceof WebInspector.ConsoleCommandResultMessage) classList.remove(WebInspector.LogContentView.FilteredOutBySearchStyleClassName);else classList.add(WebInspector.LogContentView.FilteredOutBySearchStyleClassName);
         }, this);
 
         if (!this._selectedSearchMathIsValid && this._selectedSearchMatch) {
@@ -881,14 +702,13 @@ WebInspector.LogContentView.prototype = {
         }
     },
 
-    _highlightRanges: function(message, matchRanges)
-    {
+    _highlightRanges: function _highlightRanges(message, matchRanges) {
         var highlightedElements = WebInspector.highlightRangesWithStyleClass(message, matchRanges, WebInspector.LogContentView.HighlightedStyleClassName, this._searchHighlightDOMChanges);
 
         console.assert(highlightedElements.length === matchRanges.length);
 
-        matchRanges.forEach(function(range, index) {
-            this._searchMatches.push({message, range, highlight: highlightedElements[index]});
+        matchRanges.forEach(function (range, index) {
+            this._searchMatches.push({ message: message, range: range, highlight: highlightedElements[index] });
 
             if (this._selectedSearchMatch && !this._selectedSearchMathIsValid && this._selectedSearchMatch.message === message) {
                 this._selectedSearchMathIsValid = this._rangesOverlap(this._selectedSearchMatch.range, range);
@@ -900,20 +720,14 @@ WebInspector.LogContentView.prototype = {
         }, this);
     },
 
-    _rangesOverlap: function(range1, range2)
-    {
+    _rangesOverlap: function _rangesOverlap(range1, range2) {
         return range1.offset <= range2.offset + range2.length && range2.offset <= range1.offset + range1.length;
     },
 
-    _highlightSearchMatchAtIndex: function(index)
-    {
-        if (index >= this._searchMatches.length)
-            index = 0;
-        else if (index < 0)
-            index = this._searchMatches.length - 1;
+    _highlightSearchMatchAtIndex: function _highlightSearchMatchAtIndex(index) {
+        if (index >= this._searchMatches.length) index = 0;else if (index < 0) index = this._searchMatches.length - 1;
 
-        if (this._selectedSearchMatch)
-            this._selectedSearchMatch.highlight.classList.remove(WebInspector.LogContentView.SelectedStyleClassName);
+        if (this._selectedSearchMatch) this._selectedSearchMatch.highlight.classList.remove(WebInspector.LogContentView.SelectedStyleClassName);
 
         this._selectedSearchMatch = this._searchMatches[index];
         this._selectedSearchMatch.highlight.classList.add(WebInspector.LogContentView.SelectedStyleClassName);
@@ -921,32 +735,114 @@ WebInspector.LogContentView.prototype = {
         this._ensureMessageIsVisible(this._selectedSearchMatch.message);
     },
 
-    _provisionalLoadStarted: function()
-    {
+    _provisionalLoadStarted: function _provisionalLoadStarted() {
         this._startedProvisionalLoad = true;
     },
 
-    _reappendProvisionalMessages: function()
-    {
-        if (!this._startedProvisionalLoad)
-            return;
+    _reappendProvisionalMessages: function _reappendProvisionalMessages() {
+        if (!this._startedProvisionalLoad) return;
 
         this._startedProvisionalLoad = false;
 
-        for (var provisionalMessage of this._provisionalMessages) {
-            var messageView = this._logViewController.appendConsoleMessage(provisionalMessage);
-            if (messageView.message.type !== WebInspector.ConsoleMessage.MessageType.EndGroup)
-                this._filterMessageElements([messageView.element]);
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = this._provisionalMessages[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var provisionalMessage = _step.value;
+
+                var messageView = this._logViewController.appendConsoleMessage(provisionalMessage);
+                if (messageView.message.type !== WebInspector.ConsoleMessage.MessageType.EndGroup) this._filterMessageElements([messageView.element]);
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
 
         this._provisionalMessages = [];
     },
 
-    _clearProvisionalState: function()
-    {
+    _clearProvisionalState: function _clearProvisionalState() {
         this._startedProvisionalLoad = false;
-        this._provisionalMessages = [];        
+        this._provisionalMessages = [];
     }
-};
+}, {
+    navigationItems: { // Public
+
+        get: function () {
+            var navigationItems = [this._searchBar, this._scopeBar, this._clearLogNavigationItem];
+            if (WebInspector.isShowingSplitConsole()) navigationItems.push(this._showConsoleTabNavigationItem);
+            return navigationItems;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    scopeBar: {
+        get: function () {
+            return this._scopeBar;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    logViewController: {
+        get: function () {
+            return this._logViewController;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    scrollableElements: {
+        get: function () {
+            return [this.element];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    shouldKeepElementsScrolledToBottom: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    searchInProgress: {
+        get: function () {
+            return this.messagesElement.classList.contains(WebInspector.LogContentView.SearchInProgressStyleClassName);
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSave: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    saveData: {
+        get: function () {
+            return { url: "web-inspector:///Console.txt", content: this._formatMessagesAsData(false), forceSaveAs: true };
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.LogContentView.prototype.__proto__ = WebInspector.ContentView.prototype;
+
+// FIXME: Web Inspector: Right/Left arrow no longer works in console to expand/collapse ConsoleMessages
+// FIXME: <https://webkit.org/b/141949> Web Inspector: Right/Left arrow no longer works in console to expand/collapse ObjectTrees
+
+// FIXME: Web Inspector: Right/Left arrow no longer works in console to expand/collapse ConsoleMessages
+// FIXME: <https://webkit.org/b/141949> Web Inspector: Right/Left arrow no longer works in console to expand/collapse ObjectTrees

@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,22 +27,30 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TimelineObserver = class TimelineObserver
-{
-    // Events defined by the "Timeline" domain.
-
-    eventRecorded(record)
-    {
-        WebInspector.timelineManager.eventRecorded(record);
+WebInspector.TimelineObserver = (function () {
+    function TimelineObserver() {
+        _classCallCheck(this, TimelineObserver);
     }
 
-    recordingStarted()
-    {
-        WebInspector.timelineManager.capturingStarted();
-    }
+    _createClass(TimelineObserver, [{
+        key: "eventRecorded",
 
-    recordingStopped()
-    {
-        WebInspector.timelineManager.capturingStopped();
-    }
-};
+        // Events defined by the "Timeline" domain.
+
+        value: function eventRecorded(record) {
+            WebInspector.timelineManager.eventRecorded(record);
+        }
+    }, {
+        key: "recordingStarted",
+        value: function recordingStarted() {
+            WebInspector.timelineManager.capturingStarted();
+        }
+    }, {
+        key: "recordingStopped",
+        value: function recordingStopped() {
+            WebInspector.timelineManager.capturingStopped();
+        }
+    }]);
+
+    return TimelineObserver;
+})();

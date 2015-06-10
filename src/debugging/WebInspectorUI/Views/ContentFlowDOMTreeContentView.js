@@ -27,8 +27,7 @@
  * SUCH DAMAGE.
  */
 
-WebInspector.ContentFlowDOMTreeContentView = function(contentFlow)
-{
+WebInspector.ContentFlowDOMTreeContentView = function (contentFlow) {
     console.assert(contentFlow);
 
     WebInspector.DOMTreeContentView.call(this, contentFlow);
@@ -45,34 +44,52 @@ WebInspector.ContentFlowDOMTreeContentView.prototype = {
 
     // Public
 
-    closed: function()
-    {
+    closed: function closed() {
         this.representedObject.removeEventListener(null, null, this);
 
         WebInspector.DOMTreeContentView.prototype.closed.call(this);
     },
 
-    getSearchContextNodes: function(callback)
-    {
-        callback(this.domTreeOutline.children.map(function(treeOutline) {
+    getSearchContextNodes: function getSearchContextNodes(callback) {
+        callback(this.domTreeOutline.children.map(function (treeOutline) {
             return treeOutline.representedObject.id;
         }));
     },
 
     // Private
 
-    _createContentTrees: function()
-    {
+    _createContentTrees: function _createContentTrees() {
         var contentNodes = this.representedObject.contentNodes;
-        for (var contentNode of contentNodes)
-            this.domTreeOutline.appendChild(new WebInspector.DOMTreeElement(contentNode));
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = contentNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var contentNode = _step.value;
+
+                this.domTreeOutline.appendChild(new WebInspector.DOMTreeElement(contentNode));
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
+        }
 
         var documentURL = contentNodes.length ? contentNodes[0].ownerDocument.documentURL : null;
         this._restoreSelectedNodeAfterUpdate(documentURL, contentNodes[0]);
     },
 
-    _contentNodeWasAdded: function(event)
-    {
+    _contentNodeWasAdded: function _contentNodeWasAdded(event) {
         var treeElement = new WebInspector.DOMTreeElement(event.data.node);
         if (!event.data.before) {
             this.domTreeOutline.appendChild(treeElement);
@@ -88,8 +105,7 @@ WebInspector.ContentFlowDOMTreeContentView.prototype = {
         this.domTreeOutline.insertChild(treeElement, index);
     },
 
-    _contentNodeWasRemoved: function(event)
-    {
+    _contentNodeWasRemoved: function _contentNodeWasRemoved(event) {
         var treeElement = this.domTreeOutline.findTreeElement(event.data.node);
         console.assert(treeElement);
         this.domTreeOutline.removeChild(treeElement);

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.PropertyDescriptor = class PropertyDescriptor extends WebInspector.Object
-{
-    constructor(descriptor, symbol, isOwnProperty, wasThrown, nativeGetter, isInternalProperty)
-    {
-        super();
+WebInspector.PropertyDescriptor = (function (_WebInspector$Object) {
+    function PropertyDescriptor(descriptor, symbol, isOwnProperty, wasThrown, nativeGetter, isInternalProperty) {
+        _classCallCheck(this, PropertyDescriptor);
+
+        _get(Object.getPrototypeOf(PropertyDescriptor.prototype), "constructor", this).call(this);
 
         console.assert(descriptor);
         console.assert(descriptor.name);
@@ -53,114 +61,118 @@ WebInspector.PropertyDescriptor = class PropertyDescriptor extends WebInspector.
         this._internal = isInternalProperty || false;
     }
 
-    // Static
+    _inherits(PropertyDescriptor, _WebInspector$Object);
 
-    // Runtime.PropertyDescriptor or Runtime.InternalPropertyDescriptor (second argument).
-    static fromPayload(payload, internal)
-    {
-        if (payload.value)
-            payload.value = WebInspector.RemoteObject.fromPayload(payload.value);
-        if (payload.get)
-            payload.get = WebInspector.RemoteObject.fromPayload(payload.get);
-        if (payload.set)
-            payload.set = WebInspector.RemoteObject.fromPayload(payload.set);
-
-        if (payload.symbol)
-            payload.symbol = WebInspector.RemoteObject.fromPayload(payload.symbol);
-
-        if (internal) {
-            console.assert(payload.value);
-            payload.writable = payload.configurable = payload.enumerable = false;
-            payload.isOwn = true;
+    _createClass(PropertyDescriptor, [{
+        key: "hasValue",
+        value: function hasValue() {
+            return this._hasValue;
         }
+    }, {
+        key: "hasGetter",
+        value: function hasGetter() {
+            return this._get && this._get.type === "function";
+        }
+    }, {
+        key: "hasSetter",
+        value: function hasSetter() {
+            return this._set && this._set.type === "function";
+        }
+    }, {
+        key: "isIndexProperty",
+        value: function isIndexProperty() {
+            return !isNaN(Number(this._name));
+        }
+    }, {
+        key: "isSymbolProperty",
+        value: function isSymbolProperty() {
+            return !!this._symbol;
+        }
+    }, {
+        key: "name",
 
-        return new WebInspector.PropertyDescriptor(payload, payload.symbol, payload.isOwn, payload.wasThrown, payload.nativeGetter, internal);
-    }
+        // Public
 
-    // Public
+        get: function () {
+            return this._name;
+        }
+    }, {
+        key: "value",
+        get: function () {
+            return this._value;
+        }
+    }, {
+        key: "get",
+        get: function () {
+            return this._get;
+        }
+    }, {
+        key: "set",
+        get: function () {
+            return this._set;
+        }
+    }, {
+        key: "writable",
+        get: function () {
+            return this._writable;
+        }
+    }, {
+        key: "configurable",
+        get: function () {
+            return this._configurable;
+        }
+    }, {
+        key: "enumerable",
+        get: function () {
+            return this._enumerable;
+        }
+    }, {
+        key: "symbol",
+        get: function () {
+            return this._symbol;
+        }
+    }, {
+        key: "isOwnProperty",
+        get: function () {
+            return this._own;
+        }
+    }, {
+        key: "wasThrown",
+        get: function () {
+            return this._wasThrown;
+        }
+    }, {
+        key: "nativeGetter",
+        get: function () {
+            return this._nativeGetterValue;
+        }
+    }, {
+        key: "isInternalProperty",
+        get: function () {
+            return this._internal;
+        }
+    }], [{
+        key: "fromPayload",
 
-    get name()
-    {
-        return this._name;
-    }
+        // Static
 
-    get value()
-    {
-        return this._value;
-    }
+        // Runtime.PropertyDescriptor or Runtime.InternalPropertyDescriptor (second argument).
+        value: function fromPayload(payload, internal) {
+            if (payload.value) payload.value = WebInspector.RemoteObject.fromPayload(payload.value);
+            if (payload.get) payload.get = WebInspector.RemoteObject.fromPayload(payload.get);
+            if (payload.set) payload.set = WebInspector.RemoteObject.fromPayload(payload.set);
 
-    get get()
-    {
-        return this._get;
-    }
+            if (payload.symbol) payload.symbol = WebInspector.RemoteObject.fromPayload(payload.symbol);
 
-    get set()
-    {
-        return this._set;
-    }
+            if (internal) {
+                console.assert(payload.value);
+                payload.writable = payload.configurable = payload.enumerable = false;
+                payload.isOwn = true;
+            }
 
-    get writable()
-    {
-        return this._writable;
-    }
+            return new WebInspector.PropertyDescriptor(payload, payload.symbol, payload.isOwn, payload.wasThrown, payload.nativeGetter, internal);
+        }
+    }]);
 
-    get configurable()
-    {
-        return this._configurable;
-    }
-
-    get enumerable()
-    {
-        return this._enumerable;
-    }
-
-    get symbol()
-    {
-        return this._symbol;
-    }
-
-    get isOwnProperty()
-    {
-        return this._own;
-    }
-
-    get wasThrown()
-    {
-        return this._wasThrown;
-    }
-
-    get nativeGetter()
-    {
-        return this._nativeGetterValue;
-    }
-
-    get isInternalProperty()
-    {
-        return this._internal;
-    }
-
-    hasValue()
-    {
-        return this._hasValue;
-    }
-
-    hasGetter()
-    {
-        return this._get && this._get.type === "function";
-    }
-
-    hasSetter()
-    {
-        return this._set && this._set.type === "function";
-    }
-
-    isIndexProperty()
-    {
-        return !isNaN(Number(this._name));
-    }
-
-    isSymbolProperty()
-    {
-        return !!this._symbol;
-    }
-};
+    return PropertyDescriptor;
+})(WebInspector.Object);

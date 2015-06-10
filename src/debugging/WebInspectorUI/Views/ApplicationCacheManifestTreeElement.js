@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,47 +31,52 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ApplicationCacheManifestTreeElement = class ApplicationCacheManifestTreeElement extends WebInspector.StorageTreeElement
-{
-    constructor(representedObject)
-    {
+WebInspector.ApplicationCacheManifestTreeElement = (function (_WebInspector$StorageTreeElement) {
+    function ApplicationCacheManifestTreeElement(representedObject) {
+        _classCallCheck(this, ApplicationCacheManifestTreeElement);
+
         console.assert(representedObject instanceof WebInspector.ApplicationCacheManifest);
 
-        super("application-cache-manifest", "", representedObject);
+        _get(Object.getPrototypeOf(ApplicationCacheManifestTreeElement.prototype), "constructor", this).call(this, "application-cache-manifest", "", representedObject);
     }
 
-    // Public
+    _inherits(ApplicationCacheManifestTreeElement, _WebInspector$StorageTreeElement);
 
-    get name()
-    {
-        if (!this._name)
-            this._generateTitles();
+    _createClass(ApplicationCacheManifestTreeElement, [{
+        key: "_generateTitles",
+        value: function _generateTitles() {
+            var parsedURL = parseURL(this.representedObject.manifestURL);
 
-        return this._name;
-    }
+            // Prefer the last path component, with a fallback for the host as the main title.
+            this._name = WebInspector.displayNameForURL(this.representedObject.manifestURL, parsedURL);
 
-    get secondaryName()
-    {
-        if (!this._secondaryName)
-            this._generateTitles();
+            // Show the host as the subtitle.
+            var secondaryName = WebInspector.displayNameForHost(parsedURL.host);
+            this._secondaryName = this._name !== secondaryName ? secondaryName : null;
+        }
+    }, {
+        key: "name",
 
-        return this._secondaryName;
-    }
+        // Public
 
-    get categoryName()
-    {
-        return WebInspector.UIString("Application Cache");
-    }
+        get: function () {
+            if (!this._name) this._generateTitles();
 
-    _generateTitles()
-    {
-        var parsedURL = parseURL(this.representedObject.manifestURL);
+            return this._name;
+        }
+    }, {
+        key: "secondaryName",
+        get: function () {
+            if (!this._secondaryName) this._generateTitles();
 
-        // Prefer the last path component, with a fallback for the host as the main title.
-        this._name = WebInspector.displayNameForURL(this.representedObject.manifestURL, parsedURL);
+            return this._secondaryName;
+        }
+    }, {
+        key: "categoryName",
+        get: function () {
+            return WebInspector.UIString("Application Cache");
+        }
+    }]);
 
-        // Show the host as the subtitle.
-        var secondaryName = WebInspector.displayNameForHost(parsedURL.host);
-        this._secondaryName = this._name !== secondaryName ? secondaryName : null;
-    }
-};
+    return ApplicationCacheManifestTreeElement;
+})(WebInspector.StorageTreeElement);

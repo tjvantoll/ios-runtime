@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ToggleControlToolbarItem = function(identifier, defaultToolTip, alternateToolTip, defaultImage, alternateImage, imageWidth, imageHeight) {
+WebInspector.ToggleControlToolbarItem = function (identifier, defaultToolTip, alternateToolTip, defaultImage, alternateImage, imageWidth, imageHeight) {
     WebInspector.ToggleButtonNavigationItem.call(this, identifier, defaultToolTip, alternateToolTip, defaultImage, alternateImage, imageWidth, imageHeight, false);
 };
 

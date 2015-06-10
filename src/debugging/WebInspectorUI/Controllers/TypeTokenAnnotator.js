@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014, 2015 Apple Inc. All rights reserved.
  *
@@ -23,176 +31,173 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TypeTokenAnnotator = class TypeTokenAnnotator extends WebInspector.Annotator
-{
-    constructor(sourceCodeTextEditor, script)
-    {
-        super(sourceCodeTextEditor);
+WebInspector.TypeTokenAnnotator = (function (_WebInspector$Annotator) {
+    function TypeTokenAnnotator(sourceCodeTextEditor, script) {
+        _classCallCheck(this, TypeTokenAnnotator);
+
+        _get(Object.getPrototypeOf(TypeTokenAnnotator.prototype), "constructor", this).call(this, sourceCodeTextEditor);
 
         this._script = script;
         this._typeTokenNodes = [];
         this._typeTokenBookmarks = [];
     }
 
-    // Protected
+    _inherits(TypeTokenAnnotator, _WebInspector$Annotator);
 
-    insertAnnotations()
-    {
-        if (!this.isActive())
-            return;
+    _createClass(TypeTokenAnnotator, [{
+        key: "insertAnnotations",
 
-        var scriptSyntaxTree = this._script.scriptSyntaxTree;
+        // Protected
 
-        if (!scriptSyntaxTree) {
-            this._script.requestScriptSyntaxTree(function(syntaxTree) {
-                // After requesting the tree, we still might get a null tree from a parse error.
-                if (syntaxTree)
-                    this.insertAnnotations();
-            }.bind(this));
+        value: function insertAnnotations() {
+            if (!this.isActive()) return;
 
-            return;
-        }
+            var scriptSyntaxTree = this._script.scriptSyntaxTree;
 
-        if (!scriptSyntaxTree.parsedSuccessfully)
-            return;
+            if (!scriptSyntaxTree) {
+                this._script.requestScriptSyntaxTree((function (syntaxTree) {
+                    // After requesting the tree, we still might get a null tree from a parse error.
+                    if (syntaxTree) this.insertAnnotations();
+                }).bind(this));
 
-        var {startOffset, endOffset} = this.sourceCodeTextEditor.visibleRangeOffsets();
-
-        var startTime = Date.now();
-        var allNodesInRange = scriptSyntaxTree.filterByRange(startOffset, endOffset);
-        scriptSyntaxTree.updateTypes(allNodesInRange, function afterTypeUpdates(nodesWithUpdatedTypes) {
-            // Because this is an asynchronous call, we could have been deactivated before the callback function is called.
-            if (!this.isActive())
                 return;
-
-            nodesWithUpdatedTypes.forEach(this._insertTypeToken, this);
-
-            var totalTime = Date.now() - startTime;
-            var timeoutTime = Math.max(100, Math.min(2000, 8 * totalTime));
-
-            this._timeoutIdentifier = setTimeout(function timeoutUpdate() {
-                this._timeoutIdentifier = null;
-                this.insertAnnotations();
-            }.bind(this), timeoutTime);
-        }.bind(this));
-    }
-
-    clearAnnotations()
-    {
-        this._clearTypeTokens();
-    }
-
-    // Private
-
-    _insertTypeToken(node)
-    {
-        if (node.type === WebInspector.ScriptSyntaxTree.NodeType.Identifier) {
-            if (!node.attachments.__typeToken && node.attachments.types && node.attachments.types.isValid)
-                this._insertToken(node.range[0], node, false, WebInspector.TypeTokenView.TitleType.Variable, node.name);
-
-            if (node.attachments.__typeToken)
-                node.attachments.__typeToken.update(node.attachments.types);
-
-            return;
-        }
-
-        console.assert(node.type === WebInspector.ScriptSyntaxTree.NodeType.FunctionDeclaration || node.type === WebInspector.ScriptSyntaxTree.NodeType.FunctionExpression);
-
-        var functionReturnType = node.attachments.returnTypes;
-        if (!functionReturnType || !functionReturnType.isValid)
-            return;
-
-        // If a function does not have an explicit return statement with an argument (i.e, "return x;" instead of "return;") 
-        // then don't show a return type unless we think it's a constructor.
-        var scriptSyntaxTree = this._script._scriptSyntaxTree;
-        if (!node.attachments.__typeToken && (scriptSyntaxTree.containsNonEmptyReturnStatement(node.body) || !WebInspector.TypeSet.fromPayload(functionReturnType).isContainedIn(WebInspector.TypeSet.TypeBit.Undefined))) {
-            var functionName = node.id ? node.id.name : null;
-            var offset = node.isGetterOrSetter ? node.getterOrSetterRange[0] : node.range[0];
-            this._insertToken(offset, node, true, WebInspector.TypeTokenView.TitleType.ReturnStatement, functionName);
-        }
-
-        if (node.attachments.__typeToken)
-            node.attachments.__typeToken.update(node.attachments.returnTypes);
-    }
-
-    _insertToken(originalOffset, node, shouldTranslateOffsetToAfterParameterList, typeTokenTitleType, functionOrVariableName)
-    {
-        var tokenPosition = this.sourceCodeTextEditor.originalOffsetToCurrentPosition(originalOffset);
-        var currentOffset = this.sourceCodeTextEditor.currentPositionToCurrentOffset(tokenPosition);
-        var sourceString = this.sourceCodeTextEditor.string;
-
-        if (shouldTranslateOffsetToAfterParameterList) {
-            // Translate the position to the closing parenthesis of the function arguments:
-            // translate from: [type-token] function foo() {} => to: function foo() [type-token] {}
-            currentOffset = this._translateToOffsetAfterFunctionParameterList(node, currentOffset, sourceString);
-            tokenPosition = this.sourceCodeTextEditor.currentOffsetToCurrentPosition(currentOffset);
-        }
-
-        // Note: bookmarks render to the left of the character they're being displayed next to.
-        // This is why right margin checks the current offset. And this is okay to do because JavaScript can't be written right-to-left.
-        var isSpaceRegexp = /\s/;
-        var shouldHaveLeftMargin = currentOffset !== 0 && !isSpaceRegexp.test(sourceString[currentOffset - 1]);
-        var shouldHaveRightMargin = !isSpaceRegexp.test(sourceString[currentOffset]);
-        var typeToken = new WebInspector.TypeTokenView(this, shouldHaveRightMargin, shouldHaveLeftMargin, typeTokenTitleType, functionOrVariableName);
-        var bookmark = this.sourceCodeTextEditor.setInlineWidget(tokenPosition, typeToken.element);
-        node.attachments.__typeToken = typeToken;
-        this._typeTokenNodes.push(node);
-        this._typeTokenBookmarks.push(bookmark);
-    }
-
-    _translateToOffsetAfterFunctionParameterList(node, offset, sourceString)
-    {
-        // The assumption here is that we get the offset starting at the function keyword (or after the get/set keywords).
-        // We will return the offset for the closing parenthesis in the function declaration.
-        // All this code is just a way to find this parenthesis while ignoring comments.
-
-        var isMultiLineComment = false;
-        var isSingleLineComment = false;
-        var shouldIgnore = false;
-
-        function isLineTerminator(char)
-        {
-            // Reference EcmaScript 5 grammar for single line comments and line terminators:
-            // http://www.ecma-international.org/ecma-262/5.1/#sec-7.3
-            // http://www.ecma-international.org/ecma-262/5.1/#sec-7.4
-            return char === "\n" || char === "\r" || char === "\u2028" || char === "\u2029";
-        }
-
-        while ((sourceString[offset] !== ")" || shouldIgnore) && offset < sourceString.length) {
-            if (isSingleLineComment && isLineTerminator(sourceString[offset])) {
-                isSingleLineComment = false;
-                shouldIgnore = false;
-            } else if (isMultiLineComment && sourceString[offset] === "*" && sourceString[offset + 1] === "/") {
-                isMultiLineComment = false;
-                shouldIgnore = false;
-                offset++;
-            } else if (!shouldIgnore && sourceString[offset] === "/") {
-                offset++;
-                if (sourceString[offset] === "*")
-                    isMultiLineComment = true;
-                else if (sourceString[offset] === "/")
-                    isSingleLineComment = true;
-                else
-                    throw new Error("Bad parsing. Couldn't parse comment preamble.");
-                shouldIgnore = true;
             }
 
-            offset++;
+            if (!scriptSyntaxTree.parsedSuccessfully) return;
+
+            var _sourceCodeTextEditor$visibleRangeOffsets = this.sourceCodeTextEditor.visibleRangeOffsets();
+
+            var startOffset = _sourceCodeTextEditor$visibleRangeOffsets.startOffset;
+            var endOffset = _sourceCodeTextEditor$visibleRangeOffsets.endOffset;
+
+            var startTime = Date.now();
+            var allNodesInRange = scriptSyntaxTree.filterByRange(startOffset, endOffset);
+            scriptSyntaxTree.updateTypes(allNodesInRange, (function afterTypeUpdates(nodesWithUpdatedTypes) {
+                // Because this is an asynchronous call, we could have been deactivated before the callback function is called.
+                if (!this.isActive()) return;
+
+                nodesWithUpdatedTypes.forEach(this._insertTypeToken, this);
+
+                var totalTime = Date.now() - startTime;
+                var timeoutTime = Math.max(100, Math.min(2000, 8 * totalTime));
+
+                this._timeoutIdentifier = setTimeout((function timeoutUpdate() {
+                    this._timeoutIdentifier = null;
+                    this.insertAnnotations();
+                }).bind(this), timeoutTime);
+            }).bind(this));
         }
+    }, {
+        key: "clearAnnotations",
+        value: function clearAnnotations() {
+            this._clearTypeTokens();
+        }
+    }, {
+        key: "_insertTypeToken",
 
-        return offset + 1;
-    }
+        // Private
 
-    _clearTypeTokens()
-    {
-        this._typeTokenNodes.forEach(function(node) {
-            node.attachments.__typeToken = null;
-        });
-        this._typeTokenBookmarks.forEach(function(bookmark) {
-            bookmark.clear();
-        });
+        value: function _insertTypeToken(node) {
+            if (node.type === WebInspector.ScriptSyntaxTree.NodeType.Identifier) {
+                if (!node.attachments.__typeToken && node.attachments.types && node.attachments.types.isValid) this._insertToken(node.range[0], node, false, WebInspector.TypeTokenView.TitleType.Variable, node.name);
 
-        this._typeTokenNodes = [];
-        this._typeTokenBookmarks = [];
-    }
-};
+                if (node.attachments.__typeToken) node.attachments.__typeToken.update(node.attachments.types);
+
+                return;
+            }
+
+            console.assert(node.type === WebInspector.ScriptSyntaxTree.NodeType.FunctionDeclaration || node.type === WebInspector.ScriptSyntaxTree.NodeType.FunctionExpression);
+
+            var functionReturnType = node.attachments.returnTypes;
+            if (!functionReturnType || !functionReturnType.isValid) return;
+
+            // If a function does not have an explicit return statement with an argument (i.e, "return x;" instead of "return;")
+            // then don't show a return type unless we think it's a constructor.
+            var scriptSyntaxTree = this._script._scriptSyntaxTree;
+            if (!node.attachments.__typeToken && (scriptSyntaxTree.containsNonEmptyReturnStatement(node.body) || !WebInspector.TypeSet.fromPayload(functionReturnType).isContainedIn(WebInspector.TypeSet.TypeBit.Undefined))) {
+                var functionName = node.id ? node.id.name : null;
+                var offset = node.isGetterOrSetter ? node.getterOrSetterRange[0] : node.range[0];
+                this._insertToken(offset, node, true, WebInspector.TypeTokenView.TitleType.ReturnStatement, functionName);
+            }
+
+            if (node.attachments.__typeToken) node.attachments.__typeToken.update(node.attachments.returnTypes);
+        }
+    }, {
+        key: "_insertToken",
+        value: function _insertToken(originalOffset, node, shouldTranslateOffsetToAfterParameterList, typeTokenTitleType, functionOrVariableName) {
+            var tokenPosition = this.sourceCodeTextEditor.originalOffsetToCurrentPosition(originalOffset);
+            var currentOffset = this.sourceCodeTextEditor.currentPositionToCurrentOffset(tokenPosition);
+            var sourceString = this.sourceCodeTextEditor.string;
+
+            if (shouldTranslateOffsetToAfterParameterList) {
+                // Translate the position to the closing parenthesis of the function arguments:
+                // translate from: [type-token] function foo() {} => to: function foo() [type-token] {}
+                currentOffset = this._translateToOffsetAfterFunctionParameterList(node, currentOffset, sourceString);
+                tokenPosition = this.sourceCodeTextEditor.currentOffsetToCurrentPosition(currentOffset);
+            }
+
+            // Note: bookmarks render to the left of the character they're being displayed next to.
+            // This is why right margin checks the current offset. And this is okay to do because JavaScript can't be written right-to-left.
+            var isSpaceRegexp = /\s/;
+            var shouldHaveLeftMargin = currentOffset !== 0 && !isSpaceRegexp.test(sourceString[currentOffset - 1]);
+            var shouldHaveRightMargin = !isSpaceRegexp.test(sourceString[currentOffset]);
+            var typeToken = new WebInspector.TypeTokenView(this, shouldHaveRightMargin, shouldHaveLeftMargin, typeTokenTitleType, functionOrVariableName);
+            var bookmark = this.sourceCodeTextEditor.setInlineWidget(tokenPosition, typeToken.element);
+            node.attachments.__typeToken = typeToken;
+            this._typeTokenNodes.push(node);
+            this._typeTokenBookmarks.push(bookmark);
+        }
+    }, {
+        key: "_translateToOffsetAfterFunctionParameterList",
+        value: function _translateToOffsetAfterFunctionParameterList(node, offset, sourceString) {
+            // The assumption here is that we get the offset starting at the function keyword (or after the get/set keywords).
+            // We will return the offset for the closing parenthesis in the function declaration.
+            // All this code is just a way to find this parenthesis while ignoring comments.
+
+            var isMultiLineComment = false;
+            var isSingleLineComment = false;
+            var shouldIgnore = false;
+
+            function isLineTerminator(char) {
+                // Reference EcmaScript 5 grammar for single line comments and line terminators:
+                // http://www.ecma-international.org/ecma-262/5.1/#sec-7.3
+                // http://www.ecma-international.org/ecma-262/5.1/#sec-7.4
+                return char === "\n" || char === "\r" || char === "\u2028" || char === "\u2029";
+            }
+
+            while ((sourceString[offset] !== ")" || shouldIgnore) && offset < sourceString.length) {
+                if (isSingleLineComment && isLineTerminator(sourceString[offset])) {
+                    isSingleLineComment = false;
+                    shouldIgnore = false;
+                } else if (isMultiLineComment && sourceString[offset] === "*" && sourceString[offset + 1] === "/") {
+                    isMultiLineComment = false;
+                    shouldIgnore = false;
+                    offset++;
+                } else if (!shouldIgnore && sourceString[offset] === "/") {
+                    offset++;
+                    if (sourceString[offset] === "*") isMultiLineComment = true;else if (sourceString[offset] === "/") isSingleLineComment = true;else throw new Error("Bad parsing. Couldn't parse comment preamble.");
+                    shouldIgnore = true;
+                }
+
+                offset++;
+            }
+
+            return offset + 1;
+        }
+    }, {
+        key: "_clearTypeTokens",
+        value: function _clearTypeTokens() {
+            this._typeTokenNodes.forEach(function (node) {
+                node.attachments.__typeToken = null;
+            });
+            this._typeTokenBookmarks.forEach(function (bookmark) {
+                bookmark.clear();
+            });
+
+            this._typeTokenNodes = [];
+            this._typeTokenBookmarks = [];
+        }
+    }]);
+
+    return TypeTokenAnnotator;
+})(WebInspector.Annotator);

@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ButtonToolbarItem = function(identifier, toolTip, label, image, suppressEmboss, role)
-{
+WebInspector.ButtonToolbarItem = function (identifier, toolTip, label, image, suppressEmboss, role) {
     WebInspector.ButtonNavigationItem.call(this, identifier, toolTip, image, 16, 16, suppressEmboss, role);
 
     if (typeof label === "string") {
@@ -38,24 +37,24 @@ WebInspector.ButtonToolbarItem = function(identifier, toolTip, label, image, sup
 
 WebInspector.ButtonToolbarItem.LabelStyleClassName = "label";
 
-WebInspector.ButtonToolbarItem.prototype = {
-    constructor: WebInspector.ButtonToolbarItem,
+WebInspector.ButtonToolbarItem.prototype = Object.defineProperties({
+    constructor: WebInspector.ButtonToolbarItem
 
-    // Public
+}, {
+    label: { // Public
 
-    get label()
-    {
-        return this._labelElement.textContent;
-    },
+        get: function () {
+            return this._labelElement.textContent;
+        },
+        set: function (newLabel) {
+            console.assert(newLabel);
+            if (!newLabel || !this._labelElement) return;
 
-    set label(newLabel)
-    {
-        console.assert(newLabel);
-        if (!newLabel || !this._labelElement)
-            return;
-
-        this._labelElement.textContent = newLabel;
+            this._labelElement.textContent = newLabel;
+        },
+        configurable: true,
+        enumerable: true
     }
-};
+});
 
 WebInspector.ButtonToolbarItem.prototype.__proto__ = WebInspector.ButtonNavigationItem.prototype;

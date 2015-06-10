@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013-2015 Apple Inc. All rights reserved.
  *
@@ -23,13 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DashboardView = class DashboardView extends WebInspector.Object
-{
-    constructor(representedObject, identifier)
-    {
+WebInspector.DashboardView = (function (_WebInspector$Object) {
+    function DashboardView(representedObject, identifier) {
+        _classCallCheck(this, DashboardView);
+
         console.assert(identifier);
 
-        super();
+        _get(Object.getPrototypeOf(DashboardView.prototype), "constructor", this).call(this);
 
         this._representedObject = representedObject;
 
@@ -38,50 +46,55 @@ WebInspector.DashboardView = class DashboardView extends WebInspector.Object
         this._element.classList.add(identifier);
     }
 
-    // Static
+    _inherits(DashboardView, _WebInspector$Object);
 
-    static create(representedObject)
-    {
-        console.assert(representedObject);
+    _createClass(DashboardView, [{
+        key: "shown",
+        value: function shown() {}
+    }, {
+        key: "hidden",
+        value: function hidden() {}
+    }, {
+        key: "closed",
+        value: function closed() {}
+    }, {
+        key: "element",
 
-        if (representedObject instanceof WebInspector.DefaultDashboard)
-            return new WebInspector.DefaultDashboardView(representedObject);
+        // Public
 
-        if (representedObject instanceof WebInspector.DebuggerDashboard)
-            return new WebInspector.DebuggerDashboardView(representedObject);
+        get: function () {
+            return this._element;
+        }
+    }, {
+        key: "representedObject",
+        get: function () {
+            return this._representedObject;
+        }
+    }], [{
+        key: "create",
 
-        if (representedObject instanceof WebInspector.ReplayDashboard)
-            return new WebInspector.ReplayDashboardView(representedObject);
+        // Static
 
-        throw "Can't make a DashboardView for an unknown representedObject.";
-    }
+        value: function create(representedObject) {
+            console.assert(representedObject);
 
-    // Public
+            if (representedObject instanceof WebInspector.DefaultDashboard) return new WebInspector.DefaultDashboardView(representedObject);
 
-    get element()
-    {
-        return this._element;
-    }
+            if (representedObject instanceof WebInspector.DebuggerDashboard) return new WebInspector.DebuggerDashboardView(representedObject);
 
-    get representedObject()
-    {
-        return this._representedObject;
-    }
+            if (representedObject instanceof WebInspector.ReplayDashboard) return new WebInspector.ReplayDashboardView(representedObject);
 
-    shown()
-    {
-        // Implemented by subclasses.
-    }
+            throw "Can't make a DashboardView for an unknown representedObject.";
+        }
+    }]);
 
-    hidden()
-    {
-        // Implemented by subclasses.
-    }
-
-    closed()
-    {
-        // Implemented by subclasses.
-    }
-};
+    return DashboardView;
+})(WebInspector.Object);
 
 WebInspector.DashboardView.StyleClassName = "dashboard";
+
+// Implemented by subclasses.
+
+// Implemented by subclasses.
+
+// Implemented by subclasses.

@@ -23,7 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.FlexibleSpaceNavigationItem = function(identifier) {
+WebInspector.FlexibleSpaceNavigationItem = function (identifier) {
     WebInspector.NavigationItem.call(this, identifier);
 };
 
@@ -34,7 +34,7 @@ WebInspector.FlexibleSpaceNavigationItem.prototype = {
 
     // Private
 
-    _additionalClassNames: [WebInspector.FlexibleSpaceNavigationItem.StyleClassName],
+    _additionalClassNames: [WebInspector.FlexibleSpaceNavigationItem.StyleClassName]
 };
 
 WebInspector.FlexibleSpaceNavigationItem.prototype.__proto__ = WebInspector.NavigationItem.prototype;

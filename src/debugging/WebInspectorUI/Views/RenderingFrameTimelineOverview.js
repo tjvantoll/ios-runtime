@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.RenderingFrameTimelineOverview = function(timelineRecording)
-{
+WebInspector.RenderingFrameTimelineOverview = function (timelineRecording) {
     // FIXME: Convert this to a WebInspector.TimelineOverview subclass, and call super().
 
     var minimumDurationPerPixel = 1 / WebInspector.TimelineRecordFrame.MaximumWidthPixels;
@@ -37,7 +36,7 @@ WebInspector.RenderingFrameTimelineOverview = function(timelineRecording)
 
     WebInspector.TimelineOverview.call(this, "frames", timelineRecording, minimumDurationPerPixel, maximumDurationPerPixel, defaultSettingsValues);
 
-    this.timelineRuler.formatLabelCallback = function(value) {
+    this.timelineRuler.formatLabelCallback = function (value) {
         return value.toFixed(0);
     };
 };
@@ -48,8 +47,7 @@ WebInspector.RenderingFrameTimelineOverview.prototype = {
 
     // Protected
 
-    canShowTimeline: function(timeline)
-    {
+    canShowTimeline: function canShowTimeline(timeline) {
         return timeline.type === WebInspector.TimelineRecord.Type.RenderingFrame;
     }
 };

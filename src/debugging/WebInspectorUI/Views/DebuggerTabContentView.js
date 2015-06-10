@@ -23,61 +23,54 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DebuggerTabContentView = function(identifier)
-{
+WebInspector.DebuggerTabContentView = function (identifier) {
     var tabBarItem = new WebInspector.TabBarItem("Images/Debugger.svg", WebInspector.UIString("Debugger"));
     var detailsSidebarPanels = [WebInspector.resourceDetailsSidebarPanel, WebInspector.scopeChainDetailsSidebarPanel, WebInspector.probeDetailsSidebarPanel];
 
     WebInspector.ContentBrowserTabContentView.call(this, identifier || "debugger", "debugger", tabBarItem, WebInspector.DebuggerSidebarPanel, detailsSidebarPanels);
 };
 
-WebInspector.DebuggerTabContentView.prototype = {
+WebInspector.DebuggerTabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.DebuggerTabContentView,
     __proto__: WebInspector.ContentBrowserTabContentView.prototype,
 
-    // Public
+    canShowRepresentedObject: function canShowRepresentedObject(representedObject) {
+        if (representedObject instanceof WebInspector.Script) return true;
 
-    get type()
-    {
-        return WebInspector.DebuggerTabContentView.Type;
-    },
-
-    canShowRepresentedObject: function(representedObject)
-    {
-        if (representedObject instanceof WebInspector.Script)
-            return true;
-
-        if (!(representedObject instanceof WebInspector.Resource))
-            return false;
+        if (!(representedObject instanceof WebInspector.Resource)) return false;
 
         return representedObject.type === WebInspector.Resource.Type.Document || representedObject.type === WebInspector.Resource.Type.Script;
     },
 
-    showDetailsSidebarPanels: function()
-    {
+    showDetailsSidebarPanels: function showDetailsSidebarPanels() {
         WebInspector.ContentBrowserTabContentView.prototype.showDetailsSidebarPanels.call(this);
 
-        if (!this._showScopeChainDetailsSidebarPanel || !WebInspector.scopeChainDetailsSidebarPanel.parentSidebar)
-            return;
+        if (!this._showScopeChainDetailsSidebarPanel || !WebInspector.scopeChainDetailsSidebarPanel.parentSidebar) return;
 
         WebInspector.scopeChainDetailsSidebarPanel.show();
 
         this._showScopeChainDetailsSidebarPanel = false;
     },
 
-    showScopeChainDetailsSidebarPanel: function()
-    {
+    showScopeChainDetailsSidebarPanel: function showScopeChainDetailsSidebarPanel() {
         this._showScopeChainDetailsSidebarPanel = true;
     },
 
-    revealAndSelectBreakpoint: function(breakpoint)
-    {
+    revealAndSelectBreakpoint: function revealAndSelectBreakpoint(breakpoint) {
         console.assert(breakpoint instanceof WebInspector.Breakpoint);
 
         var treeElement = this.navigationSidebarPanel.treeElementForRepresentedObject(breakpoint);
-        if (treeElement)
-            treeElement.revealAndSelect();
+        if (treeElement) treeElement.revealAndSelect();
     }
-};
+}, {
+    type: { // Public
+
+        get: function () {
+            return WebInspector.DebuggerTabContentView.Type;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.DebuggerTabContentView.Type = "debugger";

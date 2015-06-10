@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,58 +27,67 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CSSObserver = class CSSObserver
-{
-    // Events defined by the "CSS" domain.
-
-    mediaQueryResultChanged()
-    {
-        WebInspector.cssStyleManager.mediaQueryResultChanged();
+WebInspector.CSSObserver = (function () {
+    function CSSObserver() {
+        _classCallCheck(this, CSSObserver);
     }
 
-    styleSheetChanged(styleSheetId)
-    {
-        WebInspector.cssStyleManager.styleSheetChanged(styleSheetId);
-    }
+    _createClass(CSSObserver, [{
+        key: "mediaQueryResultChanged",
 
-    styleSheetAdded(header)
-    {
-        // FIXME: Not implemented. <rdar://problem/13213680>
-    }
+        // Events defined by the "CSS" domain.
 
-    styleSheetRemoved(header)
-    {
-        // FIXME: Not implemented. <rdar://problem/13213680>
-    }
+        value: function mediaQueryResultChanged() {
+            WebInspector.cssStyleManager.mediaQueryResultChanged();
+        }
+    }, {
+        key: "styleSheetChanged",
+        value: function styleSheetChanged(styleSheetId) {
+            WebInspector.cssStyleManager.styleSheetChanged(styleSheetId);
+        }
+    }, {
+        key: "styleSheetAdded",
+        value: function styleSheetAdded(header) {}
+    }, {
+        key: "styleSheetRemoved",
+        value: function styleSheetRemoved(header) {}
+    }, {
+        key: "namedFlowCreated",
+        value: function namedFlowCreated(namedFlow) {
+            WebInspector.domTreeManager.namedFlowCreated(namedFlow);
+        }
+    }, {
+        key: "namedFlowRemoved",
+        value: function namedFlowRemoved(documentNodeId, flowName) {
+            WebInspector.domTreeManager.namedFlowRemoved(documentNodeId, flowName);
+        }
+    }, {
+        key: "regionLayoutUpdated",
 
-    namedFlowCreated(namedFlow)
-    {
-        WebInspector.domTreeManager.namedFlowCreated(namedFlow);
-    }
+        // COMPATIBILITY (iOS 7): regionLayoutUpdated was removed and replaced by regionOversetChanged.
+        value: function regionLayoutUpdated(namedFlow) {
+            WebInspector.domTreeManager.regionLayoutUpdated(namedFlow);
+        }
+    }, {
+        key: "regionOversetChanged",
+        value: function regionOversetChanged(namedFlow) {
+            WebInspector.domTreeManager.regionOversetChanged(namedFlow);
+        }
+    }, {
+        key: "registeredNamedFlowContentElement",
+        value: function registeredNamedFlowContentElement(documentNodeId, flowName, contentNodeId, nextContentElementNodeId) {
+            WebInspector.domTreeManager.registeredNamedFlowContentElement(documentNodeId, flowName, contentNodeId, nextContentElementNodeId);
+        }
+    }, {
+        key: "unregisteredNamedFlowContentElement",
+        value: function unregisteredNamedFlowContentElement(documentNodeId, flowName, contentNodeId) {
+            WebInspector.domTreeManager.unregisteredNamedFlowContentElement(documentNodeId, flowName, contentNodeId);
+        }
+    }]);
 
-    namedFlowRemoved(documentNodeId, flowName)
-    {
-        WebInspector.domTreeManager.namedFlowRemoved(documentNodeId, flowName);
-    }
+    return CSSObserver;
+})();
 
-    // COMPATIBILITY (iOS 7): regionLayoutUpdated was removed and replaced by regionOversetChanged.
-    regionLayoutUpdated(namedFlow)
-    {
-        WebInspector.domTreeManager.regionLayoutUpdated(namedFlow);
-    }
+// FIXME: Not implemented. <rdar://problem/13213680>
 
-    regionOversetChanged(namedFlow)
-    {
-        WebInspector.domTreeManager.regionOversetChanged(namedFlow);
-    }
-
-    registeredNamedFlowContentElement(documentNodeId, flowName, contentNodeId, nextContentElementNodeId)
-    {
-        WebInspector.domTreeManager.registeredNamedFlowContentElement(documentNodeId, flowName, contentNodeId, nextContentElementNodeId);
-    }
-
-    unregisteredNamedFlowContentElement(documentNodeId, flowName, contentNodeId)
-    {
-        WebInspector.domTreeManager.unregisteredNamedFlowContentElement(documentNodeId, flowName, contentNodeId);
-    }
-};
+// FIXME: Not implemented. <rdar://problem/13213680>

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ScopeBarItem = class ScopeBarItem extends WebInspector.Object
-{
-    constructor(id, label, isExclusive)
-    {
-        super();
+WebInspector.ScopeBarItem = (function (_WebInspector$Object) {
+    function ScopeBarItem(id, label, isExclusive) {
+        _classCallCheck(this, ScopeBarItem);
+
+        _get(Object.getPrototypeOf(ScopeBarItem.prototype), "constructor", this).call(this);
 
         this.id = id;
         this.label = label;
@@ -38,56 +46,58 @@ WebInspector.ScopeBarItem = class ScopeBarItem extends WebInspector.Object
         this._markElementSelected(this._selectedSetting.value);
     }
 
-    // Public
+    _inherits(ScopeBarItem, _WebInspector$Object);
 
-    get element()
-    {
-        if (!this._element) {
-            this._element = document.createElement("li");
-            this._element.textContent = this.label;
-            this._element.addEventListener("click", this._clicked.bind(this), false);
+    _createClass(ScopeBarItem, [{
+        key: "setSelected",
+        value: function setSelected(selected, withModifier) {
+            if (this._selectedSetting.value === selected) return;
+
+            this._markElementSelected(selected);
+
+            this._selectedSetting.value = selected;
+
+            this.dispatchEventToListeners(WebInspector.ScopeBarItem.Event.SelectionChanged, { withModifier: withModifier });
         }
-        return this._element;
-    }
+    }, {
+        key: "_markElementSelected",
 
-    get selected()
-    {
-        return this._selectedSetting.value;
-    }
+        // Private
 
-    set selected(selected)
-    {
-        this.setSelected(selected, false);
-    }
+        value: function _markElementSelected(selected) {
+            if (selected) this.element.classList.add(WebInspector.ScopeBarItem.SelectedStyleClassName);else this.element.classList.remove(WebInspector.ScopeBarItem.SelectedStyleClassName);
+        }
+    }, {
+        key: "_clicked",
+        value: function _clicked(event) {
+            var withModifier = event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey;
+            this.setSelected(!this.selected, withModifier);
+        }
+    }, {
+        key: "element",
 
-    setSelected(selected, withModifier)
-    {
-        if (this._selectedSetting.value === selected)
-            return;
+        // Public
 
-        this._markElementSelected(selected);
+        get: function () {
+            if (!this._element) {
+                this._element = document.createElement("li");
+                this._element.textContent = this.label;
+                this._element.addEventListener("click", this._clicked.bind(this), false);
+            }
+            return this._element;
+        }
+    }, {
+        key: "selected",
+        get: function () {
+            return this._selectedSetting.value;
+        },
+        set: function (selected) {
+            this.setSelected(selected, false);
+        }
+    }]);
 
-        this._selectedSetting.value = selected;
-
-        this.dispatchEventToListeners(WebInspector.ScopeBarItem.Event.SelectionChanged, {withModifier});
-    }
-
-    // Private
-
-    _markElementSelected(selected)
-    {
-        if (selected)
-            this.element.classList.add(WebInspector.ScopeBarItem.SelectedStyleClassName);
-        else
-            this.element.classList.remove(WebInspector.ScopeBarItem.SelectedStyleClassName);
-    }
-
-    _clicked(event)
-    {
-        var withModifier = (event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey);
-        this.setSelected(!this.selected, withModifier);
-    }
-};
+    return ScopeBarItem;
+})(WebInspector.Object);
 
 WebInspector.ScopeBarItem.SelectedStyleClassName = "selected";
 

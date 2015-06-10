@@ -24,8 +24,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TimelineView = function(representedObject, extraArguments)
-{
+WebInspector.TimelineView = function (representedObject, extraArguments) {
     // This class should not be instantiated directly. Create a concrete subclass instead.
     console.assert(this.constructor !== WebInspector.TimelineView && this instanceof WebInspector.TimelineView);
 
@@ -49,127 +48,22 @@ WebInspector.TimelineView = function(representedObject, extraArguments)
     this._currentTime = 0;
 };
 
-WebInspector.TimelineView.prototype = {
+WebInspector.TimelineView.prototype = Object.defineProperties({
     constructor: WebInspector.TimelineView,
     __proto__: WebInspector.ContentView.prototype,
 
-    // Public
-
-    get navigationSidebarTreeOutline()
-    {
-        return this._contentTreeOutline;
-    },
-
-    get navigationSidebarTreeOutlineLabel()
-    {
-        // Implemented by sub-classes if needed.
-        return null;
-    },
-
-    get timelineSidebarPanel()
-    {
-        return this._timelineSidebarPanel;
-    },
-
-    get selectionPathComponents()
-    {
-        if (!this._contentTreeOutline.selectedTreeElement || this._contentTreeOutline.selectedTreeElement.hidden)
-            return null;
-
-        var pathComponent = new WebInspector.GeneralTreeElementPathComponent(this._contentTreeOutline.selectedTreeElement);
-        pathComponent.addEventListener(WebInspector.HierarchicalPathComponent.Event.SiblingWasSelected, this.treeElementPathComponentSelected, this);
-        return [pathComponent];
-    },
-
-    get zeroTime()
-    {
-        return this._zeroTime;
-    },
-
-    set zeroTime(x)
-    {
-        if (this._zeroTime === x)
-            return;
-
-        this._zeroTime = x || 0;
-
-        this.needsLayout();
-    },
-
-    get startTime()
-    {
-        return this._startTime;
-    },
-
-    set startTime(x)
-    {
-        if (this._startTime === x)
-            return;
-
-        this._startTime = x || 0;
-
-        this.needsLayout();
-    },
-
-    get endTime()
-    {
-        return this._endTime;
-    },
-
-    set endTime(x)
-    {
-        if (this._endTime === x)
-            return;
-
-        this._endTime = x || 0;
-
-        this.needsLayout();
-    },
-
-    get currentTime()
-    {
-        return this._currentTime;
-    },
-
-    set currentTime(x)
-    {
-        if (this._currentTime === x)
-            return;
-
-        var oldCurrentTime = this._currentTime;
-
-        this._currentTime = x || 0;
-
-        function checkIfLayoutIsNeeded(currentTime)
-        {
-            // Include some wiggle room since the current time markers can be clipped off the ends a bit and still partially visible.
-            const wiggleTime = 0.05; // 50ms
-            return this._startTime - wiggleTime <= currentTime && currentTime <= this._endTime + wiggleTime;
-        }
-
-        if (checkIfLayoutIsNeeded.call(this, oldCurrentTime) || checkIfLayoutIsNeeded.call(this, this._currentTime))
-            this.needsLayout();
-    },
-
-    reset: function()
-    {
+    reset: function reset() {
         this._contentTreeOutline.removeChildren();
     },
 
+    filterDidChange: function filterDidChange() {},
 
-    filterDidChange: function()
-    {
-        // Implemented by sub-classes if needed.
-    },
-
-    matchTreeElementAgainstCustomFilters: function(treeElement)
-    {
+    matchTreeElementAgainstCustomFilters: function matchTreeElementAgainstCustomFilters(treeElement) {
         // Implemented by sub-classes if needed.
         return true;
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         if (this._scheduledLayoutUpdateIdentifier) {
             cancelAnimationFrame(this._scheduledLayoutUpdateIdentifier);
             delete this._scheduledLayoutUpdateIdentifier;
@@ -178,31 +72,25 @@ WebInspector.TimelineView.prototype = {
         // Implemented by sub-classes if needed.
     },
 
-    updateLayoutIfNeeded: function()
-    {
-        if (!this._scheduledLayoutUpdateIdentifier)
-            return;
+    updateLayoutIfNeeded: function updateLayoutIfNeeded() {
+        if (!this._scheduledLayoutUpdateIdentifier) return;
         this.updateLayout();
     },
 
-    filterUpdated: function()
-    {
+    filterUpdated: function filterUpdated() {
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SelectionPathComponentsDidChange);
     },
 
     // Protected
 
-    canShowContentViewForTreeElement: function(treeElement)
-    {
+    canShowContentViewForTreeElement: function canShowContentViewForTreeElement(treeElement) {
         // Implemented by sub-classes if needed.
 
-        if (treeElement instanceof WebInspector.TimelineRecordTreeElement)
-            return !!treeElement.sourceCodeLocation;
+        if (treeElement instanceof WebInspector.TimelineRecordTreeElement) return !!treeElement.sourceCodeLocation;
         return false;
     },
 
-    showContentViewForTreeElement: function(treeElement)
-    {
+    showContentViewForTreeElement: function showContentViewForTreeElement(treeElement) {
         // Implemented by sub-classes if needed.
 
         if (!(treeElement instanceof WebInspector.TimelineRecordTreeElement)) {
@@ -219,37 +107,130 @@ WebInspector.TimelineView.prototype = {
         WebInspector.showOriginalOrFormattedSourceCodeLocation(sourceCodeLocation);
     },
 
-    treeElementPathComponentSelected: function(event)
-    {
-        // Implemented by sub-classes if needed.
-    },
+    treeElementPathComponentSelected: function treeElementPathComponentSelected(event) {},
 
-    treeElementDeselected: function(treeElement)
-    {
-        // Implemented by sub-classes if needed.
-    },
+    treeElementDeselected: function treeElementDeselected(treeElement) {},
 
-    treeElementSelected: function(treeElement, selectedByUser)
-    {
+    treeElementSelected: function treeElementSelected(treeElement, selectedByUser) {
         // Implemented by sub-classes if needed.
 
-        if (!this._timelineSidebarPanel.canShowDifferentContentView())
-            return;
+        if (!this._timelineSidebarPanel.canShowDifferentContentView()) return;
 
-        if (treeElement instanceof WebInspector.FolderTreeElement)
-            return;
+        if (treeElement instanceof WebInspector.FolderTreeElement) return;
 
         this.showContentViewForTreeElement(treeElement);
     },
 
-    needsLayout: function()
-    {
-        if (!this.visible)
-            return;
+    needsLayout: function needsLayout() {
+        if (!this.visible) return;
 
-        if (this._scheduledLayoutUpdateIdentifier)
-            return;
+        if (this._scheduledLayoutUpdateIdentifier) return;
 
         this._scheduledLayoutUpdateIdentifier = requestAnimationFrame(this.updateLayout.bind(this));
     }
-};
+}, {
+    navigationSidebarTreeOutline: { // Public
+
+        get: function () {
+            return this._contentTreeOutline;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    navigationSidebarTreeOutlineLabel: {
+        get: function () {
+            // Implemented by sub-classes if needed.
+            return null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    timelineSidebarPanel: {
+        get: function () {
+            return this._timelineSidebarPanel;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    selectionPathComponents: {
+        get: function () {
+            if (!this._contentTreeOutline.selectedTreeElement || this._contentTreeOutline.selectedTreeElement.hidden) return null;
+
+            var pathComponent = new WebInspector.GeneralTreeElementPathComponent(this._contentTreeOutline.selectedTreeElement);
+            pathComponent.addEventListener(WebInspector.HierarchicalPathComponent.Event.SiblingWasSelected, this.treeElementPathComponentSelected, this);
+            return [pathComponent];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    zeroTime: {
+        get: function () {
+            return this._zeroTime;
+        },
+        set: function (x) {
+            if (this._zeroTime === x) return;
+
+            this._zeroTime = x || 0;
+
+            this.needsLayout();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    startTime: {
+        get: function () {
+            return this._startTime;
+        },
+        set: function (x) {
+            if (this._startTime === x) return;
+
+            this._startTime = x || 0;
+
+            this.needsLayout();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    endTime: {
+        get: function () {
+            return this._endTime;
+        },
+        set: function (x) {
+            if (this._endTime === x) return;
+
+            this._endTime = x || 0;
+
+            this.needsLayout();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    currentTime: {
+        get: function () {
+            return this._currentTime;
+        },
+        set: function (x) {
+            if (this._currentTime === x) return;
+
+            var oldCurrentTime = this._currentTime;
+
+            this._currentTime = x || 0;
+
+            function checkIfLayoutIsNeeded(currentTime) {
+                // Include some wiggle room since the current time markers can be clipped off the ends a bit and still partially visible.
+                var wiggleTime = 0.05; // 50ms
+                return this._startTime - wiggleTime <= currentTime && currentTime <= this._endTime + wiggleTime;
+            }
+
+            if (checkIfLayoutIsNeeded.call(this, oldCurrentTime) || checkIfLayoutIsNeeded.call(this, this._currentTime)) this.needsLayout();
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
+
+// Implemented by sub-classes if needed.
+
+// Implemented by sub-classes if needed.
+
+// Implemented by sub-classes if needed.

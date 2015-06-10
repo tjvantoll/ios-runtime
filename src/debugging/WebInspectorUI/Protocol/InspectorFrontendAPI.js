@@ -27,25 +27,16 @@ InspectorFrontendAPI = {
     _loaded: false,
     _pendingCommands: [],
 
-    savedURL: function(url)
-    {
-        // Not used yet.
-    },
+    savedURL: function savedURL(url) {},
 
-    appendedToURL: function(url)
-    {
-        // Not used yet.
-    },
+    appendedToURL: function appendedToURL(url) {},
 
-    isTimelineProfilingEnabled: function()
-    {
+    isTimelineProfilingEnabled: function isTimelineProfilingEnabled() {
         return WebInspector.timelineManager.isCapturing();
     },
 
-    setTimelineProfilingEnabled: function(enabled)
-    {
-        if (WebInspector.timelineManager.isCapturing() === enabled)
-            return;
+    setTimelineProfilingEnabled: function setTimelineProfilingEnabled(enabled) {
+        if (WebInspector.timelineManager.isCapturing() === enabled) return;
 
         if (enabled) {
             WebInspector.showTimelineTab();
@@ -55,29 +46,24 @@ InspectorFrontendAPI = {
         }
     },
 
-    setDockingUnavailable: function(unavailable)
-    {
+    setDockingUnavailable: function setDockingUnavailable(unavailable) {
         WebInspector.updateDockingAvailability(!unavailable);
     },
 
-    setDockSide: function(side)
-    {
+    setDockSide: function setDockSide(side) {
         WebInspector.updateDockedState(side);
     },
 
-    showConsole: function()
-    {
+    showConsole: function showConsole() {
         WebInspector.showConsoleTab();
 
         WebInspector.quickConsole.prompt.focus();
 
         // If the page is still loading, focus the quick console again after tabindex autofocus.
-        if (document.readyState !== "complete")
-            document.addEventListener("readystatechange", this);
+        if (document.readyState !== "complete") document.addEventListener("readystatechange", this);
     },
 
-    handleEvent: function(event)
-    {
+    handleEvent: function handleEvent(event) {
         console.assert(event.type === "readystatechange");
 
         if (document.readyState === "complete") {
@@ -86,38 +72,31 @@ InspectorFrontendAPI = {
         }
     },
 
-    showResources: function()
-    {
+    showResources: function showResources() {
         WebInspector.showResourcesTab();
     },
 
-    showMainResourceForFrame: function(frameIdentifier)
-    {
+    showMainResourceForFrame: function showMainResourceForFrame(frameIdentifier) {
         WebInspector.showSourceCodeForFrame(frameIdentifier, true);
     },
 
-    contextMenuItemSelected: function(id)
-    {
+    contextMenuItemSelected: function contextMenuItemSelected(id) {
         WebInspector.ContextMenu.contextMenuItemSelected(id);
     },
 
-    contextMenuCleared: function()
-    {
+    contextMenuCleared: function contextMenuCleared() {
         WebInspector.ContextMenu.contextMenuCleared();
     },
 
-    dispatchMessageAsync: function(messageObject)
-    {
+    dispatchMessageAsync: function dispatchMessageAsync(messageObject) {
         WebInspector.dispatchMessageFromBackend(messageObject);
     },
 
-    dispatchMessage: function(messageObject)
-    {
+    dispatchMessage: function dispatchMessage(messageObject) {
         InspectorBackend.dispatch(messageObject);
     },
 
-    dispatch: function(signature)
-    {
+    dispatch: function dispatch(signature) {
         if (!InspectorFrontendAPI._loaded) {
             InspectorFrontendAPI._pendingCommands.push(signature);
             return null;
@@ -125,19 +104,20 @@ InspectorFrontendAPI = {
 
         var methodName = signature.shift();
         console.assert(InspectorFrontendAPI[methodName], "Unexpected InspectorFrontendAPI method name: " + methodName);
-        if (!InspectorFrontendAPI[methodName])
-            return;
+        if (!InspectorFrontendAPI[methodName]) return;
 
         return InspectorFrontendAPI[methodName].apply(InspectorFrontendAPI, signature);
     },
 
-    loadCompleted: function()
-    {
+    loadCompleted: function loadCompleted() {
         InspectorFrontendAPI._loaded = true;
 
-        for (var i = 0; i < InspectorFrontendAPI._pendingCommands.length; ++i)
-            InspectorFrontendAPI.dispatch(InspectorFrontendAPI._pendingCommands[i]);
+        for (var i = 0; i < InspectorFrontendAPI._pendingCommands.length; ++i) InspectorFrontendAPI.dispatch(InspectorFrontendAPI._pendingCommands[i]);
 
         delete InspectorFrontendAPI._pendingCommands;
     }
 };
+
+// Not used yet.
+
+// Not used yet.

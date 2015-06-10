@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.SourceCodeTimelineTimelineDataGridNode = function(sourceCodeTimeline, graphDataSource)
-{
+WebInspector.SourceCodeTimelineTimelineDataGridNode = function (sourceCodeTimeline, graphDataSource) {
     WebInspector.TimelineDataGridNode.call(this, true, graphDataSource);
 
     this._sourceCodeTimeline = sourceCodeTimeline;
@@ -34,32 +33,36 @@ WebInspector.SourceCodeTimelineTimelineDataGridNode = function(sourceCodeTimelin
 // FIXME: Move to a WebInspector.Object subclass and we can remove this.
 WebInspector.Object.deprecatedAddConstructorFunctions(WebInspector.SourceCodeTimelineTimelineDataGridNode);
 
-WebInspector.SourceCodeTimelineTimelineDataGridNode.prototype = {
+WebInspector.SourceCodeTimelineTimelineDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.SourceCodeTimelineTimelineDataGridNode,
     __proto__: WebInspector.TimelineDataGridNode.prototype,
 
-    // Public
-
-    get records()
-    {
-        return this._sourceCodeTimeline.records;
-    },
-
-    get sourceCodeTimeline()
-    {
-        return this._sourceCodeTimeline;
-    },
-
-    get data()
-    {
-        return {graph: this._sourceCodeTimeline.startTime};
-    },
-
     // Private
 
-    _timelineRecordAdded: function(event)
-    {
-        if (this.isRecordVisible(event.data.record))
-            this.needsGraphRefresh();
+    _timelineRecordAdded: function _timelineRecordAdded(event) {
+        if (this.isRecordVisible(event.data.record)) this.needsGraphRefresh();
     }
-};
+}, {
+    records: { // Public
+
+        get: function () {
+            return this._sourceCodeTimeline.records;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    sourceCodeTimeline: {
+        get: function () {
+            return this._sourceCodeTimeline;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            return { graph: this._sourceCodeTimeline.startTime };
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

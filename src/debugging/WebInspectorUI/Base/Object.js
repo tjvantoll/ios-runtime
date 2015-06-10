@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2008, 2013 Apple Inc. All Rights Reserved.
  *
@@ -23,150 +27,174 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Object = class Object
-{
-    // Static
+WebInspector.Object = (function () {
+    function Object() {
+        _classCallCheck(this, Object);
+    }
 
-    static addEventListener(eventType, listener, thisObject)
-    {
-        thisObject = thisObject || null;
+    _createClass(Object, [{
+        key: "addEventListener",
 
-        console.assert(eventType, "Object.addEventListener: invalid event type ", eventType, "(listener: ", listener, "thisObject: ", thisObject, ")");
-        if (!eventType)
-            return;
+        // Public
 
-        console.assert(listener, "Object.addEventListener: invalid listener ", listener, "(event type: ", eventType, "thisObject: ", thisObject, ")");
-        if (!listener)
-            return;
-
-        if (!this._listeners)
-            this._listeners = {};
-
-        var listeners = this._listeners[eventType];
-        if (!listeners)
-            listeners = this._listeners[eventType] = [];
-
-        // Prevent registering multiple times.
-        for (var i = 0; i < listeners.length; ++i) {
-            if (listeners[i].listener === listener && listeners[i].thisObject === thisObject)
-                return;
+        value: function addEventListener() {
+            return WebInspector.Object.addEventListener.apply(this, arguments);
         }
-
-        listeners.push({thisObject, listener});
-    }
-
-    static removeEventListener(eventType, listener, thisObject)
-    {
-        eventType = eventType || null;
-        listener = listener || null;
-        thisObject = thisObject || null;
-
-        if (!this._listeners)
-            return;
-
-        if (!eventType) {
-            for (eventType in this._listeners)
-                this.removeEventListener(eventType, listener, thisObject);
-            return;
+    }, {
+        key: "removeEventListener",
+        value: function removeEventListener() {
+            return WebInspector.Object.removeEventListener.apply(this, arguments);
         }
-
-        var listeners = this._listeners[eventType];
-        if (!listeners)
-            return;
-
-        for (var i = listeners.length - 1; i >= 0; --i) {
-            if (listener && listeners[i].listener === listener && listeners[i].thisObject === thisObject)
-                listeners.splice(i, 1);
-            else if (!listener && thisObject && listeners[i].thisObject === thisObject)
-                listeners.splice(i, 1);
+    }, {
+        key: "removeAllListeners",
+        value: function removeAllListeners() {
+            return WebInspector.Object.removeAllListeners.apply(this, arguments);
         }
+    }, {
+        key: "hasEventListeners",
+        value: function hasEventListeners() {
+            return WebInspector.Object.hasEventListeners.apply(this, arguments);
+        }
+    }, {
+        key: "dispatchEventToListeners",
+        value: function dispatchEventToListeners(eventType, eventData) {
+            var event = new WebInspector.Event(this, eventType, eventData);
 
-        if (!listeners.length)
-            delete this._listeners[eventType];
+            function dispatch(object) {
+                if (!object || !object._listeners || !object._listeners[eventType] || event._stoppedPropagation) return;
 
-        if (!Object.keys(this._listeners).length)
-            delete this._listeners;
-    }
+                // Make a copy with slice so mutations during the loop doesn't affect us.
+                var listenersForThisEvent = object._listeners[eventType].slice(0);
 
-    static removeAllListeners()
-    {
-        delete this._listeners;
-    }
-
-    static hasEventListeners(eventType)
-    {
-        if (!this._listeners || !this._listeners[eventType])
-            return false;
-        return true;
-    }
-
-    // Public
-
-    addEventListener() { return WebInspector.Object.addEventListener.apply(this, arguments); }
-    removeEventListener() { return WebInspector.Object.removeEventListener.apply(this, arguments); }
-    removeAllListeners() { return WebInspector.Object.removeAllListeners.apply(this, arguments); }
-    hasEventListeners() { return WebInspector.Object.hasEventListeners.apply(this, arguments); }
-
-    dispatchEventToListeners(eventType, eventData)
-    {
-        var event = new WebInspector.Event(this, eventType, eventData);
-
-        function dispatch(object)
-        {
-            if (!object || !object._listeners || !object._listeners[eventType] || event._stoppedPropagation)
-                return;
-
-            // Make a copy with slice so mutations during the loop doesn't affect us.
-            var listenersForThisEvent = object._listeners[eventType].slice(0);
-
-            // Iterate over the listeners and call them. Stop if stopPropagation is called.
-            for (var i = 0; i < listenersForThisEvent.length; ++i) {
-                listenersForThisEvent[i].listener.call(listenersForThisEvent[i].thisObject, event);
-                if (event._stoppedPropagation)
-                    break;
+                // Iterate over the listeners and call them. Stop if stopPropagation is called.
+                for (var i = 0; i < listenersForThisEvent.length; ++i) {
+                    listenersForThisEvent[i].listener.call(listenersForThisEvent[i].thisObject, event);
+                    if (event._stoppedPropagation) break;
+                }
             }
+
+            // Dispatch to listeners of this specific object.
+            dispatch(this);
+
+            // Allow propagation again so listeners on the constructor always have a crack at the event.
+            event._stoppedPropagation = false;
+
+            // Dispatch to listeners on all constructors up the prototype chain, including the immediate constructor.
+            var constructor = this.constructor;
+            while (constructor) {
+                dispatch(constructor);
+
+                if (!constructor.prototype.__proto__) break;
+
+                constructor = constructor.prototype.__proto__.constructor;
+            }
+
+            return event.defaultPrevented;
         }
+    }], [{
+        key: "addEventListener",
 
-        // Dispatch to listeners of this specific object.
-        dispatch(this);
+        // Static
 
-        // Allow propagation again so listeners on the constructor always have a crack at the event.
-        event._stoppedPropagation = false;
+        value: function addEventListener(eventType, listener, thisObject) {
+            thisObject = thisObject || null;
 
-        // Dispatch to listeners on all constructors up the prototype chain, including the immediate constructor.
-        var constructor = this.constructor;
-        while (constructor) {
-            dispatch(constructor);
+            console.assert(eventType, "Object.addEventListener: invalid event type ", eventType, "(listener: ", listener, "thisObject: ", thisObject, ")");
+            if (!eventType) return;
 
-            if (!constructor.prototype.__proto__)
-                break;
+            console.assert(listener, "Object.addEventListener: invalid listener ", listener, "(event type: ", eventType, "thisObject: ", thisObject, ")");
+            if (!listener) return;
 
-            constructor = constructor.prototype.__proto__.constructor;
+            if (!this._listeners) this._listeners = {};
+
+            var listeners = this._listeners[eventType];
+            if (!listeners) listeners = this._listeners[eventType] = [];
+
+            // Prevent registering multiple times.
+            for (var i = 0; i < listeners.length; ++i) {
+                if (listeners[i].listener === listener && listeners[i].thisObject === thisObject) return;
+            }
+
+            listeners.push({ thisObject: thisObject, listener: listener });
         }
+    }, {
+        key: "removeEventListener",
+        value: function removeEventListener(eventType, listener, thisObject) {
+            eventType = eventType || null;
+            listener = listener || null;
+            thisObject = thisObject || null;
 
-        return event.defaultPrevented;
-    }
-};
+            if (!this._listeners) return;
+
+            if (!eventType) {
+                for (eventType in this._listeners) this.removeEventListener(eventType, listener, thisObject);
+                return;
+            }
+
+            var listeners = this._listeners[eventType];
+            if (!listeners) return;
+
+            for (var i = listeners.length - 1; i >= 0; --i) {
+                if (listener && listeners[i].listener === listener && listeners[i].thisObject === thisObject) listeners.splice(i, 1);else if (!listener && thisObject && listeners[i].thisObject === thisObject) listeners.splice(i, 1);
+            }
+
+            if (!listeners.length) delete this._listeners[eventType];
+
+            if (!window.Object.keys(this._listeners).length) delete this._listeners;
+        }
+    }, {
+        key: "removeAllListeners",
+        value: function removeAllListeners() {
+            delete this._listeners;
+        }
+    }, {
+        key: "hasEventListeners",
+        value: function hasEventListeners(eventType) {
+            if (!this._listeners || !this._listeners[eventType]) return false;
+            return true;
+        }
+    }]);
+
+    return Object;
+})();
 
 // FIXME: Uses arguments.callee, so it cannot be in the class.
-WebInspector.Object.deprecatedAddConstructorFunctions = function(subclassConstructor)
-{
+WebInspector.Object.deprecatedAddConstructorFunctions = function (subclassConstructor) {
     // Copies the relevant functions to the subclass constructor.
     var list = ["addEventListener", "removeEventListener", "removeAllListeners", "hasEventListeners"];
-    for (var property of list) {
-        var value = WebInspector.Object[property];
-        if (typeof value !== "function")
-            continue;
-        if (value === arguments.callee)
-            continue;
-        subclassConstructor[property] = value;
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+        for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var property = _step.value;
+
+            var value = WebInspector.Object[property];
+            if (typeof value !== "function") continue;
+            if (value === arguments.callee) continue;
+            subclassConstructor[property] = value;
+        }
+    } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion && _iterator["return"]) {
+                _iterator["return"]();
+            }
+        } finally {
+            if (_didIteratorError) {
+                throw _iteratorError;
+            }
+        }
     }
 };
 
-WebInspector.Event = class Event
-{
-    constructor(target, type, data)
-    {
+WebInspector.Event = (function () {
+    function Event(target, type, data) {
+        _classCallCheck(this, Event);
+
         this.target = target;
         this.type = type;
         this.data = data;
@@ -174,22 +202,26 @@ WebInspector.Event = class Event
         this._stoppedPropagation = false;
     }
 
-    stopPropagation()
-    {
-        this._stoppedPropagation = true;
-    }
+    _createClass(Event, [{
+        key: "stopPropagation",
+        value: function stopPropagation() {
+            this._stoppedPropagation = true;
+        }
+    }, {
+        key: "preventDefault",
+        value: function preventDefault() {
+            this.defaultPrevented = true;
+        }
+    }]);
 
-    preventDefault()
-    {
-        this.defaultPrevented = true;
-    }
-};
+    return Event;
+})();
 
-WebInspector.notifications = new WebInspector.Object;
+WebInspector.notifications = new WebInspector.Object();
 
 WebInspector.Notification = {
     GlobalModifierKeysDidChange: "global-modifiers-did-change",
     PageArchiveStarted: "page-archive-started",
     PageArchiveEnded: "page-archive-ended",
-    ExtraDomainsActivated: "extra-domains-activated",
+    ExtraDomainsActivated: "extra-domains-activated"
 };

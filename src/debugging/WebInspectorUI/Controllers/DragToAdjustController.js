@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2014 Antoine Quint
  *
@@ -23,10 +27,10 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DragToAdjustController = class DragToAdjustController
-{
-    constructor(delegate)
-    {
+WebInspector.DragToAdjustController = (function () {
+    function DragToAdjustController(delegate) {
+        _classCallCheck(this, DragToAdjustController);
+
         this._delegate = delegate;
 
         this._element = null;
@@ -36,203 +40,180 @@ WebInspector.DragToAdjustController = class DragToAdjustController
         this._tracksMouseClickAndDrag = false;
     }
 
-    // Public
-
-    get element()
-    {
-        return this._element;
-    }
-
-    set element(element)
-    {
-        this._element = element;
-    }
-
-    get enabled()
-    {
-        return this._enabled;
-    }
-
-    set enabled(enabled)
-    {
-        if (this._enabled === enabled)
-            return;
-
-        if (enabled) {
-            this._element.addEventListener("mouseenter", this);
-            this._element.addEventListener("mouseleave", this);
-        } else {
-            this._element.removeEventListener("mouseenter", this);
-            this._element.removeEventListener("mouseleave", this);
-        }
-    }
-
-    get active()
-    {
-        return this._active;
-    }
-
-    set active(active)
-    {
-        if (!this._element)
-            return;
-
-        if (this._active === active)
-            return;
-
-        if (active) {
-            WebInspector.notifications.addEventListener(WebInspector.Notification.GlobalModifierKeysDidChange, this._modifiersDidChange, this);
-            this._element.addEventListener("mousemove", this);
-        } else {
-            WebInspector.notifications.removeEventListener(WebInspector.Notification.GlobalModifierKeysDidChange, this._modifiersDidChange, this);
-            this._element.removeEventListener("mousemove", this);
+    _createClass(DragToAdjustController, [{
+        key: "reset",
+        value: function reset() {
             this._setTracksMouseClickAndDrag(false);
-        }
-
-        this._active = active;
-
-        if (this._delegate && typeof this._delegate.dragToAdjustControllerActiveStateChanged === "function")
-            this._delegate.dragToAdjustControllerActiveStateChanged(this);
-    }
-
-    reset()
-    {
-        this._setTracksMouseClickAndDrag(false);
-        this._element.classList.remove(WebInspector.DragToAdjustController.StyleClassName);
-
-        if (this._delegate && typeof this._delegate.dragToAdjustControllerDidReset === "function")
-            this._delegate.dragToAdjustControllerDidReset(this);
-    }
-
-    // Protected
-
-    handleEvent(event)
-    {
-        switch(event.type) {
-        case "mouseenter":
-            if (!this._dragging) {
-                if (this._delegate && typeof this._delegate.dragToAdjustControllerCanBeActivated === "function")
-                    this.active = this._delegate.dragToAdjustControllerCanBeActivated(this);
-                else
-                    this.active = true;
-            }
-            break;
-        case "mouseleave":
-            if (!this._dragging)
-                this.active = false;
-            break;
-        case "mousemove":
-            if (this._dragging)
-                this._mouseWasDragged(event);
-            else
-                this._mouseMoved(event);
-            break;
-        case "mousedown":
-            this._mouseWasPressed(event);
-            break;
-        case "mouseup":
-            this._mouseWasReleased(event);
-            break;
-        case "contextmenu":
-            event.preventDefault();
-            break;
-        }
-    }
-
-    // Private
-
-    _setDragging(dragging)
-    {
-        if (this._dragging === dragging)
-            return;
-
-        console.assert(window.event);
-        if (dragging)
-            WebInspector.elementDragStart(this._element, this, this, window.event, "col-resize", window);
-        else
-            WebInspector.elementDragEnd(window.event);
-
-        this._dragging = dragging;
-    }
-
-    _setTracksMouseClickAndDrag(tracksMouseClickAndDrag)
-    {
-        if (this._tracksMouseClickAndDrag === tracksMouseClickAndDrag)
-            return;
-
-        if (tracksMouseClickAndDrag) {
-            this._element.classList.add(WebInspector.DragToAdjustController.StyleClassName);
-            window.addEventListener("mousedown", this, true);
-            window.addEventListener("contextmenu", this, true);
-        } else {
             this._element.classList.remove(WebInspector.DragToAdjustController.StyleClassName);
-            window.removeEventListener("mousedown", this, true);
-            window.removeEventListener("contextmenu", this, true);
-            this._setDragging(false);
+
+            if (this._delegate && typeof this._delegate.dragToAdjustControllerDidReset === "function") this._delegate.dragToAdjustControllerDidReset(this);
         }
+    }, {
+        key: "handleEvent",
 
-        this._tracksMouseClickAndDrag = tracksMouseClickAndDrag;
-    }
+        // Protected
 
-    _modifiersDidChange(event)
-    {
-        var canBeAdjusted = WebInspector.modifierKeys.altKey;
-        if (canBeAdjusted && this._delegate && typeof this._delegate.dragToAdjustControllerCanBeAdjusted === "function")
-            canBeAdjusted = this._delegate.dragToAdjustControllerCanBeAdjusted(this);
+        value: function handleEvent(event) {
+            switch (event.type) {
+                case "mouseenter":
+                    if (!this._dragging) {
+                        if (this._delegate && typeof this._delegate.dragToAdjustControllerCanBeActivated === "function") this.active = this._delegate.dragToAdjustControllerCanBeActivated(this);else this.active = true;
+                    }
+                    break;
+                case "mouseleave":
+                    if (!this._dragging) this.active = false;
+                    break;
+                case "mousemove":
+                    if (this._dragging) this._mouseWasDragged(event);else this._mouseMoved(event);
+                    break;
+                case "mousedown":
+                    this._mouseWasPressed(event);
+                    break;
+                case "mouseup":
+                    this._mouseWasReleased(event);
+                    break;
+                case "contextmenu":
+                    event.preventDefault();
+                    break;
+            }
+        }
+    }, {
+        key: "_setDragging",
 
-        this._setTracksMouseClickAndDrag(canBeAdjusted);
-    }
+        // Private
 
-    _mouseMoved(event)
-    {
-        var canBeAdjusted = event.altKey;
-        if (canBeAdjusted && this._delegate && typeof this._delegate.dragToAdjustControllerCanAdjustObjectAtPoint === "function")
-            canBeAdjusted = this._delegate.dragToAdjustControllerCanAdjustObjectAtPoint(this, WebInspector.Point.fromEvent(event));
+        value: function _setDragging(dragging) {
+            if (this._dragging === dragging) return;
 
-        this._setTracksMouseClickAndDrag(canBeAdjusted);
-    }
+            console.assert(window.event);
+            if (dragging) WebInspector.elementDragStart(this._element, this, this, window.event, "col-resize", window);else WebInspector.elementDragEnd(window.event);
 
-    _mouseWasPressed(event)
-    {
-        this._lastX = event.screenX;
+            this._dragging = dragging;
+        }
+    }, {
+        key: "_setTracksMouseClickAndDrag",
+        value: function _setTracksMouseClickAndDrag(tracksMouseClickAndDrag) {
+            if (this._tracksMouseClickAndDrag === tracksMouseClickAndDrag) return;
 
-        this._setDragging(true);
+            if (tracksMouseClickAndDrag) {
+                this._element.classList.add(WebInspector.DragToAdjustController.StyleClassName);
+                window.addEventListener("mousedown", this, true);
+                window.addEventListener("contextmenu", this, true);
+            } else {
+                this._element.classList.remove(WebInspector.DragToAdjustController.StyleClassName);
+                window.removeEventListener("mousedown", this, true);
+                window.removeEventListener("contextmenu", this, true);
+                this._setDragging(false);
+            }
 
-        event.preventDefault();
-        event.stopPropagation();
-    }
+            this._tracksMouseClickAndDrag = tracksMouseClickAndDrag;
+        }
+    }, {
+        key: "_modifiersDidChange",
+        value: function _modifiersDidChange(event) {
+            var canBeAdjusted = WebInspector.modifierKeys.altKey;
+            if (canBeAdjusted && this._delegate && typeof this._delegate.dragToAdjustControllerCanBeAdjusted === "function") canBeAdjusted = this._delegate.dragToAdjustControllerCanBeAdjusted(this);
 
-    _mouseWasDragged(event)
-    {
-        var x = event.screenX;
-        var amount = x - this._lastX;
+            this._setTracksMouseClickAndDrag(canBeAdjusted);
+        }
+    }, {
+        key: "_mouseMoved",
+        value: function _mouseMoved(event) {
+            var canBeAdjusted = event.altKey;
+            if (canBeAdjusted && this._delegate && typeof this._delegate.dragToAdjustControllerCanAdjustObjectAtPoint === "function") canBeAdjusted = this._delegate.dragToAdjustControllerCanAdjustObjectAtPoint(this, WebInspector.Point.fromEvent(event));
 
-        if (Math.abs(amount) < 1)
-            return;
+            this._setTracksMouseClickAndDrag(canBeAdjusted);
+        }
+    }, {
+        key: "_mouseWasPressed",
+        value: function _mouseWasPressed(event) {
+            this._lastX = event.screenX;
 
-        this._lastX = x;
+            this._setDragging(true);
 
-        if (event.ctrlKey)
-            amount /= 10;
-        else if (event.shiftKey)
-            amount *= 10;
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }, {
+        key: "_mouseWasDragged",
+        value: function _mouseWasDragged(event) {
+            var x = event.screenX;
+            var amount = x - this._lastX;
 
-        if (this._delegate && typeof this._delegate.dragToAdjustControllerWasAdjustedByAmount === "function")
-            this._delegate.dragToAdjustControllerWasAdjustedByAmount(this, amount);
+            if (Math.abs(amount) < 1) return;
 
-        event.preventDefault();
-        event.stopPropagation();
-    }
+            this._lastX = x;
 
-    _mouseWasReleased(event)
-    {
-        this._setDragging(false);
+            if (event.ctrlKey) amount /= 10;else if (event.shiftKey) amount *= 10;
 
-        event.preventDefault();
-        event.stopPropagation();
+            if (this._delegate && typeof this._delegate.dragToAdjustControllerWasAdjustedByAmount === "function") this._delegate.dragToAdjustControllerWasAdjustedByAmount(this, amount);
 
-        this.reset();
-    }
-};
+            event.preventDefault();
+            event.stopPropagation();
+        }
+    }, {
+        key: "_mouseWasReleased",
+        value: function _mouseWasReleased(event) {
+            this._setDragging(false);
+
+            event.preventDefault();
+            event.stopPropagation();
+
+            this.reset();
+        }
+    }, {
+        key: "element",
+
+        // Public
+
+        get: function () {
+            return this._element;
+        },
+        set: function (element) {
+            this._element = element;
+        }
+    }, {
+        key: "enabled",
+        get: function () {
+            return this._enabled;
+        },
+        set: function (enabled) {
+            if (this._enabled === enabled) return;
+
+            if (enabled) {
+                this._element.addEventListener("mouseenter", this);
+                this._element.addEventListener("mouseleave", this);
+            } else {
+                this._element.removeEventListener("mouseenter", this);
+                this._element.removeEventListener("mouseleave", this);
+            }
+        }
+    }, {
+        key: "active",
+        get: function () {
+            return this._active;
+        },
+        set: function (active) {
+            if (!this._element) return;
+
+            if (this._active === active) return;
+
+            if (active) {
+                WebInspector.notifications.addEventListener(WebInspector.Notification.GlobalModifierKeysDidChange, this._modifiersDidChange, this);
+                this._element.addEventListener("mousemove", this);
+            } else {
+                WebInspector.notifications.removeEventListener(WebInspector.Notification.GlobalModifierKeysDidChange, this._modifiersDidChange, this);
+                this._element.removeEventListener("mousemove", this);
+                this._setTracksMouseClickAndDrag(false);
+            }
+
+            this._active = active;
+
+            if (this._delegate && typeof this._delegate.dragToAdjustControllerActiveStateChanged === "function") this._delegate.dragToAdjustControllerActiveStateChanged(this);
+        }
+    }]);
+
+    return DragToAdjustController;
+})();
 
 WebInspector.DragToAdjustController.StyleClassName = "drag-to-adjust";

@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ConsolePrompt = function(delegate, mimeType, element)
-{
+WebInspector.ConsolePrompt = function (delegate, mimeType, element) {
     // FIXME: Convert this to a WebInspector.Object subclass, and call super().
     // WebInspector.Object.call(this);
 
@@ -66,98 +65,36 @@ WebInspector.ConsolePrompt = function(delegate, mimeType, element)
 WebInspector.ConsolePrompt.StyleClassName = "console-prompt";
 WebInspector.ConsolePrompt.MaximumHistorySize = 30;
 
-WebInspector.ConsolePrompt.prototype = {
+WebInspector.ConsolePrompt.prototype = Object.defineProperties({
     constructor: WebInspector.ConsolePrompt,
 
-    // Public
-
-    get element()
-    {
-        return this._element;
-    },
-
-    get delegate()
-    {
-        return this._delegate;
-    },
-
-    set delegate(delegate)
-    {
-        this._delegate = delegate || null;
-    },
-
-    set escapeKeyHandlerWhenEmpty(handler)
-    {
-        this._escapeKeyHandlerWhenEmpty = handler;
-    },
-
-    get text()
-    {
-        return this._codeMirror.getValue();
-    },
-
-    set text(text)
-    {
-        this._codeMirror.setValue(text || "");
-        this._codeMirror.clearHistory();
-        this._codeMirror.markClean();
-    },
-
-    get history()
-    {
-        this._history[this._historyIndex] = this._historyEntryForCurrentText();
-        return this._history;
-    },
-
-    set history(history)
-    {
-        this._history = history instanceof Array ? history.slice(0, WebInspector.ConsolePrompt.MaximumHistorySize) : [{}];
-        this._historyIndex = 0;
-        this._restoreHistoryEntry(0);
-    },
-
-    get focused()
-    {
-        return this._codeMirror.getWrapperElement().classList.contains("CodeMirror-focused");
-    },
-
-    focus: function()
-    {
+    focus: function focus() {
         this._codeMirror.focus();
     },
 
-    shown: function()
-    {
+    shown: function shown() {
         this._codeMirror.refresh();
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         this._codeMirror.refresh();
     },
 
-    updateCompletions: function(completions, implicitSuffix)
-    {
+    updateCompletions: function updateCompletions(completions, implicitSuffix) {
         this._completionController.updateCompletions(completions, implicitSuffix);
     },
 
-    pushHistoryItem: function(text)
-    {
-        this._commitHistoryEntry({text});
+    pushHistoryItem: function pushHistoryItem(text) {
+        this._commitHistoryEntry({ text: text });
     },
 
     // Protected
 
-    completionControllerCompletionsNeeded: function(completionController, prefix, defaultCompletions, base, suffix, forced)
-    {
-        if (this.delegate && typeof this.delegate.consolePromptCompletionsNeeded === "function")
-            this.delegate.consolePromptCompletionsNeeded(this, defaultCompletions, base, prefix, suffix, forced);
-        else
-            this._completionController.updateCompletions(defaultCompletions);
+    completionControllerCompletionsNeeded: function completionControllerCompletionsNeeded(completionController, prefix, defaultCompletions, base, suffix, forced) {
+        if (this.delegate && typeof this.delegate.consolePromptCompletionsNeeded === "function") this.delegate.consolePromptCompletionsNeeded(this, defaultCompletions, base, prefix, suffix, forced);else this._completionController.updateCompletions(defaultCompletions);
     },
 
-    completionControllerShouldAllowEscapeCompletion: function(completionController)
-    {
+    completionControllerShouldAllowEscapeCompletion: function completionControllerShouldAllowEscapeCompletion(completionController) {
         // Only allow escape to complete if there is text in the prompt. Otherwise allow it to pass through
         // so escape to toggle the quick console still works.
         return !!this.text;
@@ -165,29 +102,22 @@ WebInspector.ConsolePrompt.prototype = {
 
     // Private
 
-    _handleEscapeKey: function(codeMirror)
-    {
-        if (this.text)
-            return CodeMirror.Pass;
+    _handleEscapeKey: function _handleEscapeKey(codeMirror) {
+        if (this.text) return CodeMirror.Pass;
 
-        if (!this._escapeKeyHandlerWhenEmpty)
-            return CodeMirror.Pass;
+        if (!this._escapeKeyHandlerWhenEmpty) return CodeMirror.Pass;
 
         this._escapeKeyHandlerWhenEmpty();
     },
 
-    _handlePreviousKey: function(codeMirror)
-    {
-        if (this._codeMirror.somethingSelected())
-            return CodeMirror.Pass;
+    _handlePreviousKey: function _handlePreviousKey(codeMirror) {
+        if (this._codeMirror.somethingSelected()) return CodeMirror.Pass;
 
         // Pass unless we are on the first line.
-        if (this._codeMirror.getCursor().line)
-            return CodeMirror.Pass;
+        if (this._codeMirror.getCursor().line) return CodeMirror.Pass;
 
         var historyEntry = this._history[this._historyIndex + 1];
-        if (!historyEntry)
-            return CodeMirror.Pass;
+        if (!historyEntry) return CodeMirror.Pass;
 
         this._rememberCurrentTextInHistory();
 
@@ -196,18 +126,14 @@ WebInspector.ConsolePrompt.prototype = {
         this._restoreHistoryEntry(this._historyIndex);
     },
 
-    _handleNextKey: function(codeMirror)
-    {
-        if (this._codeMirror.somethingSelected())
-            return CodeMirror.Pass;
+    _handleNextKey: function _handleNextKey(codeMirror) {
+        if (this._codeMirror.somethingSelected()) return CodeMirror.Pass;
 
         // Pass unless we are on the last line.
-        if (this._codeMirror.getCursor().line !== this._codeMirror.lastLine())
-            return CodeMirror.Pass;
+        if (this._codeMirror.getCursor().line !== this._codeMirror.lastLine()) return CodeMirror.Pass;
 
         var historyEntry = this._history[this._historyIndex - 1];
-        if (!historyEntry)
-            return CodeMirror.Pass;
+        if (!historyEntry) return CodeMirror.Pass;
 
         this._rememberCurrentTextInHistory();
 
@@ -216,32 +142,27 @@ WebInspector.ConsolePrompt.prototype = {
         this._restoreHistoryEntry(this._historyIndex);
     },
 
-    _handleEnterKey: function(codeMirror, forceCommit)
-    {
+    _handleEnterKey: function _handleEnterKey(codeMirror, forceCommit) {
         var currentText = this.text;
 
         // Always do nothing when there is just whitespace.
-        if (!currentText.trim())
-            return;
+        if (!currentText.trim()) return;
 
         var cursor = this._codeMirror.getCursor();
         var lastLine = this._codeMirror.lastLine();
         var lastLineLength = this._codeMirror.getLine(lastLine).length;
-        var cursorIsAtLastPosition = positionsEqual(cursor, {line: lastLine, ch: lastLineLength});
+        var cursorIsAtLastPosition = positionsEqual(cursor, { line: lastLine, ch: lastLineLength });
 
-        function positionsEqual(a, b)
-        {
+        function positionsEqual(a, b) {
             console.assert(a);
             console.assert(b);
             return a.line === b.line && a.ch === b.ch;
         }
 
-        function commitTextOrInsertNewLine(commit)
-        {
+        function commitTextOrInsertNewLine(commit) {
             if (!commit) {
                 // Only insert a new line if the previous cursor and the current cursor are in the same position.
-                if (positionsEqual(cursor, this._codeMirror.getCursor()))
-                    CodeMirror.commands.newlineAndIndent(this._codeMirror);
+                if (positionsEqual(cursor, this._codeMirror.getCursor())) CodeMirror.commands.newlineAndIndent(this._codeMirror);
                 return;
             }
 
@@ -250,11 +171,9 @@ WebInspector.ConsolePrompt.prototype = {
             this._codeMirror.setValue("");
             this._codeMirror.clearHistory();
 
-            if (this.delegate && typeof this.delegate.consolePromptHistoryDidChange === "function")
-                this.delegate.consolePromptHistoryDidChange(this);
+            if (this.delegate && typeof this.delegate.consolePromptHistoryDidChange === "function") this.delegate.consolePromptHistoryDidChange(this);
 
-            if (this.delegate && typeof this.delegate.consolePromptTextCommitted === "function")
-                this.delegate.consolePromptTextCommitted(this, currentText);
+            if (this.delegate && typeof this.delegate.consolePromptTextCommitted === "function") this.delegate.consolePromptTextCommitted(this, currentText);
         }
 
         if (!forceCommit && this.delegate && typeof this.delegate.consolePromptShouldCommitText === "function") {
@@ -265,8 +184,7 @@ WebInspector.ConsolePrompt.prototype = {
         commitTextOrInsertNewLine.call(this, true);
     },
 
-    _commitHistoryEntry: function(historyEntry)
-    {
+    _commitHistoryEntry: function _commitHistoryEntry(historyEntry) {
         // Replace the previous entry if it does not have text or if the text is the same.
         if (this._history[1] && (!this._history[1].text || this._history[1].text === historyEntry.text)) {
             this._history[1] = historyEntry;
@@ -277,44 +195,93 @@ WebInspector.ConsolePrompt.prototype = {
             this._history.unshift({});
 
             // Trim the history length if needed.
-            if (this._history.length > WebInspector.ConsolePrompt.MaximumHistorySize)
-                this._history = this._history.slice(0, WebInspector.ConsolePrompt.MaximumHistorySize);
+            if (this._history.length > WebInspector.ConsolePrompt.MaximumHistorySize) this._history = this._history.slice(0, WebInspector.ConsolePrompt.MaximumHistorySize);
         }
 
         this._historyIndex = 0;
     },
 
-    _handleCommandEnterKey: function(codeMirror)
-    {
+    _handleCommandEnterKey: function _handleCommandEnterKey(codeMirror) {
         this._handleEnterKey(codeMirror, true);
     },
 
-    _restoreHistoryEntry: function(index)
-    {
+    _restoreHistoryEntry: function _restoreHistoryEntry(index) {
         var historyEntry = this._history[index];
 
         this._codeMirror.setValue(historyEntry.text || "");
 
-        if (historyEntry.undoHistory)
-            this._codeMirror.setHistory(historyEntry.undoHistory);
-        else
-            this._codeMirror.clearHistory();
+        if (historyEntry.undoHistory) this._codeMirror.setHistory(historyEntry.undoHistory);else this._codeMirror.clearHistory();
 
-        this._codeMirror.setCursor(historyEntry.cursor || {line: 0});
+        this._codeMirror.setCursor(historyEntry.cursor || { line: 0 });
     },
 
-    _historyEntryForCurrentText: function()
-    {
-        return {text: this.text, undoHistory: this._codeMirror.getHistory(), cursor: this._codeMirror.getCursor()};
+    _historyEntryForCurrentText: function _historyEntryForCurrentText() {
+        return { text: this.text, undoHistory: this._codeMirror.getHistory(), cursor: this._codeMirror.getCursor() };
     },
 
-    _rememberCurrentTextInHistory: function()
-    {
+    _rememberCurrentTextInHistory: function _rememberCurrentTextInHistory() {
         this._history[this._historyIndex] = this._historyEntryForCurrentText();
 
-        if (this.delegate && typeof this.delegate.consolePromptHistoryDidChange === "function")
-            this.delegate.consolePromptHistoryDidChange(this);
+        if (this.delegate && typeof this.delegate.consolePromptHistoryDidChange === "function") this.delegate.consolePromptHistoryDidChange(this);
     }
-};
+}, {
+    element: { // Public
+
+        get: function () {
+            return this._element;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    delegate: {
+        get: function () {
+            return this._delegate;
+        },
+        set: function (delegate) {
+            this._delegate = delegate || null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    escapeKeyHandlerWhenEmpty: {
+        set: function (handler) {
+            this._escapeKeyHandlerWhenEmpty = handler;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    text: {
+        get: function () {
+            return this._codeMirror.getValue();
+        },
+        set: function (text) {
+            this._codeMirror.setValue(text || "");
+            this._codeMirror.clearHistory();
+            this._codeMirror.markClean();
+        },
+        configurable: true,
+        enumerable: true
+    },
+    history: {
+        get: function () {
+            this._history[this._historyIndex] = this._historyEntryForCurrentText();
+            return this._history;
+        },
+        set: function (history) {
+            this._history = history instanceof Array ? history.slice(0, WebInspector.ConsolePrompt.MaximumHistorySize) : [{}];
+            this._historyIndex = 0;
+            this._restoreHistoryEntry(0);
+        },
+        configurable: true,
+        enumerable: true
+    },
+    focused: {
+        get: function () {
+            return this._codeMirror.getWrapperElement().classList.contains("CodeMirror-focused");
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ConsolePrompt.prototype.__proto__ = WebInspector.Object.prototype;

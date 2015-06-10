@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.FilterBarButton = class FilterBarButton extends WebInspector.ActivateButtonNavigationItem
-{
-    constructor(identifier, filterFunction, activatedByDefault, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss, role)
-    {
-        super(identifier, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss, role);
+WebInspector.FilterBarButton = (function (_WebInspector$ActivateButtonNavigationItem) {
+    function FilterBarButton(identifier, filterFunction, activatedByDefault, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss, role) {
+        _classCallCheck(this, FilterBarButton);
+
+        _get(Object.getPrototypeOf(FilterBarButton.prototype), "constructor", this).call(this, identifier, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss, role);
 
         this._filterFunction = filterFunction;
 
@@ -36,20 +44,27 @@ WebInspector.FilterBarButton = class FilterBarButton extends WebInspector.Activa
         this.activated = !!this._activatedSetting.value;
     }
 
-    // Public
+    _inherits(FilterBarButton, _WebInspector$ActivateButtonNavigationItem);
 
-    get filterFunction()
-    {
-        return this._filterFunction;
-    }
+    _createClass(FilterBarButton, [{
+        key: "toggle",
+        value: function toggle() {
+            this.activated = !this.activated;
+            this._activatedSetting.value = this.activated;
+            this.dispatchEventToListeners(WebInspector.FilterBarButton.Event.ActivatedStateToggled);
+        }
+    }, {
+        key: "filterFunction",
 
-    toggle()
-    {
-        this.activated = !this.activated;
-        this._activatedSetting.value = this.activated;
-        this.dispatchEventToListeners(WebInspector.FilterBarButton.Event.ActivatedStateToggled);
-    }
-};
+        // Public
+
+        get: function () {
+            return this._filterFunction;
+        }
+    }]);
+
+    return FilterBarButton;
+})(WebInspector.ActivateButtonNavigationItem);
 
 WebInspector.FilterBarButton.Event = {
     ActivatedStateToggled: "filter-bar-activated-state-toggled"

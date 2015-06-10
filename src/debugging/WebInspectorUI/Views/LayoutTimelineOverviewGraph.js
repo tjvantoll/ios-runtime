@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.LayoutTimelineOverviewGraph = function(timeline)
-{
+WebInspector.LayoutTimelineOverviewGraph = function (timeline) {
     WebInspector.TimelineOverviewGraph.call(this, timeline);
 
     this.element.classList.add(WebInspector.LayoutTimelineOverviewGraph.StyleClassName);
@@ -45,35 +44,29 @@ WebInspector.LayoutTimelineOverviewGraph.prototype = {
 
     // Public
 
-    reset: function()
-    {
+    reset: function reset() {
         WebInspector.TimelineOverviewGraph.prototype.reset.call(this);
 
-        this._timelineRecordBarMap = new Map;
+        this._timelineRecordBarMap = new Map();
 
         this.element.removeChildren();
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         WebInspector.TimelineOverviewGraph.prototype.updateLayout.call(this);
 
         var secondsPerPixel = this.timelineOverview.secondsPerPixel;
 
         var recordBarIndex = 0;
 
-        function createBar(records, renderMode)
-        {
+        function createBar(records, renderMode) {
             var timelineRecordBar = this._timelineRecordBars[recordBarIndex];
-            if (!timelineRecordBar)
-                timelineRecordBar = this._timelineRecordBars[recordBarIndex] = new WebInspector.TimelineRecordBar(records, renderMode);
-            else {
+            if (!timelineRecordBar) timelineRecordBar = this._timelineRecordBars[recordBarIndex] = new WebInspector.TimelineRecordBar(records, renderMode);else {
                 timelineRecordBar.renderMode = renderMode;
                 timelineRecordBar.records = records;
             }
             timelineRecordBar.refresh(this);
-            if (!timelineRecordBar.element.parentNode)
-                this.element.appendChild(timelineRecordBar.element);
+            if (!timelineRecordBar.element.parentNode) this.element.appendChild(timelineRecordBar.element);
             ++recordBarIndex;
         }
 
@@ -88,8 +81,7 @@ WebInspector.LayoutTimelineOverviewGraph.prototype = {
 
     // Private
 
-    _layoutTimelineRecordAdded: function(event)
-    {
+    _layoutTimelineRecordAdded: function _layoutTimelineRecordAdded(event) {
         this.needsLayout();
     }
 };

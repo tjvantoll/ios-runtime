@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CSSProperty = class CSSProperty extends WebInspector.Object
-{
-    constructor(index, text, name, value, priority, enabled, overridden, implicit, anonymous, valid, styleSheetTextRange, styleDeclarationTextRange)
-    {
-        super();
+WebInspector.CSSProperty = (function (_WebInspector$Object) {
+    function CSSProperty(index, text, name, value, priority, enabled, overridden, implicit, anonymous, valid, styleSheetTextRange, styleDeclarationTextRange) {
+        _classCallCheck(this, CSSProperty);
+
+        _get(Object.getPrototypeOf(CSSProperty.prototype), "constructor", this).call(this);
 
         this._ownerStyle = null;
         this._index = index;
@@ -35,250 +43,229 @@ WebInspector.CSSProperty = class CSSProperty extends WebInspector.Object
         this.update(text, name, value, priority, enabled, overridden, implicit, anonymous, valid, styleSheetTextRange, styleDeclarationTextRange, true);
     }
 
-    // Public
+    _inherits(CSSProperty, _WebInspector$Object);
 
-    get ownerStyle()
-    {
-        return this._ownerStyle;
-    }
+    _createClass(CSSProperty, [{
+        key: "update",
+        value: function update(text, name, value, priority, enabled, overridden, implicit, anonymous, valid, styleSheetTextRange, styleDeclarationTextRange, dontFireEvents) {
+            text = text || "";
+            name = name || "";
+            value = value || "";
+            priority = priority || "";
+            enabled = enabled || false;
+            overridden = overridden || false;
+            implicit = implicit || false;
+            anonymous = anonymous || false;
+            valid = valid || false;
 
-    set ownerStyle(ownerStyle)
-    {
-        this._ownerStyle = ownerStyle || null;
-    }
+            var changed = false;
 
-    get index()
-    {
-        return this._index;
-    }
+            if (!dontFireEvents) {
+                changed = this._name !== name || this._value !== value || this._priority !== priority || this._enabled !== enabled || this._implicit !== implicit || this._anonymous !== anonymous || this._valid !== valid;
+            }
 
-    set index(index)
-    {
-        this._index = index;
-    }
+            // Use the setter for overridden if we want to fire events since the
+            // OverriddenStatusChanged event coalesces changes before it fires.
+            if (!dontFireEvents) this.overridden = overridden;else this._overridden = overridden;
 
-    update(text, name, value, priority, enabled, overridden, implicit, anonymous, valid, styleSheetTextRange, styleDeclarationTextRange, dontFireEvents)
-    {
-        text = text || "";
-        name = name || "";
-        value = value || "";
-        priority = priority || "";
-        enabled = enabled || false;
-        overridden = overridden || false;
-        implicit = implicit || false;
-        anonymous = anonymous || false;
-        valid = valid || false;
+            this._text = text;
+            this._name = name;
+            this._value = value;
+            this._priority = priority;
+            this._enabled = enabled;
+            this._implicit = implicit;
+            this._anonymous = anonymous;
+            this._inherited = name in WebInspector.CSSKeywordCompletions.InheritedProperties;
+            this._valid = valid;
+            this._styleSheetTextRange = styleSheetTextRange || null;
 
-        var changed = false;
+            if (styleDeclarationTextRange) this._styleDeclarationTextRange = styleDeclarationTextRange;else delete this._styleDeclarationTextRange;
 
-        if (!dontFireEvents) {
-            changed = this._name !== name || this._value !== value || this._priority !== priority ||
-                this._enabled !== enabled || this._implicit !== implicit || this._anonymous !== anonymous || this._valid !== valid;
+            this._relatedShorthandProperty = null;
+            this._relatedLonghandProperties = [];
+
+            delete this._canonicalName;
+            delete this._hasOtherVendorNameOrKeyword;
+
+            if (changed) this.dispatchEventToListeners(WebInspector.CSSProperty.Event.Changed);
         }
+    }, {
+        key: "addRelatedLonghandProperty",
+        value: function addRelatedLonghandProperty(property) {
+            this._relatedLonghandProperties.push(property);
+        }
+    }, {
+        key: "clearRelatedLonghandProperties",
+        value: function clearRelatedLonghandProperties(property) {
+            this._relatedLonghandProperties = [];
+        }
+    }, {
+        key: "hasOtherVendorNameOrKeyword",
+        value: function hasOtherVendorNameOrKeyword() {
+            if ("_hasOtherVendorNameOrKeyword" in this) return this._hasOtherVendorNameOrKeyword;
 
-        // Use the setter for overridden if we want to fire events since the
-        // OverriddenStatusChanged event coalesces changes before it fires.
-        if (!dontFireEvents)
-            this.overridden = overridden;
-        else
+            this._hasOtherVendorNameOrKeyword = WebInspector.cssStyleManager.propertyNameHasOtherVendorPrefix(this.name) || WebInspector.cssStyleManager.propertyValueHasOtherVendorKeyword(this.value);
+
+            return this._hasOtherVendorNameOrKeyword;
+        }
+    }, {
+        key: "ownerStyle",
+
+        // Public
+
+        get: function () {
+            return this._ownerStyle;
+        },
+        set: function (ownerStyle) {
+            this._ownerStyle = ownerStyle || null;
+        }
+    }, {
+        key: "index",
+        get: function () {
+            return this._index;
+        },
+        set: function (index) {
+            this._index = index;
+        }
+    }, {
+        key: "synthesizedText",
+        get: function () {
+            var name = this.name;
+            if (!name) return "";
+
+            var priority = this.priority;
+            return name + ": " + this.value.trim() + (priority ? " !" + priority : "") + ";";
+        }
+    }, {
+        key: "text",
+        get: function () {
+            return this._text || this.synthesizedText;
+        }
+    }, {
+        key: "name",
+        get: function () {
+            return this._name;
+        }
+    }, {
+        key: "canonicalName",
+        get: function () {
+            if (this._canonicalName) return this._canonicalName;
+
+            this._canonicalName = WebInspector.cssStyleManager.canonicalNameForPropertyName(this.name);
+
+            return this._canonicalName;
+        }
+    }, {
+        key: "value",
+        get: function () {
+            return this._value;
+        }
+    }, {
+        key: "important",
+        get: function () {
+            return this.priority === "important";
+        }
+    }, {
+        key: "priority",
+        get: function () {
+            return this._priority;
+        }
+    }, {
+        key: "enabled",
+        get: function () {
+            return this._enabled && this._ownerStyle && (!isNaN(this._index) || this._ownerStyle.type === WebInspector.CSSStyleDeclaration.Type.Computed);
+        }
+    }, {
+        key: "overridden",
+        get: function () {
+            return this._overridden;
+        },
+        set: function (overridden) {
+            overridden = overridden || false;
+
+            if (this._overridden === overridden) return;
+
+            var previousOverridden = this._overridden;
+
             this._overridden = overridden;
 
-        this._text = text;
-        this._name = name;
-        this._value = value;
-        this._priority = priority;
-        this._enabled = enabled;
-        this._implicit = implicit;
-        this._anonymous = anonymous;
-        this._inherited = name in WebInspector.CSSKeywordCompletions.InheritedProperties;
-        this._valid = valid;
-        this._styleSheetTextRange = styleSheetTextRange || null;
+            if (this._overriddenStatusChangedTimeout) return;
 
-        if (styleDeclarationTextRange)
-            this._styleDeclarationTextRange = styleDeclarationTextRange;
-        else
-            delete this._styleDeclarationTextRange;
+            function delayed() {
+                delete this._overriddenStatusChangedTimeout;
 
-        this._relatedShorthandProperty = null;
-        this._relatedLonghandProperties = [];
+                if (this._overridden === previousOverridden) return;
 
-        delete this._canonicalName;
-        delete this._hasOtherVendorNameOrKeyword;
+                this.dispatchEventToListeners(WebInspector.CSSProperty.Event.OverriddenStatusChanged);
+            }
 
-        if (changed)
-            this.dispatchEventToListeners(WebInspector.CSSProperty.Event.Changed);
-    }
-
-    get synthesizedText()
-    {
-        var name = this.name;
-        if (!name)
-            return "";
-
-        var priority = this.priority;
-        return name + ": " + this.value.trim() + (priority ? " !" + priority : "") + ";";
-    }
-
-    get text()
-    {
-        return this._text || this.synthesizedText;
-    }
-
-    get name()
-    {
-        return this._name;
-    }
-
-    get canonicalName()
-    {
-        if (this._canonicalName)
-            return this._canonicalName;
-
-        this._canonicalName = WebInspector.cssStyleManager.canonicalNameForPropertyName(this.name);
-
-        return this._canonicalName;
-    }
-
-    get value()
-    {
-        return this._value;
-    }
-
-    get important()
-    {
-        return this.priority === "important";
-    }
-
-    get priority()
-    {
-        return this._priority;
-    }
-
-    get enabled()
-    {
-        return this._enabled && this._ownerStyle && (!isNaN(this._index) || this._ownerStyle.type === WebInspector.CSSStyleDeclaration.Type.Computed);
-    }
-
-    get overridden()
-    {
-        return this._overridden;
-    }
-
-    set overridden(overridden)
-    {
-        overridden = overridden || false;
-
-        if (this._overridden === overridden)
-            return;
-
-        var previousOverridden = this._overridden;
-
-        this._overridden = overridden;
-
-        if (this._overriddenStatusChangedTimeout)
-            return;
-
-        function delayed()
-        {
-            delete this._overriddenStatusChangedTimeout;
-
-            if (this._overridden === previousOverridden)
-                return;
-
-            this.dispatchEventToListeners(WebInspector.CSSProperty.Event.OverriddenStatusChanged);
+            this._overriddenStatusChangedTimeout = setTimeout(delayed.bind(this), 0);
         }
+    }, {
+        key: "implicit",
+        get: function () {
+            return this._implicit;
+        }
+    }, {
+        key: "anonymous",
+        get: function () {
+            return this._anonymous;
+        }
+    }, {
+        key: "inherited",
+        get: function () {
+            return this._inherited;
+        }
+    }, {
+        key: "valid",
+        get: function () {
+            return this._valid;
+        }
+    }, {
+        key: "styleSheetTextRange",
+        get: function () {
+            return this._styleSheetTextRange;
+        }
+    }, {
+        key: "styleDeclarationTextRange",
+        get: function () {
+            if ("_styleDeclarationTextRange" in this) return this._styleDeclarationTextRange;
 
-        this._overriddenStatusChangedTimeout = setTimeout(delayed.bind(this), 0);
-    }
+            if (!this._ownerStyle || !this._styleSheetTextRange) return null;
 
-    get implicit()
-    {
-        return this._implicit;
-    }
+            var styleTextRange = this._ownerStyle.styleSheetTextRange;
+            if (!styleTextRange) return null;
 
-    get anonymous()
-    {
-        return this._anonymous;
-    }
+            var startLine = this._styleSheetTextRange.startLine - styleTextRange.startLine;
+            var endLine = this._styleSheetTextRange.endLine - styleTextRange.startLine;
 
-    get inherited()
-    {
-        return this._inherited;
-    }
+            var startColumn = this._styleSheetTextRange.startColumn;
+            if (!startLine) startColumn -= styleTextRange.startColumn;
 
-    get valid()
-    {
-        return this._valid;
-    }
+            var endColumn = this._styleSheetTextRange.endColumn;
+            if (!endLine) endColumn -= styleTextRange.startColumn;
 
-    get styleSheetTextRange()
-    {
-        return this._styleSheetTextRange;
-    }
+            this._styleDeclarationTextRange = new WebInspector.TextRange(startLine, startColumn, endLine, endColumn);
 
-    get styleDeclarationTextRange()
-    {
-        if ("_styleDeclarationTextRange" in this)
             return this._styleDeclarationTextRange;
+        }
+    }, {
+        key: "relatedShorthandProperty",
+        get: function () {
+            return this._relatedShorthandProperty;
+        },
+        set: function (property) {
+            this._relatedShorthandProperty = property || null;
+        }
+    }, {
+        key: "relatedLonghandProperties",
+        get: function () {
+            return this._relatedLonghandProperties;
+        }
+    }]);
 
-        if (!this._ownerStyle || !this._styleSheetTextRange)
-            return null;
-
-        var styleTextRange = this._ownerStyle.styleSheetTextRange;
-        if (!styleTextRange)
-            return null;
-
-        var startLine = this._styleSheetTextRange.startLine - styleTextRange.startLine;
-        var endLine = this._styleSheetTextRange.endLine - styleTextRange.startLine;
-
-        var startColumn = this._styleSheetTextRange.startColumn;
-        if (!startLine)
-            startColumn -= styleTextRange.startColumn;
-
-        var endColumn = this._styleSheetTextRange.endColumn;
-        if (!endLine)
-            endColumn -= styleTextRange.startColumn;
-
-        this._styleDeclarationTextRange = new WebInspector.TextRange(startLine, startColumn, endLine, endColumn);
-
-        return this._styleDeclarationTextRange;
-    }
-
-    get relatedShorthandProperty()
-    {
-        return this._relatedShorthandProperty;
-    }
-
-    set relatedShorthandProperty(property)
-    {
-        this._relatedShorthandProperty = property || null;
-    }
-
-    get relatedLonghandProperties()
-    {
-        return this._relatedLonghandProperties;
-    }
-
-    addRelatedLonghandProperty(property)
-    {
-        this._relatedLonghandProperties.push(property);
-    }
-
-    clearRelatedLonghandProperties(property)
-    {
-        this._relatedLonghandProperties = [];
-    }
-
-    hasOtherVendorNameOrKeyword()
-    {
-        if ("_hasOtherVendorNameOrKeyword" in this)
-            return this._hasOtherVendorNameOrKeyword;
-
-        this._hasOtherVendorNameOrKeyword = WebInspector.cssStyleManager.propertyNameHasOtherVendorPrefix(this.name) || WebInspector.cssStyleManager.propertyValueHasOtherVendorKeyword(this.value);
-
-        return this._hasOtherVendorNameOrKeyword;
-    }
-};
+    return CSSProperty;
+})(WebInspector.Object);
 
 WebInspector.CSSProperty.Event = {
     Changed: "css-property-changed",

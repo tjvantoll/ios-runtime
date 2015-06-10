@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2009, 2010 Google Inc. All rights reserved.
  * Copyright (C) 2009 Joseph Pecoraro
@@ -30,690 +38,689 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMTreeManager = class DOMTreeManager extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.DOMTreeManager = (function (_WebInspector$Object) {
+    function DOMTreeManager() {
+        _classCallCheck(this, DOMTreeManager);
+
+        _get(Object.getPrototypeOf(DOMTreeManager.prototype), "constructor", this).call(this);
 
         this._idToDOMNode = {};
         this._document = null;
         this._attributeLoadNodeIds = {};
-        this._flows = new Map;
-        this._contentNodesToFlowsMap = new Map;
+        this._flows = new Map();
+        this._contentNodesToFlowsMap = new Map();
         this._restoreSelectedNodeIsAllowed = true;
 
         WebInspector.Frame.addEventListener(WebInspector.Frame.Event.MainResourceDidChange, this._mainResourceDidChange, this);
     }
 
-    // Static
+    _inherits(DOMTreeManager, _WebInspector$Object);
 
-    static _flowPayloadHashKey(flowPayload)
-    {
-        // Use the flow node id, to avoid collisions when we change main document id.
-        return flowPayload.documentNodeId + ":" + flowPayload.name;
-    }
+    _createClass(DOMTreeManager, [{
+        key: "requestDocument",
 
-    // Public
+        // Public
 
-    requestDocument(callback)
-    {
-        if (this._document) {
-            if (callback)
-                callback(this._document);
-            return;
-        }
-
-        if (this._pendingDocumentRequestCallbacks) {
-            this._pendingDocumentRequestCallbacks.push(callback);
-            return;
-        }
-
-        this._pendingDocumentRequestCallbacks = [callback];
-
-        function onDocumentAvailable(error, root)
-        {
-            if (!error)
-                this._setDocument(root);
-
-            for (var i = 0; i < this._pendingDocumentRequestCallbacks.length; ++i) {
-                var callback = this._pendingDocumentRequestCallbacks[i];
-                if (callback)
-                    callback(this._document);
-            }
-            delete this._pendingDocumentRequestCallbacks;
-        }
-
-        DOMAgent.getDocument(onDocumentAvailable.bind(this));
-    }
-
-    pushNodeToFrontend(objectId, callback)
-    {
-        this._dispatchWhenDocumentAvailable(DOMAgent.requestNode.bind(DOMAgent, objectId), callback);
-    }
-
-    pushNodeByPathToFrontend(path, callback)
-    {
-        var callbackCast = callback;
-        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByPathToFrontend.bind(DOMAgent, path), callbackCast);
-    }
-
-    // Private
-
-    _wrapClientCallback(callback)
-    {
-        if (!callback)
-            return;
-        return function(error, result) {
-            if (error)
-                console.error("Error during DOMAgent operation: " + error);
-            callback(error ? null : result);
-        };
-    }
-
-    _dispatchWhenDocumentAvailable(func, callback)
-    {
-        var callbackWrapper = this._wrapClientCallback(callback);
-
-        function onDocumentAvailable()
-        {
-            if (this._document)
-                func(callbackWrapper);
-            else {
-                if (callbackWrapper)
-                    callbackWrapper("No document");
-            }
-        }
-        this.requestDocument(onDocumentAvailable.bind(this));
-    }
-
-    _attributeModified(nodeId, name, value)
-    {
-        var node = this._idToDOMNode[nodeId];
-        if (!node)
-            return;
-        node._setAttribute(name, value);
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.AttributeModified, {node, name});
-        node.dispatchEventToListeners(WebInspector.DOMNode.Event.AttributeModified, {name});
-    }
-
-    _attributeRemoved(nodeId, name)
-    {
-        var node = this._idToDOMNode[nodeId];
-        if (!node)
-            return;
-        node._removeAttribute(name);
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.AttributeRemoved, {node, name});
-        node.dispatchEventToListeners(WebInspector.DOMNode.Event.AttributeRemoved, {name});
-    }
-
-    _inlineStyleInvalidated(nodeIds)
-    {
-        for (var i = 0; i < nodeIds.length; ++i)
-            this._attributeLoadNodeIds[nodeIds[i]] = true;
-        if ("_loadNodeAttributesTimeout" in this)
-            return;
-        this._loadNodeAttributesTimeout = setTimeout(this._loadNodeAttributes.bind(this), 0);
-    }
-
-    _loadNodeAttributes()
-    {
-        function callback(nodeId, error, attributes)
-        {
-            if (error) {
-                console.error("Error during DOMAgent operation: " + error);
+        value: function requestDocument(callback) {
+            if (this._document) {
+                if (callback) callback(this._document);
                 return;
             }
+
+            if (this._pendingDocumentRequestCallbacks) {
+                this._pendingDocumentRequestCallbacks.push(callback);
+                return;
+            }
+
+            this._pendingDocumentRequestCallbacks = [callback];
+
+            function onDocumentAvailable(error, root) {
+                if (!error) this._setDocument(root);
+
+                for (var i = 0; i < this._pendingDocumentRequestCallbacks.length; ++i) {
+                    var callback = this._pendingDocumentRequestCallbacks[i];
+                    if (callback) callback(this._document);
+                }
+                delete this._pendingDocumentRequestCallbacks;
+            }
+
+            DOMAgent.getDocument(onDocumentAvailable.bind(this));
+        }
+    }, {
+        key: "pushNodeToFrontend",
+        value: function pushNodeToFrontend(objectId, callback) {
+            this._dispatchWhenDocumentAvailable(DOMAgent.requestNode.bind(DOMAgent, objectId), callback);
+        }
+    }, {
+        key: "pushNodeByPathToFrontend",
+        value: function pushNodeByPathToFrontend(path, callback) {
+            var callbackCast = callback;
+            this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByPathToFrontend.bind(DOMAgent, path), callbackCast);
+        }
+    }, {
+        key: "_wrapClientCallback",
+
+        // Private
+
+        value: function _wrapClientCallback(callback) {
+            if (!callback) return;
+            return function (error, result) {
+                if (error) console.error("Error during DOMAgent operation: " + error);
+                callback(error ? null : result);
+            };
+        }
+    }, {
+        key: "_dispatchWhenDocumentAvailable",
+        value: function _dispatchWhenDocumentAvailable(func, callback) {
+            var callbackWrapper = this._wrapClientCallback(callback);
+
+            function onDocumentAvailable() {
+                if (this._document) func(callbackWrapper);else {
+                    if (callbackWrapper) callbackWrapper("No document");
+                }
+            }
+            this.requestDocument(onDocumentAvailable.bind(this));
+        }
+    }, {
+        key: "_attributeModified",
+        value: function _attributeModified(nodeId, name, value) {
             var node = this._idToDOMNode[nodeId];
-            if (node) {
-                node._setAttributesPayload(attributes);
-                this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.AttributeModified, { node, name: "style" });
-                node.dispatchEventToListeners(WebInspector.DOMNode.Event.AttributeModified, {name: "style"});
+            if (!node) return;
+            node._setAttribute(name, value);
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.AttributeModified, { node: node, name: name });
+            node.dispatchEventToListeners(WebInspector.DOMNode.Event.AttributeModified, { name: name });
+        }
+    }, {
+        key: "_attributeRemoved",
+        value: function _attributeRemoved(nodeId, name) {
+            var node = this._idToDOMNode[nodeId];
+            if (!node) return;
+            node._removeAttribute(name);
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.AttributeRemoved, { node: node, name: name });
+            node.dispatchEventToListeners(WebInspector.DOMNode.Event.AttributeRemoved, { name: name });
+        }
+    }, {
+        key: "_inlineStyleInvalidated",
+        value: function _inlineStyleInvalidated(nodeIds) {
+            for (var i = 0; i < nodeIds.length; ++i) this._attributeLoadNodeIds[nodeIds[i]] = true;
+            if ("_loadNodeAttributesTimeout" in this) return;
+            this._loadNodeAttributesTimeout = setTimeout(this._loadNodeAttributes.bind(this), 0);
+        }
+    }, {
+        key: "_loadNodeAttributes",
+        value: function _loadNodeAttributes() {
+            function callback(nodeId, error, attributes) {
+                if (error) {
+                    console.error("Error during DOMAgent operation: " + error);
+                    return;
+                }
+                var node = this._idToDOMNode[nodeId];
+                if (node) {
+                    node._setAttributesPayload(attributes);
+                    this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.AttributeModified, { node: node, name: "style" });
+                    node.dispatchEventToListeners(WebInspector.DOMNode.Event.AttributeModified, { name: "style" });
+                }
             }
+
+            delete this._loadNodeAttributesTimeout;
+
+            for (var nodeId in this._attributeLoadNodeIds) {
+                var nodeIdAsNumber = parseInt(nodeId, 10);
+                DOMAgent.getAttributes(nodeIdAsNumber, callback.bind(this, nodeIdAsNumber));
+            }
+            this._attributeLoadNodeIds = {};
         }
-
-        delete this._loadNodeAttributesTimeout;
-
-        for (var nodeId in this._attributeLoadNodeIds) {
-            var nodeIdAsNumber = parseInt(nodeId, 10);
-            DOMAgent.getAttributes(nodeIdAsNumber, callback.bind(this, nodeIdAsNumber));
+    }, {
+        key: "_characterDataModified",
+        value: function _characterDataModified(nodeId, newValue) {
+            var node = this._idToDOMNode[nodeId];
+            node._nodeValue = newValue;
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.CharacterDataModified, { node: node });
         }
-        this._attributeLoadNodeIds = {};
-    }
-
-    _characterDataModified(nodeId, newValue)
-    {
-        var node = this._idToDOMNode[nodeId];
-        node._nodeValue = newValue;
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.CharacterDataModified, {node});
-    }
-
-    nodeForId(nodeId)
-    {
-        return this._idToDOMNode[nodeId];
-    }
-
-    _documentUpdated()
-    {
-        this._setDocument(null);
-    }
-
-    _setDocument(payload)
-    {
-        this._idToDOMNode = {};
-        if (payload && "nodeId" in payload)
-            this._document = new WebInspector.DOMNode(this, null, false, payload);
-        else
-            this._document = null;
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.DocumentUpdated, this._document);
-    }
-
-    _setDetachedRoot(payload)
-    {
-        new WebInspector.DOMNode(this, null, false, payload);
-    }
-
-    _setChildNodes(parentId, payloads)
-    {
-        if (!parentId && payloads.length) {
-            this._setDetachedRoot(payloads[0]);
-            return;
+    }, {
+        key: "nodeForId",
+        value: function nodeForId(nodeId) {
+            return this._idToDOMNode[nodeId];
         }
-
-        var parent = this._idToDOMNode[parentId];
-        parent._setChildrenPayload(payloads);
-    }
-
-    _childNodeCountUpdated(nodeId, newValue)
-    {
-        var node = this._idToDOMNode[nodeId];
-        node.childNodeCount = newValue;
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.ChildNodeCountUpdated, node);
-    }
-
-    _childNodeInserted(parentId, prevId, payload)
-    {
-        var parent = this._idToDOMNode[parentId];
-        var prev = this._idToDOMNode[prevId];
-        var node = parent._insertChild(prev, payload);
-        this._idToDOMNode[node.id] = node;
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.NodeInserted, {node, parent});
-    }
-
-    _childNodeRemoved(parentId, nodeId)
-    {
-        var parent = this._idToDOMNode[parentId];
-        var node = this._idToDOMNode[nodeId];
-        parent._removeChild(node);
-        this._unbind(node);
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.NodeRemoved, {node:node, parent});
-    }
-
-    _unbind(node)
-    {
-        this._removeContentNodeFromFlowIfNeeded(node);
-
-        delete this._idToDOMNode[node.id];
-        for (var i = 0; node.children && i < node.children.length; ++i)
-            this._unbind(node.children[i]);
-    }
-
-    get restoreSelectedNodeIsAllowed()
-    {
-        return this._restoreSelectedNodeIsAllowed;
-    }
-
-    inspectElement(nodeId)
-    {
-        var node = this._idToDOMNode[nodeId];
-        if (node)
-            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.DOMNodeWasInspected, {node});
-
-        this._inspectModeEnabled = false;
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.InspectModeStateChanged);
-    }
-
-    inspectNodeObject(remoteObject)
-    {
-        this._restoreSelectedNodeIsAllowed = false;
-
-        function nodeAvailable(nodeId)
-        {
-            remoteObject.release();
-
-            console.assert(nodeId);
-            if (!nodeId)
-                return;
-
-            this.inspectElement(nodeId);
+    }, {
+        key: "_documentUpdated",
+        value: function _documentUpdated() {
+            this._setDocument(null);
         }
-
-        remoteObject.pushNodeToFrontend(nodeAvailable.bind(this));
-    }
-
-    performSearch(query, searchCallback)
-    {
-        this.cancelSearch();
-
-        function callback(error, searchId, resultsCount)
-        {
-            this._searchId = searchId;
-            searchCallback(resultsCount);
+    }, {
+        key: "_setDocument",
+        value: function _setDocument(payload) {
+            this._idToDOMNode = {};
+            if (payload && "nodeId" in payload) this._document = new WebInspector.DOMNode(this, null, false, payload);else this._document = null;
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.DocumentUpdated, this._document);
         }
-        DOMAgent.performSearch(query, callback.bind(this));
-    }
-
-    searchResult(index, callback)
-    {
-        function mycallback(error, nodeIds)
-        {
-            if (error) {
-                console.error(error);
-                callback(null);
+    }, {
+        key: "_setDetachedRoot",
+        value: function _setDetachedRoot(payload) {
+            new WebInspector.DOMNode(this, null, false, payload);
+        }
+    }, {
+        key: "_setChildNodes",
+        value: function _setChildNodes(parentId, payloads) {
+            if (!parentId && payloads.length) {
+                this._setDetachedRoot(payloads[0]);
                 return;
             }
-            if (nodeIds.length !== 1)
-                return;
 
-            callback(this._idToDOMNode[nodeIds[0]]);
+            var parent = this._idToDOMNode[parentId];
+            parent._setChildrenPayload(payloads);
         }
-
-        if (this._searchId)
-            DOMAgent.getSearchResults(this._searchId, index, index + 1, mycallback.bind(this));
-        else
-            callback(null);
-    }
-
-    cancelSearch()
-    {
-        if (this._searchId) {
-            DOMAgent.discardSearchResults(this._searchId);
-            delete this._searchId;
+    }, {
+        key: "_childNodeCountUpdated",
+        value: function _childNodeCountUpdated(nodeId, newValue) {
+            var node = this._idToDOMNode[nodeId];
+            node.childNodeCount = newValue;
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.ChildNodeCountUpdated, node);
         }
-    }
-
-    querySelector(nodeId, selectors, callback)
-    {
-        var callbackCast = callback;
-        DOMAgent.querySelector(nodeId, selectors, this._wrapClientCallback(callbackCast));
-    }
-
-    querySelectorAll(nodeId, selectors, callback)
-    {
-        var callbackCast = callback;
-        DOMAgent.querySelectorAll(nodeId, selectors, this._wrapClientCallback(callbackCast));
-    }
-
-    highlightDOMNode(nodeId, mode)
-    {
-        if (this._hideDOMNodeHighlightTimeout) {
-            clearTimeout(this._hideDOMNodeHighlightTimeout);
-            delete this._hideDOMNodeHighlightTimeout;
+    }, {
+        key: "_childNodeInserted",
+        value: function _childNodeInserted(parentId, prevId, payload) {
+            var parent = this._idToDOMNode[parentId];
+            var prev = this._idToDOMNode[prevId];
+            var node = parent._insertChild(prev, payload);
+            this._idToDOMNode[node.id] = node;
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.NodeInserted, { node: node, parent: parent });
         }
+    }, {
+        key: "_childNodeRemoved",
+        value: function _childNodeRemoved(parentId, nodeId) {
+            var parent = this._idToDOMNode[parentId];
+            var node = this._idToDOMNode[nodeId];
+            parent._removeChild(node);
+            this._unbind(node);
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.NodeRemoved, { node: node, parent: parent });
+        }
+    }, {
+        key: "_unbind",
+        value: function _unbind(node) {
+            this._removeContentNodeFromFlowIfNeeded(node);
 
-        this._highlightedDOMNodeId = nodeId;
-        if (nodeId)
-            DOMAgent.highlightNode.invoke({nodeId, highlightConfig: this._buildHighlightConfig(mode)});
-        else
-            DOMAgent.hideHighlight();
-    }
+            delete this._idToDOMNode[node.id];
+            for (var i = 0; node.children && i < node.children.length; ++i) this._unbind(node.children[i]);
+        }
+    }, {
+        key: "inspectElement",
+        value: function inspectElement(nodeId) {
+            var node = this._idToDOMNode[nodeId];
+            if (node) this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.DOMNodeWasInspected, { node: node });
 
-    highlightRect(rect, usePageCoordinates)
-    {
-        DOMAgent.highlightRect.invoke({
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: rect.height,
-            color: {r: 111, g: 168, b: 220, a: 0.66},
-            outlineColor: {r: 255, g: 229, b: 153, a: 0.66},
-            usePageCoordinates
-        });
-    }
-
-    hideDOMNodeHighlight()
-    {
-        this.highlightDOMNode(0);
-    }
-
-    highlightDOMNodeForTwoSeconds(nodeId)
-    {
-        this.highlightDOMNode(nodeId);
-        this._hideDOMNodeHighlightTimeout = setTimeout(this.hideDOMNodeHighlight.bind(this), 2000);
-    }
-
-    get inspectModeEnabled()
-    {
-        return this._inspectModeEnabled;
-    }
-
-    set inspectModeEnabled(enabled)
-    {
-        function callback(error)
-        {
-            this._inspectModeEnabled = error ? false : enabled;
+            this._inspectModeEnabled = false;
             this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.InspectModeStateChanged);
         }
+    }, {
+        key: "inspectNodeObject",
+        value: function inspectNodeObject(remoteObject) {
+            this._restoreSelectedNodeIsAllowed = false;
 
-        DOMAgent.setInspectModeEnabled(enabled, this._buildHighlightConfig(), callback.bind(this));
-    }
+            function nodeAvailable(nodeId) {
+                remoteObject.release();
 
-    _buildHighlightConfig(mode)
-    {
-        mode = mode || "all";
-        var highlightConfig = { showInfo: mode === "all" };
-        if (mode === "all" || mode === "content")
-            highlightConfig.contentColor = {r: 111, g: 168, b: 220, a: 0.66};
+                console.assert(nodeId);
+                if (!nodeId) return;
 
-        if (mode === "all" || mode === "padding")
-            highlightConfig.paddingColor = {r: 147, g: 196, b: 125, a: 0.66};
-
-        if (mode === "all" || mode === "border")
-            highlightConfig.borderColor = {r: 255, g: 229, b: 153, a: 0.66};
-
-        if (mode === "all" || mode === "margin")
-            highlightConfig.marginColor = {r: 246, g: 178, b: 107, a: 0.66};
-
-        return highlightConfig;
-    }
-
-    _createContentFlowFromPayload(flowPayload)
-    {
-        // FIXME: Collect the regions from the payload.
-        var flow = new WebInspector.ContentFlow(flowPayload.documentNodeId, flowPayload.name, flowPayload.overset, flowPayload.content.map(this.nodeForId.bind(this)));
-
-        for (var contentNode of flow.contentNodes) {
-            console.assert(!this._contentNodesToFlowsMap.has(contentNode.id));
-            this._contentNodesToFlowsMap.set(contentNode.id, flow);
-        }
-
-        return flow;
-    }
-
-    _updateContentFlowFromPayload(contentFlow, flowPayload)
-    {
-        console.assert(contentFlow.contentNodes.length === flowPayload.content.length);
-        console.assert(contentFlow.contentNodes.every(function(node, i) { node.id === flowPayload.content[i]; }));
-
-        // FIXME: Collect the regions from the payload.
-        contentFlow.overset = flowPayload.overset;
-    }
-
-    getNamedFlowCollection(documentNodeIdentifier)
-    {
-        function onNamedFlowCollectionAvailable(error, flows)
-        {
-            if (error) {
-                console.error("Error while getting the named flows for document " + documentNodeIdentifier + ": " + error);
-                return;
+                this.inspectElement(nodeId);
             }
-            this._contentNodesToFlowsMap.clear();
-            var contentFlows = [];
-            for (var i = 0; i < flows.length; ++i) {
-                var flowPayload = flows[i];
-                var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey(flowPayload);
-                var contentFlow = this._flows.get(flowKey);
-                if (contentFlow)
-                    this._updateContentFlowFromPayload(contentFlow, flowPayload);
-                else {
-                    contentFlow = this._createContentFlowFromPayload(flowPayload);
-                    this._flows.set(flowKey, contentFlow);
+
+            remoteObject.pushNodeToFrontend(nodeAvailable.bind(this));
+        }
+    }, {
+        key: "performSearch",
+        value: function performSearch(query, searchCallback) {
+            this.cancelSearch();
+
+            function callback(error, searchId, resultsCount) {
+                this._searchId = searchId;
+                searchCallback(resultsCount);
+            }
+            DOMAgent.performSearch(query, callback.bind(this));
+        }
+    }, {
+        key: "searchResult",
+        value: function searchResult(index, callback) {
+            function mycallback(error, nodeIds) {
+                if (error) {
+                    console.error(error);
+                    callback(null);
+                    return;
                 }
-                contentFlows.push(contentFlow);
+                if (nodeIds.length !== 1) return;
+
+                callback(this._idToDOMNode[nodeIds[0]]);
             }
-            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.ContentFlowListWasUpdated, {documentNodeIdentifier, flows: contentFlows});
+
+            if (this._searchId) DOMAgent.getSearchResults(this._searchId, index, index + 1, mycallback.bind(this));else callback(null);
         }
-
-        if (window.CSSAgent && CSSAgent.getNamedFlowCollection)
-            CSSAgent.getNamedFlowCollection(documentNodeIdentifier, onNamedFlowCollectionAvailable.bind(this));
-    }
-
-    namedFlowCreated(flowPayload)
-    {
-        var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey(flowPayload);
-        console.assert(!this._flows.has(flowKey));
-        var contentFlow = this._createContentFlowFromPayload(flowPayload);
-        this._flows.set(flowKey, contentFlow);
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.ContentFlowWasAdded, {flow: contentFlow});
-    }
-
-    namedFlowRemoved(documentNodeIdentifier, flowName)
-    {
-        var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey({documentNodeId: documentNodeIdentifier, name: flowName});
-        var contentFlow = this._flows.get(flowKey);
-        console.assert(contentFlow);
-        this._flows.delete(flowKey);
-
-        // Remove any back links to this flow from the content nodes.
-        for (var contentNode of contentFlow.contentNodes)
-            this._contentNodesToFlowsMap.delete(contentNode.id);
-
-        this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.ContentFlowWasRemoved, {flow: contentFlow});
-    }
-
-    _sendNamedFlowUpdateEvents(flowPayload)
-    {
-        var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey(flowPayload);
-        console.assert(this._flows.has(flowKey));
-        this._updateContentFlowFromPayload(this._flows.get(flowKey), flowPayload);
-    }
-
-    regionOversetChanged(flowPayload)
-    {
-        this._sendNamedFlowUpdateEvents(flowPayload);
-    }
-
-    registeredNamedFlowContentElement(documentNodeIdentifier, flowName, contentNodeId, nextContentElementNodeId)
-    {
-        var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey({documentNodeId: documentNodeIdentifier, name: flowName});
-        console.assert(this._flows.has(flowKey));
-        console.assert(!this._contentNodesToFlowsMap.has(contentNodeId));
-
-        var flow = this._flows.get(flowKey);
-        var contentNode = this.nodeForId(contentNodeId);
-
-        this._contentNodesToFlowsMap.set(contentNode.id, flow);
-
-        if (nextContentElementNodeId)
-            flow.insertContentNodeBefore(contentNode, this.nodeForId(nextContentElementNodeId));
-        else
-            flow.appendContentNode(contentNode);
-    }
-
-    _removeContentNodeFromFlowIfNeeded(node)
-    {
-        if (!this._contentNodesToFlowsMap.has(node.id))
-            return;
-        var flow = this._contentNodesToFlowsMap.get(node.id);
-        this._contentNodesToFlowsMap.delete(node.id);
-        flow.removeContentNode(node);
-    }
-
-    unregisteredNamedFlowContentElement(documentNodeIdentifier, flowName, contentNodeId)
-    {
-        console.assert(this._contentNodesToFlowsMap.has(contentNodeId));
-
-        var flow = this._contentNodesToFlowsMap.get(contentNodeId);
-        console.assert(flow.id === WebInspector.DOMTreeManager._flowPayloadHashKey({documentNodeId: documentNodeIdentifier, name: flowName}));
-
-        this._contentNodesToFlowsMap.delete(contentNodeId);
-        flow.removeContentNode(this.nodeForId(contentNodeId));
-    }
-
-    _coerceRemoteArrayOfDOMNodes(objectId, callback)
-    {
-        var length, nodes, received = 0, lastError = null, domTreeManager = this;
-
-        function nodeRequested(index, error, nodeId)
-        {
-            if (error)
-                lastError = error;
-            else
-                nodes[index] = domTreeManager._idToDOMNode[nodeId];
-            if (++received === length)
-                callback(lastError, nodes);
+    }, {
+        key: "cancelSearch",
+        value: function cancelSearch() {
+            if (this._searchId) {
+                DOMAgent.discardSearchResults(this._searchId);
+                delete this._searchId;
+            }
         }
-
-        WebInspector.runtimeManager.getPropertiesForRemoteObject(objectId, function(error, properties) {
-            if (error) {
-                callback(error);
-                return;
-            }
-
-            var lengthProperty = properties.get("length");
-            if (!lengthProperty || lengthProperty.value.type !== "number") {
-                callback(null);
-                return;
-            }
-
-            length = lengthProperty.value.value;
-            if (!length) {
-                callback(null, []);
-                return;
-            }
-
-            nodes = new Array(length);
-            for (var i = 0; i < length; ++i) {
-                var nodeProperty = properties.get(String(i));
-                console.assert(nodeProperty.value.type === "object");
-                DOMAgent.requestNode(nodeProperty.value.objectId, nodeRequested.bind(null, i));
-            }
-        });
-    }
-
-    getNodeContentFlowInfo(domNode, resultReadyCallback)
-    {
-        DOMAgent.resolveNode(domNode.id, domNodeResolved.bind(this));
-
-        function domNodeResolved(error, remoteObject)
-        {
-            if (error) {
-                resultReadyCallback(error);
-                return;
-            }
-            // Serialize "backendFunction" and execute it in the context of the page
-            // passing the DOMNode as the "this" reference.
-            var evalParameters = {
-                objectId: remoteObject.objectId,
-                functionDeclaration: backendFunction.toString(),
-                doNotPauseOnExceptionsAndMuteConsole: true,
-                returnByValue: false,
-                generatePreview: false
-            };
-            RuntimeAgent.callFunctionOn.invoke(evalParameters, regionNodesAvailable.bind(this));
+    }, {
+        key: "querySelector",
+        value: function querySelector(nodeId, selectors, callback) {
+            var callbackCast = callback;
+            DOMAgent.querySelector(nodeId, selectors, this._wrapClientCallback(callbackCast));
         }
-
-        function regionNodesAvailable(error, remoteObject, wasThrown)
-        {
-            if (error) {
-                resultReadyCallback(error);
-                return;
-            }
-
-            if (wasThrown) {
-                // We should never get here, but having the error is useful for debugging.
-                console.error("Error while executing backend function:", JSON.stringify(remoteObject));
-                resultReadyCallback(null);
-                return;
-            }
-
-            // The backend function can never return null.
-            console.assert(remoteObject.type === "object");
-            console.assert(remoteObject.objectId);
-            WebInspector.runtimeManager.getPropertiesForRemoteObject(remoteObject.objectId, remoteObjectPropertiesAvailable.bind(this));
+    }, {
+        key: "querySelectorAll",
+        value: function querySelectorAll(nodeId, selectors, callback) {
+            var callbackCast = callback;
+            DOMAgent.querySelectorAll(nodeId, selectors, this._wrapClientCallback(callbackCast));
         }
-
-        function remoteObjectPropertiesAvailable(error, properties) {
-            if (error) {
-                resultReadyCallback(error);
-                return;
+    }, {
+        key: "highlightDOMNode",
+        value: function highlightDOMNode(nodeId, mode) {
+            if (this._hideDOMNodeHighlightTimeout) {
+                clearTimeout(this._hideDOMNodeHighlightTimeout);
+                delete this._hideDOMNodeHighlightTimeout;
             }
 
-            var result = {
-                regionFlow: null,
-                contentFlow: null,
-                regions: null
-            };
-
-            var regionFlowNameProperty = properties.get("regionFlowName");
-            if (regionFlowNameProperty && regionFlowNameProperty.value && regionFlowNameProperty.value.value) {
-                console.assert(regionFlowNameProperty.value.type === "string");
-                var regionFlowKey = WebInspector.DOMTreeManager._flowPayloadHashKey({documentNodeId: domNode.ownerDocument.id, name: regionFlowNameProperty.value.value});
-                result.regionFlow = this._flows.get(regionFlowKey);
-            }
-
-            var contentFlowNameProperty = properties.get("contentFlowName");
-            if (contentFlowNameProperty && contentFlowNameProperty.value && contentFlowNameProperty.value.value) {
-                console.assert(contentFlowNameProperty.value.type === "string");
-                var contentFlowKey = WebInspector.DOMTreeManager._flowPayloadHashKey({documentNodeId: domNode.ownerDocument.id, name: contentFlowNameProperty.value.value});
-                result.contentFlow = this._flows.get(contentFlowKey);
-            }
-
-            var regionsProperty = properties.get("regions");
-            if (!regionsProperty || !regionsProperty.value.objectId) {
-                // The list of regions is null.
-                resultReadyCallback(null, result);
-                return;
-            }
-
-            console.assert(regionsProperty.value.type === "object");
-            console.assert(regionsProperty.value.subtype === "array");
-            this._coerceRemoteArrayOfDOMNodes(regionsProperty.value.objectId, function(error, nodes) {
-                result.regions = nodes;
-                resultReadyCallback(error, result);
+            this._highlightedDOMNodeId = nodeId;
+            if (nodeId) DOMAgent.highlightNode.invoke({ nodeId: nodeId, highlightConfig: this._buildHighlightConfig(mode) });else DOMAgent.hideHighlight();
+        }
+    }, {
+        key: "highlightRect",
+        value: function highlightRect(rect, usePageCoordinates) {
+            DOMAgent.highlightRect.invoke({
+                x: rect.x,
+                y: rect.y,
+                width: rect.width,
+                height: rect.height,
+                color: { r: 111, g: 168, b: 220, a: 0.66 },
+                outlineColor: { r: 255, g: 229, b: 153, a: 0.66 },
+                usePageCoordinates: usePageCoordinates
             });
         }
-
-        // Note that "backendFunction" is serialized and executed in the context of the page.
-        function backendFunction()
-        {
-            function getComputedProperty(node, propertyName)
-            {
-                if (!node.ownerDocument || !node.ownerDocument.defaultView)
-                    return null;
-                var computedStyle = node.ownerDocument.defaultView.getComputedStyle(node);
-                return computedStyle ? computedStyle[propertyName] : null;
-            }
-
-            function getContentFlowName(node)
-            {
-                for (; node; node = node.parentNode) {
-                    var flowName = getComputedProperty(node, "webkitFlowInto");
-                    if (flowName && flowName !== "none")
-                        return flowName;
-                }
-                return null;
-            }
-
-            var node = this;
-
-            // Even detached nodes have an ownerDocument.
-            console.assert(node.ownerDocument);
-
-            var result = {
-                regionFlowName: getComputedProperty(node, "webkitFlowFrom"),
-                contentFlowName: getContentFlowName(node),
-                regions: null
-            };
-
-            if (result.contentFlowName) {
-                var flowThread = node.ownerDocument.webkitGetNamedFlows().namedItem(result.contentFlowName);
-                if (flowThread)
-                    result.regions = flowThread.getRegionsByContent(node);
-            }
-
-            return result;
+    }, {
+        key: "hideDOMNodeHighlight",
+        value: function hideDOMNodeHighlight() {
+            this.highlightDOMNode(0);
         }
-    }
+    }, {
+        key: "highlightDOMNodeForTwoSeconds",
+        value: function highlightDOMNodeForTwoSeconds(nodeId) {
+            this.highlightDOMNode(nodeId);
+            this._hideDOMNodeHighlightTimeout = setTimeout(this.hideDOMNodeHighlight.bind(this), 2000);
+        }
+    }, {
+        key: "_buildHighlightConfig",
+        value: function _buildHighlightConfig(mode) {
+            mode = mode || "all";
+            var highlightConfig = { showInfo: mode === "all" };
+            if (mode === "all" || mode === "content") highlightConfig.contentColor = { r: 111, g: 168, b: 220, a: 0.66 };
 
-    // Private
+            if (mode === "all" || mode === "padding") highlightConfig.paddingColor = { r: 147, g: 196, b: 125, a: 0.66 };
 
-    _mainResourceDidChange(event)
-    {
-        if (event.target.isMainFrame())
-            this._restoreSelectedNodeIsAllowed = true;
-    }
-};
+            if (mode === "all" || mode === "border") highlightConfig.borderColor = { r: 255, g: 229, b: 153, a: 0.66 };
+
+            if (mode === "all" || mode === "margin") highlightConfig.marginColor = { r: 246, g: 178, b: 107, a: 0.66 };
+
+            return highlightConfig;
+        }
+    }, {
+        key: "_createContentFlowFromPayload",
+        value: function _createContentFlowFromPayload(flowPayload) {
+            // FIXME: Collect the regions from the payload.
+            var flow = new WebInspector.ContentFlow(flowPayload.documentNodeId, flowPayload.name, flowPayload.overset, flowPayload.content.map(this.nodeForId.bind(this)));
+
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = flow.contentNodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var contentNode = _step.value;
+
+                    console.assert(!this._contentNodesToFlowsMap.has(contentNode.id));
+                    this._contentNodesToFlowsMap.set(contentNode.id, flow);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator["return"]) {
+                        _iterator["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            return flow;
+        }
+    }, {
+        key: "_updateContentFlowFromPayload",
+        value: function _updateContentFlowFromPayload(contentFlow, flowPayload) {
+            console.assert(contentFlow.contentNodes.length === flowPayload.content.length);
+            console.assert(contentFlow.contentNodes.every(function (node, i) {
+                node.id === flowPayload.content[i];
+            }));
+
+            // FIXME: Collect the regions from the payload.
+            contentFlow.overset = flowPayload.overset;
+        }
+    }, {
+        key: "getNamedFlowCollection",
+        value: function getNamedFlowCollection(documentNodeIdentifier) {
+            function onNamedFlowCollectionAvailable(error, flows) {
+                if (error) {
+                    console.error("Error while getting the named flows for document " + documentNodeIdentifier + ": " + error);
+                    return;
+                }
+                this._contentNodesToFlowsMap.clear();
+                var contentFlows = [];
+                for (var i = 0; i < flows.length; ++i) {
+                    var flowPayload = flows[i];
+                    var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey(flowPayload);
+                    var contentFlow = this._flows.get(flowKey);
+                    if (contentFlow) this._updateContentFlowFromPayload(contentFlow, flowPayload);else {
+                        contentFlow = this._createContentFlowFromPayload(flowPayload);
+                        this._flows.set(flowKey, contentFlow);
+                    }
+                    contentFlows.push(contentFlow);
+                }
+                this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.ContentFlowListWasUpdated, { documentNodeIdentifier: documentNodeIdentifier, flows: contentFlows });
+            }
+
+            if (window.CSSAgent && CSSAgent.getNamedFlowCollection) CSSAgent.getNamedFlowCollection(documentNodeIdentifier, onNamedFlowCollectionAvailable.bind(this));
+        }
+    }, {
+        key: "namedFlowCreated",
+        value: function namedFlowCreated(flowPayload) {
+            var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey(flowPayload);
+            console.assert(!this._flows.has(flowKey));
+            var contentFlow = this._createContentFlowFromPayload(flowPayload);
+            this._flows.set(flowKey, contentFlow);
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.ContentFlowWasAdded, { flow: contentFlow });
+        }
+    }, {
+        key: "namedFlowRemoved",
+        value: function namedFlowRemoved(documentNodeIdentifier, flowName) {
+            var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey({ documentNodeId: documentNodeIdentifier, name: flowName });
+            var contentFlow = this._flows.get(flowKey);
+            console.assert(contentFlow);
+            this._flows["delete"](flowKey);
+
+            // Remove any back links to this flow from the content nodes.
+            var _iteratorNormalCompletion2 = true;
+            var _didIteratorError2 = false;
+            var _iteratorError2 = undefined;
+
+            try {
+                for (var _iterator2 = contentFlow.contentNodes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                    var contentNode = _step2.value;
+
+                    this._contentNodesToFlowsMap["delete"](contentNode.id);
+                }
+            } catch (err) {
+                _didIteratorError2 = true;
+                _iteratorError2 = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+                        _iterator2["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError2) {
+                        throw _iteratorError2;
+                    }
+                }
+            }
+
+            this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.ContentFlowWasRemoved, { flow: contentFlow });
+        }
+    }, {
+        key: "_sendNamedFlowUpdateEvents",
+        value: function _sendNamedFlowUpdateEvents(flowPayload) {
+            var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey(flowPayload);
+            console.assert(this._flows.has(flowKey));
+            this._updateContentFlowFromPayload(this._flows.get(flowKey), flowPayload);
+        }
+    }, {
+        key: "regionOversetChanged",
+        value: function regionOversetChanged(flowPayload) {
+            this._sendNamedFlowUpdateEvents(flowPayload);
+        }
+    }, {
+        key: "registeredNamedFlowContentElement",
+        value: function registeredNamedFlowContentElement(documentNodeIdentifier, flowName, contentNodeId, nextContentElementNodeId) {
+            var flowKey = WebInspector.DOMTreeManager._flowPayloadHashKey({ documentNodeId: documentNodeIdentifier, name: flowName });
+            console.assert(this._flows.has(flowKey));
+            console.assert(!this._contentNodesToFlowsMap.has(contentNodeId));
+
+            var flow = this._flows.get(flowKey);
+            var contentNode = this.nodeForId(contentNodeId);
+
+            this._contentNodesToFlowsMap.set(contentNode.id, flow);
+
+            if (nextContentElementNodeId) flow.insertContentNodeBefore(contentNode, this.nodeForId(nextContentElementNodeId));else flow.appendContentNode(contentNode);
+        }
+    }, {
+        key: "_removeContentNodeFromFlowIfNeeded",
+        value: function _removeContentNodeFromFlowIfNeeded(node) {
+            if (!this._contentNodesToFlowsMap.has(node.id)) return;
+            var flow = this._contentNodesToFlowsMap.get(node.id);
+            this._contentNodesToFlowsMap["delete"](node.id);
+            flow.removeContentNode(node);
+        }
+    }, {
+        key: "unregisteredNamedFlowContentElement",
+        value: function unregisteredNamedFlowContentElement(documentNodeIdentifier, flowName, contentNodeId) {
+            console.assert(this._contentNodesToFlowsMap.has(contentNodeId));
+
+            var flow = this._contentNodesToFlowsMap.get(contentNodeId);
+            console.assert(flow.id === WebInspector.DOMTreeManager._flowPayloadHashKey({ documentNodeId: documentNodeIdentifier, name: flowName }));
+
+            this._contentNodesToFlowsMap["delete"](contentNodeId);
+            flow.removeContentNode(this.nodeForId(contentNodeId));
+        }
+    }, {
+        key: "_coerceRemoteArrayOfDOMNodes",
+        value: function _coerceRemoteArrayOfDOMNodes(objectId, callback) {
+            var length,
+                nodes,
+                received = 0,
+                lastError = null,
+                domTreeManager = this;
+
+            function nodeRequested(index, error, nodeId) {
+                if (error) lastError = error;else nodes[index] = domTreeManager._idToDOMNode[nodeId];
+                if (++received === length) callback(lastError, nodes);
+            }
+
+            WebInspector.runtimeManager.getPropertiesForRemoteObject(objectId, function (error, properties) {
+                if (error) {
+                    callback(error);
+                    return;
+                }
+
+                var lengthProperty = properties.get("length");
+                if (!lengthProperty || lengthProperty.value.type !== "number") {
+                    callback(null);
+                    return;
+                }
+
+                length = lengthProperty.value.value;
+                if (!length) {
+                    callback(null, []);
+                    return;
+                }
+
+                nodes = new Array(length);
+                for (var i = 0; i < length; ++i) {
+                    var nodeProperty = properties.get(String(i));
+                    console.assert(nodeProperty.value.type === "object");
+                    DOMAgent.requestNode(nodeProperty.value.objectId, nodeRequested.bind(null, i));
+                }
+            });
+        }
+    }, {
+        key: "getNodeContentFlowInfo",
+        value: function getNodeContentFlowInfo(domNode, resultReadyCallback) {
+            DOMAgent.resolveNode(domNode.id, domNodeResolved.bind(this));
+
+            function domNodeResolved(error, remoteObject) {
+                if (error) {
+                    resultReadyCallback(error);
+                    return;
+                }
+                // Serialize "backendFunction" and execute it in the context of the page
+                // passing the DOMNode as the "this" reference.
+                var evalParameters = {
+                    objectId: remoteObject.objectId,
+                    functionDeclaration: backendFunction.toString(),
+                    doNotPauseOnExceptionsAndMuteConsole: true,
+                    returnByValue: false,
+                    generatePreview: false
+                };
+                RuntimeAgent.callFunctionOn.invoke(evalParameters, regionNodesAvailable.bind(this));
+            }
+
+            function regionNodesAvailable(error, remoteObject, wasThrown) {
+                if (error) {
+                    resultReadyCallback(error);
+                    return;
+                }
+
+                if (wasThrown) {
+                    // We should never get here, but having the error is useful for debugging.
+                    console.error("Error while executing backend function:", JSON.stringify(remoteObject));
+                    resultReadyCallback(null);
+                    return;
+                }
+
+                // The backend function can never return null.
+                console.assert(remoteObject.type === "object");
+                console.assert(remoteObject.objectId);
+                WebInspector.runtimeManager.getPropertiesForRemoteObject(remoteObject.objectId, remoteObjectPropertiesAvailable.bind(this));
+            }
+
+            function remoteObjectPropertiesAvailable(error, properties) {
+                if (error) {
+                    resultReadyCallback(error);
+                    return;
+                }
+
+                var result = {
+                    regionFlow: null,
+                    contentFlow: null,
+                    regions: null
+                };
+
+                var regionFlowNameProperty = properties.get("regionFlowName");
+                if (regionFlowNameProperty && regionFlowNameProperty.value && regionFlowNameProperty.value.value) {
+                    console.assert(regionFlowNameProperty.value.type === "string");
+                    var regionFlowKey = WebInspector.DOMTreeManager._flowPayloadHashKey({ documentNodeId: domNode.ownerDocument.id, name: regionFlowNameProperty.value.value });
+                    result.regionFlow = this._flows.get(regionFlowKey);
+                }
+
+                var contentFlowNameProperty = properties.get("contentFlowName");
+                if (contentFlowNameProperty && contentFlowNameProperty.value && contentFlowNameProperty.value.value) {
+                    console.assert(contentFlowNameProperty.value.type === "string");
+                    var contentFlowKey = WebInspector.DOMTreeManager._flowPayloadHashKey({ documentNodeId: domNode.ownerDocument.id, name: contentFlowNameProperty.value.value });
+                    result.contentFlow = this._flows.get(contentFlowKey);
+                }
+
+                var regionsProperty = properties.get("regions");
+                if (!regionsProperty || !regionsProperty.value.objectId) {
+                    // The list of regions is null.
+                    resultReadyCallback(null, result);
+                    return;
+                }
+
+                console.assert(regionsProperty.value.type === "object");
+                console.assert(regionsProperty.value.subtype === "array");
+                this._coerceRemoteArrayOfDOMNodes(regionsProperty.value.objectId, function (error, nodes) {
+                    result.regions = nodes;
+                    resultReadyCallback(error, result);
+                });
+            }
+
+            // Note that "backendFunction" is serialized and executed in the context of the page.
+            function backendFunction() {
+                function getComputedProperty(node, propertyName) {
+                    if (!node.ownerDocument || !node.ownerDocument.defaultView) return null;
+                    var computedStyle = node.ownerDocument.defaultView.getComputedStyle(node);
+                    return computedStyle ? computedStyle[propertyName] : null;
+                }
+
+                function getContentFlowName(node) {
+                    for (; node; node = node.parentNode) {
+                        var flowName = getComputedProperty(node, "webkitFlowInto");
+                        if (flowName && flowName !== "none") return flowName;
+                    }
+                    return null;
+                }
+
+                var node = this;
+
+                // Even detached nodes have an ownerDocument.
+                console.assert(node.ownerDocument);
+
+                var result = {
+                    regionFlowName: getComputedProperty(node, "webkitFlowFrom"),
+                    contentFlowName: getContentFlowName(node),
+                    regions: null
+                };
+
+                if (result.contentFlowName) {
+                    var flowThread = node.ownerDocument.webkitGetNamedFlows().namedItem(result.contentFlowName);
+                    if (flowThread) result.regions = flowThread.getRegionsByContent(node);
+                }
+
+                return result;
+            }
+        }
+    }, {
+        key: "_mainResourceDidChange",
+
+        // Private
+
+        value: function _mainResourceDidChange(event) {
+            if (event.target.isMainFrame()) this._restoreSelectedNodeIsAllowed = true;
+        }
+    }, {
+        key: "restoreSelectedNodeIsAllowed",
+        get: function () {
+            return this._restoreSelectedNodeIsAllowed;
+        }
+    }, {
+        key: "inspectModeEnabled",
+        get: function () {
+            return this._inspectModeEnabled;
+        },
+        set: function (enabled) {
+            function callback(error) {
+                this._inspectModeEnabled = error ? false : enabled;
+                this.dispatchEventToListeners(WebInspector.DOMTreeManager.Event.InspectModeStateChanged);
+            }
+
+            DOMAgent.setInspectModeEnabled(enabled, this._buildHighlightConfig(), callback.bind(this));
+        }
+    }], [{
+        key: "_flowPayloadHashKey",
+
+        // Static
+
+        value: function _flowPayloadHashKey(flowPayload) {
+            // Use the flow node id, to avoid collisions when we change main document id.
+            return flowPayload.documentNodeId + ":" + flowPayload.name;
+        }
+    }]);
+
+    return DOMTreeManager;
+})(WebInspector.Object);
 
 WebInspector.DOMTreeManager.Event = {
     AttributeModified: "dom-tree-manager-attribute-modified",

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  * Copyright (C) 2009 Google Inc. All rights reserved.
@@ -29,11 +37,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ContextMenuItem = class ContextMenuItem extends WebInspector.Object
-{
-    constructor(topLevelMenu, type, label, disabled, checked)
-    {
-        super();
+WebInspector.ContextMenuItem = (function (_WebInspector$Object) {
+    function ContextMenuItem(topLevelMenu, type, label, disabled, checked) {
+        _classCallCheck(this, ContextMenuItem);
+
+        _get(Object.getPrototypeOf(ContextMenuItem.prototype), "constructor", this).call(this);
 
         this._type = type;
         this._label = label;
@@ -41,193 +49,209 @@ WebInspector.ContextMenuItem = class ContextMenuItem extends WebInspector.Object
         this._checked = checked;
         this._contextMenu = topLevelMenu || this;
 
-        if (type === "item" || type === "checkbox")
-            this._id = topLevelMenu.nextId();
+        if (type === "item" || type === "checkbox") this._id = topLevelMenu.nextId();
     }
 
-    // Public
+    _inherits(ContextMenuItem, _WebInspector$Object);
 
-    id()
-    {
-        return this._id;
-    }
+    _createClass(ContextMenuItem, [{
+        key: "id",
 
-    type()
-    {
-        return this._type;
-    }
+        // Public
 
-    isEnabled()
-    {
-        return !this._disabled;
-    }
-
-    setEnabled(enabled)
-    {
-        this._disabled = !enabled;
-    }
-
-    // Private
-
-    _buildDescriptor()
-    {
-        switch (this._type) {
-        case "item":
-            return { type: "item", id: this._id, label: this._label, enabled: !this._disabled };
-        case "separator":
-            return { type: "separator" };
-        case "checkbox":
-            return { type: "checkbox", id: this._id, label: this._label, checked: !!this._checked, enabled: !this._disabled };
+        value: function id() {
+            return this._id;
         }
-    }
-};
+    }, {
+        key: "type",
+        value: function type() {
+            return this._type;
+        }
+    }, {
+        key: "isEnabled",
+        value: function isEnabled() {
+            return !this._disabled;
+        }
+    }, {
+        key: "setEnabled",
+        value: function setEnabled(enabled) {
+            this._disabled = !enabled;
+        }
+    }, {
+        key: "_buildDescriptor",
 
-WebInspector.ContextSubMenuItem = class ContextSubMenuItem extends WebInspector.ContextMenuItem
-{
-    constructor(topLevelMenu, label, disabled)
-    {
-        super(topLevelMenu, "subMenu", label, disabled);
+        // Private
+
+        value: function _buildDescriptor() {
+            switch (this._type) {
+                case "item":
+                    return { type: "item", id: this._id, label: this._label, enabled: !this._disabled };
+                case "separator":
+                    return { type: "separator" };
+                case "checkbox":
+                    return { type: "checkbox", id: this._id, label: this._label, checked: !!this._checked, enabled: !this._disabled };
+            }
+        }
+    }]);
+
+    return ContextMenuItem;
+})(WebInspector.Object);
+
+WebInspector.ContextSubMenuItem = (function (_WebInspector$ContextMenuItem) {
+    function ContextSubMenuItem(topLevelMenu, label, disabled) {
+        _classCallCheck(this, ContextSubMenuItem);
+
+        _get(Object.getPrototypeOf(ContextSubMenuItem.prototype), "constructor", this).call(this, topLevelMenu, "subMenu", label, disabled);
 
         this._items = [];
     }
 
-    // Public
+    _inherits(ContextSubMenuItem, _WebInspector$ContextMenuItem);
 
-    appendItem(label, handler, disabled)
-    {
-        var item = new WebInspector.ContextMenuItem(this._contextMenu, "item", label, disabled);
-        this._pushItem(item);
-        this._contextMenu._setHandler(item.id(), handler);
-        return item;
-    }
+    _createClass(ContextSubMenuItem, [{
+        key: "appendItem",
 
-    appendSubMenuItem(label, disabled)
-    {
-        var item = new WebInspector.ContextSubMenuItem(this._contextMenu, label, disabled);
-        this._pushItem(item);
-        return item;
-    }
+        // Public
 
-    appendCheckboxItem(label, handler, checked, disabled)
-    {
-        var item = new WebInspector.ContextMenuItem(this._contextMenu, "checkbox", label, disabled, checked);
-        this._pushItem(item);
-        this._contextMenu._setHandler(item.id(), handler);
-        return item;
-    }
-
-    appendSeparator()
-    {
-        if (this._items.length)
-            this._pendingSeparator = true;
-    }
-
-    _pushItem(item)
-    {
-        if (this._pendingSeparator) {
-            this._items.push(new WebInspector.ContextMenuItem(this._contextMenu, "separator"));
-            delete this._pendingSeparator;
+        value: function appendItem(label, handler, disabled) {
+            var item = new WebInspector.ContextMenuItem(this._contextMenu, "item", label, disabled);
+            this._pushItem(item);
+            this._contextMenu._setHandler(item.id(), handler);
+            return item;
         }
-        this._items.push(item);
-    }
+    }, {
+        key: "appendSubMenuItem",
+        value: function appendSubMenuItem(label, disabled) {
+            var item = new WebInspector.ContextSubMenuItem(this._contextMenu, label, disabled);
+            this._pushItem(item);
+            return item;
+        }
+    }, {
+        key: "appendCheckboxItem",
+        value: function appendCheckboxItem(label, handler, checked, disabled) {
+            var item = new WebInspector.ContextMenuItem(this._contextMenu, "checkbox", label, disabled, checked);
+            this._pushItem(item);
+            this._contextMenu._setHandler(item.id(), handler);
+            return item;
+        }
+    }, {
+        key: "appendSeparator",
+        value: function appendSeparator() {
+            if (this._items.length) this._pendingSeparator = true;
+        }
+    }, {
+        key: "_pushItem",
+        value: function _pushItem(item) {
+            if (this._pendingSeparator) {
+                this._items.push(new WebInspector.ContextMenuItem(this._contextMenu, "separator"));
+                delete this._pendingSeparator;
+            }
+            this._items.push(item);
+        }
+    }, {
+        key: "isEmpty",
+        value: function isEmpty() {
+            return !this._items.length;
+        }
+    }, {
+        key: "_buildDescriptor",
+        value: function _buildDescriptor() {
+            var result = { type: "subMenu", label: this._label, enabled: !this._disabled, subItems: [] };
+            for (var i = 0; i < this._items.length; ++i) result.subItems.push(this._items[i]._buildDescriptor());
+            return result;
+        }
+    }]);
 
-    isEmpty()
-    {
-        return !this._items.length;
-    }
+    return ContextSubMenuItem;
+})(WebInspector.ContextMenuItem);
 
-    _buildDescriptor()
-    {
-        var result = { type: "subMenu", label: this._label, enabled: !this._disabled, subItems: [] };
-        for (var i = 0; i < this._items.length; ++i)
-            result.subItems.push(this._items[i]._buildDescriptor());
-        return result;
-    }
-};
+WebInspector.ContextMenu = (function (_WebInspector$ContextSubMenuItem) {
+    function ContextMenu(event) {
+        _classCallCheck(this, ContextMenu);
 
-WebInspector.ContextMenu = class ContextMenu extends WebInspector.ContextSubMenuItem
-{
-    constructor(event)
-    {
-        super(null, "");
+        _get(Object.getPrototypeOf(ContextMenu.prototype), "constructor", this).call(this, null, "");
 
         this._event = event;
         this._handlers = {};
         this._id = 0;
     }
 
-    // Static
+    _inherits(ContextMenu, _WebInspector$ContextSubMenuItem);
 
-    static contextMenuItemSelected(id)
-    {
-        if (WebInspector.ContextMenu._lastContextMenu)
-            WebInspector.ContextMenu._lastContextMenu._itemSelected(id);
-    }
+    _createClass(ContextMenu, [{
+        key: "nextId",
 
-    static contextMenuCleared()
-    {
-        // FIXME: Unfortunately, contextMenuCleared is invoked between show and item selected
-        // so we can't delete last menu object from WebInspector. Fix the contract.
-    }
+        // Public
 
-    // Public
-
-    nextId()
-    {
-        return this._id++;
-    }
-
-    show()
-    {
-        console.assert(this._event instanceof MouseEvent);
-
-        var menuObject = this._buildDescriptor();
-
-        if (menuObject.length) {
-            WebInspector.ContextMenu._lastContextMenu = this;
-
-            if (this._event.type !== "contextmenu" && typeof InspectorFrontendHost.dispatchEventAsContextMenuEvent === "function") {
-                this._menuObject = menuObject;
-                this._event.target.addEventListener("contextmenu", this, true);
-                InspectorFrontendHost.dispatchEventAsContextMenuEvent(this._event);
-            } else
-                InspectorFrontendHost.showContextMenu(this._event, menuObject);
+        value: function nextId() {
+            return this._id++;
         }
+    }, {
+        key: "show",
+        value: function show() {
+            console.assert(this._event instanceof MouseEvent);
 
-        if (this._event)
-            this._event.stopImmediatePropagation();
-    }
+            var menuObject = this._buildDescriptor();
 
-    // Protected
+            if (menuObject.length) {
+                WebInspector.ContextMenu._lastContextMenu = this;
 
-    handleEvent(event)
-    {
-        this._event.target.removeEventListener("contextmenu", this, true);
-        InspectorFrontendHost.showContextMenu(event, this._menuObject);
-        delete this._menuObject;
+                if (this._event.type !== "contextmenu" && typeof InspectorFrontendHost.dispatchEventAsContextMenuEvent === "function") {
+                    this._menuObject = menuObject;
+                    this._event.target.addEventListener("contextmenu", this, true);
+                    InspectorFrontendHost.dispatchEventAsContextMenuEvent(this._event);
+                } else InspectorFrontendHost.showContextMenu(this._event, menuObject);
+            }
 
-        event.stopImmediatePropagation();
-    }
+            if (this._event) this._event.stopImmediatePropagation();
+        }
+    }, {
+        key: "handleEvent",
 
-    // Private
+        // Protected
 
-    _setHandler(id, handler)
-    {
-        if (handler)
-            this._handlers[id] = handler;
-    }
+        value: function handleEvent(event) {
+            this._event.target.removeEventListener("contextmenu", this, true);
+            InspectorFrontendHost.showContextMenu(event, this._menuObject);
+            delete this._menuObject;
 
-    _buildDescriptor()
-    {
-        var result = [];
-        for (var i = 0; i < this._items.length; ++i)
-            result.push(this._items[i]._buildDescriptor());
-        return result;
-    }
+            event.stopImmediatePropagation();
+        }
+    }, {
+        key: "_setHandler",
 
-    _itemSelected(id)
-    {
-        if (this._handlers[id])
-            this._handlers[id].call(this);
-    }
-};
+        // Private
+
+        value: function _setHandler(id, handler) {
+            if (handler) this._handlers[id] = handler;
+        }
+    }, {
+        key: "_buildDescriptor",
+        value: function _buildDescriptor() {
+            var result = [];
+            for (var i = 0; i < this._items.length; ++i) result.push(this._items[i]._buildDescriptor());
+            return result;
+        }
+    }, {
+        key: "_itemSelected",
+        value: function _itemSelected(id) {
+            if (this._handlers[id]) this._handlers[id].call(this);
+        }
+    }], [{
+        key: "contextMenuItemSelected",
+
+        // Static
+
+        value: function contextMenuItemSelected(id) {
+            if (WebInspector.ContextMenu._lastContextMenu) WebInspector.ContextMenu._lastContextMenu._itemSelected(id);
+        }
+    }, {
+        key: "contextMenuCleared",
+        value: function contextMenuCleared() {}
+    }]);
+
+    return ContextMenu;
+})(WebInspector.ContextSubMenuItem);
+
+// FIXME: Unfortunately, contextMenuCleared is invoked between show and item selected
+// so we can't delete last menu object from WebInspector. Fix the contract.

@@ -23,103 +23,82 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-Object.defineProperty(Object, "shallowCopy",
-{
-    value: function(object)
-    {
+Object.defineProperty(Object, "shallowCopy", {
+    value: function value(object) {
         // Make a new object and copy all the key/values. The values are not copied.
         var copy = {};
         var keys = Object.keys(object);
-        for (var i = 0; i < keys.length; ++i)
-            copy[keys[i]] = object[keys[i]];
+        for (var i = 0; i < keys.length; ++i) copy[keys[i]] = object[keys[i]];
         return copy;
     }
 });
 
-Object.defineProperty(Object, "shallowEqual",
-{
-    value: function(a, b)
-    {
+Object.defineProperty(Object, "shallowEqual", {
+    value: function value(a, b) {
         // Checks if two objects have the same top-level properties.
 
         // Check for strict equality in case they are the same object.
-        if (a === b)
-            return true;
+        if (a === b) return true;
 
         // Only objects can proceed. null is an object, but Object.keys throws for null.
-        if (typeof a !== "object" || typeof b !== "object" || a === null || b === null)
-            return false;
+        if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false;
 
         var aKeys = Object.keys(a);
         var bKeys = Object.keys(b);
 
         // Check that each object has the same number of keys.
-        if (aKeys.length !== bKeys.length)
-            return false;
+        if (aKeys.length !== bKeys.length) return false;
 
         // Check if all the keys and their values are equal.
         for (var i = 0; i < aKeys.length; ++i) {
             // Check that b has the same key as a.
-            if (!(aKeys[i] in b))
-                return false;
+            if (!(aKeys[i] in b)) return false;
 
             // Check that the values are strict equal since this is only
             // a shallow check, not a recursive one.
-            if (a[aKeys[i]] !== b[aKeys[i]])
-                return false;
+            if (a[aKeys[i]] !== b[aKeys[i]]) return false;
         }
 
         return true;
     }
 });
 
-Object.defineProperty(Object.prototype, "valueForCaseInsensitiveKey",
-{
-    value: function(key)
-    {
-        if (this.hasOwnProperty(key))
-            return this[key];
+Object.defineProperty(Object.prototype, "valueForCaseInsensitiveKey", {
+    value: function value(key) {
+        if (this.hasOwnProperty(key)) return this[key];
 
         var lowerCaseKey = key.toLowerCase();
         for (var currentKey in this) {
-            if (currentKey.toLowerCase() === lowerCaseKey)
-                return this[currentKey];
+            if (currentKey.toLowerCase() === lowerCaseKey) return this[currentKey];
         }
 
         return undefined;
     }
 });
 
-Object.defineProperty(Map.prototype, "take",
-{
-    value: function(key)
-    {
+Object.defineProperty(Map.prototype, "take", {
+    value: function value(key) {
         var deletedValue = this.get(key);
-        this.delete(key);
+        this["delete"](key);
         return deletedValue;
     }
 });
 
-Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithClass",
-{
-    value: function(className)
-    {
-        for (var node = this; node && node !== this.ownerDocument; node = node.parentNode)
-            if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(className))
-                return node;
+Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithClass", {
+    value: function value(className) {
+        for (var node = this; node && node !== this.ownerDocument; node = node.parentNode) if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(className)) return node;
         return null;
     }
 });
 
-Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithNodeNameInArray",
-{
-    value: function(nameArray)
-    {
-        var lowerCaseNameArray = nameArray.map(function(name) { return name.toLowerCase(); });
+Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithNodeNameInArray", {
+    value: function value(nameArray) {
+        var lowerCaseNameArray = nameArray.map(function (name) {
+            return name.toLowerCase();
+        });
         for (var node = this; node && node !== this.ownerDocument; node = node.parentNode) {
             for (var i = 0; i < nameArray.length; ++i) {
-                if (node.nodeName.toLowerCase() === lowerCaseNameArray[i])
-                    return node;
+                if (node.nodeName.toLowerCase() === lowerCaseNameArray[i]) return node;
             }
         }
 
@@ -127,25 +106,19 @@ Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithNodeNameInArray",
     }
 });
 
-Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithNodeName",
-{
-    value: function(nodeName)
-    {
+Object.defineProperty(Node.prototype, "enclosingNodeOrSelfWithNodeName", {
+    value: function value(nodeName) {
         return this.enclosingNodeOrSelfWithNodeNameInArray([nodeName]);
     }
 });
 
-Object.defineProperty(Node.prototype, "isAncestor",
-{
-    value: function(node)
-    {
-        if (!node)
-            return false;
+Object.defineProperty(Node.prototype, "isAncestor", {
+    value: function value(node) {
+        if (!node) return false;
 
         var currentNode = node.parentNode;
         while (currentNode) {
-            if (this === currentNode)
-                return true;
+            if (this === currentNode) return true;
             currentNode = currentNode.parentNode;
         }
 
@@ -153,96 +126,71 @@ Object.defineProperty(Node.prototype, "isAncestor",
     }
 });
 
-Object.defineProperty(Node.prototype, "isDescendant",
-{
-    value: function(descendant)
-    {
+Object.defineProperty(Node.prototype, "isDescendant", {
+    value: function value(descendant) {
         return !!descendant && descendant.isAncestor(this);
     }
 });
 
-
-Object.defineProperty(Node.prototype, "isSelfOrAncestor",
-{
-    value: function(node)
-    {
+Object.defineProperty(Node.prototype, "isSelfOrAncestor", {
+    value: function value(node) {
         return !!node && (node === this || this.isAncestor(node));
     }
 });
 
-
-Object.defineProperty(Node.prototype, "isSelfOrDescendant",
-{
-    value: function(node)
-    {
+Object.defineProperty(Node.prototype, "isSelfOrDescendant", {
+    value: function value(node) {
         return !!node && (node === this || this.isDescendant(node));
     }
 });
 
-Object.defineProperty(Node.prototype, "traverseNextNode",
-{
-    value: function(stayWithin)
-    {
+Object.defineProperty(Node.prototype, "traverseNextNode", {
+    value: function value(stayWithin) {
         var node = this.firstChild;
-        if (node)
-            return node;
+        if (node) return node;
 
-        if (stayWithin && this === stayWithin)
-            return null;
+        if (stayWithin && this === stayWithin) return null;
 
         node = this.nextSibling;
-        if (node)
-            return node;
+        if (node) return node;
 
         node = this;
-        while (node && !node.nextSibling && (!stayWithin || !node.parentNode || node.parentNode !== stayWithin))
-            node = node.parentNode;
-        if (!node)
-            return null;
+        while (node && !node.nextSibling && (!stayWithin || !node.parentNode || node.parentNode !== stayWithin)) node = node.parentNode;
+        if (!node) return null;
 
         return node.nextSibling;
     }
 });
 
-Object.defineProperty(Node.prototype, "traversePreviousNode",
-{
-    value: function(stayWithin)
-    {
-       if (stayWithin && this === stayWithin)
-            return null;
+Object.defineProperty(Node.prototype, "traversePreviousNode", {
+    value: function value(stayWithin) {
+        if (stayWithin && this === stayWithin) return null;
         var node = this.previousSibling;
-        while (node && node.lastChild)
-            node = node.lastChild;
-        if (node)
-            return node;
+        while (node && node.lastChild) node = node.lastChild;
+        if (node) return node;
         return this.parentNode;
     }
 });
 
-
-Object.defineProperty(Node.prototype, "rangeOfWord",
-{
-    value: function(offset, stopCharacters, stayWithinNode, direction)
-    {
+Object.defineProperty(Node.prototype, "rangeOfWord", {
+    value: function value(offset, stopCharacters, stayWithinNode, direction) {
         var startNode;
         var startOffset = 0;
         var endNode;
         var endOffset = 0;
 
-        if (!stayWithinNode)
-            stayWithinNode = this;
+        if (!stayWithinNode) stayWithinNode = this;
 
         if (!direction || direction === "backward" || direction === "both") {
             var node = this;
             while (node) {
                 if (node === stayWithinNode) {
-                    if (!startNode)
-                        startNode = stayWithinNode;
+                    if (!startNode) startNode = stayWithinNode;
                     break;
                 }
 
                 if (node.nodeType === Node.TEXT_NODE) {
-                    var start = (node === this ? (offset - 1) : (node.nodeValue.length - 1));
+                    var start = node === this ? offset - 1 : node.nodeValue.length - 1;
                     for (var i = start; i >= 0; --i) {
                         if (stopCharacters.indexOf(node.nodeValue[i]) !== -1) {
                             startNode = node;
@@ -252,8 +200,7 @@ Object.defineProperty(Node.prototype, "rangeOfWord",
                     }
                 }
 
-                if (startNode)
-                    break;
+                if (startNode) break;
 
                 node = node.traversePreviousNode(stayWithinNode);
             }
@@ -271,13 +218,12 @@ Object.defineProperty(Node.prototype, "rangeOfWord",
             node = this;
             while (node) {
                 if (node === stayWithinNode) {
-                    if (!endNode)
-                        endNode = stayWithinNode;
+                    if (!endNode) endNode = stayWithinNode;
                     break;
                 }
 
                 if (node.nodeType === Node.TEXT_NODE) {
-                    var start = (node === this ? offset : 0);
+                    var start = node === this ? offset : 0;
                     for (var i = start; i < node.nodeValue.length; ++i) {
                         if (stopCharacters.indexOf(node.nodeValue[i]) !== -1) {
                             endNode = node;
@@ -287,8 +233,7 @@ Object.defineProperty(Node.prototype, "rangeOfWord",
                     }
                 }
 
-                if (endNode)
-                    break;
+                if (endNode) break;
 
                 node = node.traverseNextNode(stayWithinNode);
             }
@@ -307,177 +252,132 @@ Object.defineProperty(Node.prototype, "rangeOfWord",
         result.setEnd(endNode, endOffset);
 
         return result;
-
     }
 });
 
-Object.defineProperty(Element.prototype, "realOffsetWidth",
-{
-    get: function()
-    {
+Object.defineProperty(Element.prototype, "realOffsetWidth", {
+    get: function get() {
         return this.getBoundingClientRect().width;
     }
 });
 
-Object.defineProperty(Element.prototype, "realOffsetHeight",
-{
-    get: function()
-    {
+Object.defineProperty(Element.prototype, "realOffsetHeight", {
+    get: function get() {
         return this.getBoundingClientRect().height;
     }
 });
 
-Object.defineProperty(Element.prototype, "totalOffsetLeft",
-{
-    get: function()
-    {
+Object.defineProperty(Element.prototype, "totalOffsetLeft", {
+    get: function get() {
         return this.getBoundingClientRect().left;
     }
 });
 
-Object.defineProperty(Element.prototype, "totalOffsetTop",
-{
-    get: function()
-    {
+Object.defineProperty(Element.prototype, "totalOffsetTop", {
+    get: function get() {
         return this.getBoundingClientRect().top;
     }
 });
 
-Object.defineProperty(Element.prototype, "removeChildren",
-{
-    value: function()
-    {
+Object.defineProperty(Element.prototype, "removeChildren", {
+    value: function value() {
         // This has been tested to be the fastest removal method.
-        if (this.firstChild)
-            this.textContent = "";
+        if (this.firstChild) this.textContent = "";
     }
 });
 
-Object.defineProperty(Element.prototype, "isInsertionCaretInside",
-{
-    value: function()
-    {
+Object.defineProperty(Element.prototype, "isInsertionCaretInside", {
+    value: function value() {
         var selection = window.getSelection();
-        if (!selection.rangeCount || !selection.isCollapsed)
-            return false;
+        if (!selection.rangeCount || !selection.isCollapsed) return false;
         var selectionRange = selection.getRangeAt(0);
         return selectionRange.startContainer === this || selectionRange.startContainer.isDescendant(this);
     }
 });
 
-Object.defineProperty(Element.prototype, "removeMatchingStyleClasses",
-{
-    value: function(classNameRegex)
-    {
+Object.defineProperty(Element.prototype, "removeMatchingStyleClasses", {
+    value: function value(classNameRegex) {
         var regex = new RegExp("(^|\\s+)" + classNameRegex + "($|\\s+)");
-        if (regex.test(this.className))
-            this.className = this.className.replace(regex, " ");
+        if (regex.test(this.className)) this.className = this.className.replace(regex, " ");
     }
 });
 
-Object.defineProperty(Element.prototype, "createChild",
-{
-    value: function(elementName, className)
-    {
+Object.defineProperty(Element.prototype, "createChild", {
+    value: function value(elementName, className) {
         var element = this.ownerDocument.createElement(elementName);
-        if (className)
-            element.className = className;
+        if (className) element.className = className;
         this.appendChild(element);
         return element;
     }
 });
 
-Object.defineProperty(Element.prototype, "isScrolledToBottom",
-{
-    value: function()
-    {
+Object.defineProperty(Element.prototype, "isScrolledToBottom", {
+    value: function value() {
         // This code works only for 0-width border
         return this.scrollTop + this.clientHeight === this.scrollHeight;
     }
 });
 
-Object.defineProperty(Element.prototype, "recalculateStyles",
-{
-    value: function()
-    {
+Object.defineProperty(Element.prototype, "recalculateStyles", {
+    value: function value() {
         this.ownerDocument.defaultView.getComputedStyle(this);
     }
 });
 
-Object.defineProperty(DocumentFragment.prototype, "createChild",
-{
+Object.defineProperty(DocumentFragment.prototype, "createChild", {
     value: Element.prototype.createChild
 });
 
-Object.defineProperty(Array.prototype, "lastValue",
-{
-    get: function()
-    {
-        if (!this.length)
-            return undefined;
+Object.defineProperty(Array.prototype, "lastValue", {
+    get: function get() {
+        if (!this.length) return undefined;
         return this[this.length - 1];
     }
 });
 
-Object.defineProperty(Array.prototype, "remove",
-{
-    value: function(value, onlyFirst)
-    {
+Object.defineProperty(Array.prototype, "remove", {
+    value: function value(_value, onlyFirst) {
         for (var i = this.length - 1; i >= 0; --i) {
-            if (this[i] === value) {
+            if (this[i] === _value) {
                 this.splice(i, 1);
-                if (onlyFirst)
-                    return;
+                if (onlyFirst) return;
             }
         }
     }
 });
 
-Object.defineProperty(Array.prototype, "keySet",
-{
-    value: function()
-    {
+Object.defineProperty(Array.prototype, "keySet", {
+    value: function value() {
         var keys = {};
-        for (var i = 0; i < this.length; ++i)
-            keys[this[i]] = true;
+        for (var i = 0; i < this.length; ++i) keys[this[i]] = true;
         return keys;
     }
 });
 
-Object.defineProperty(String.prototype, "trimMiddle",
-{
-    value: function(maxLength)
-    {
-        if (this.length <= maxLength)
-            return this;
+Object.defineProperty(String.prototype, "trimMiddle", {
+    value: function value(maxLength) {
+        if (this.length <= maxLength) return this;
         var leftHalf = maxLength >> 1;
         var rightHalf = maxLength - leftHalf - 1;
-        return this.substr(0, leftHalf) + "\u2026" + this.substr(this.length - rightHalf, rightHalf);
+        return this.substr(0, leftHalf) + "…" + this.substr(this.length - rightHalf, rightHalf);
     }
 });
 
-Object.defineProperty(String.prototype, "trimEnd",
-{
-    value: function(maxLength)
-    {
-        if (this.length <= maxLength)
-            return this;
-        return this.substr(0, maxLength - 1) + "\u2026";
+Object.defineProperty(String.prototype, "trimEnd", {
+    value: function value(maxLength) {
+        if (this.length <= maxLength) return this;
+        return this.substr(0, maxLength - 1) + "…";
     }
 });
 
-Object.defineProperty(String.prototype, "collapseWhitespace",
-{
-    value: function()
-    {
+Object.defineProperty(String.prototype, "collapseWhitespace", {
+    value: function value() {
         return this.replace(/[\s\xA0]+/g, " ");
     }
 });
 
-Object.defineProperty(String.prototype, "escapeCharacters",
-{
-    value: function(chars)
-    {
+Object.defineProperty(String.prototype, "escapeCharacters", {
+    value: function value(chars) {
         var foundChar = false;
         for (var i = 0; i < chars.length; ++i) {
             if (this.indexOf(chars.charAt(i)) !== -1) {
@@ -486,13 +386,11 @@ Object.defineProperty(String.prototype, "escapeCharacters",
             }
         }
 
-        if (!foundChar)
-            return this;
+        if (!foundChar) return this;
 
         var result = "";
         for (var i = 0; i < this.length; ++i) {
-            if (chars.indexOf(this.charAt(i)) !== -1)
-                result += "\\";
+            if (chars.indexOf(this.charAt(i)) !== -1) result += "\\";
             result += this.charAt(i);
         }
 
@@ -500,37 +398,29 @@ Object.defineProperty(String.prototype, "escapeCharacters",
     }
 });
 
-Object.defineProperty(String.prototype, "escapeForRegExp",
-{
-    value: function()
-    {
+Object.defineProperty(String.prototype, "escapeForRegExp", {
+    value: function value() {
         return this.escapeCharacters("^[]{}()\\.$*+?|");
     }
 });
 
-Object.defineProperty(String.prototype, "capitalize",
-{
-    value: function()
-    {
+Object.defineProperty(String.prototype, "capitalize", {
+    value: function value() {
         return this.charAt(0).toUpperCase() + this.slice(1);
     }
 });
 
-Object.defineProperty(String, "tokenizeFormatString",
-{
-    value: function(format)
-    {
+Object.defineProperty(String, "tokenizeFormatString", {
+    value: function value(format) {
         var tokens = [];
         var substitutionIndex = 0;
 
-        function addStringToken(str)
-        {
-            tokens.push({type: "string", value: str});
+        function addStringToken(str) {
+            tokens.push({ type: "string", value: str });
         }
 
-        function addSpecifierToken(specifier, precision, substitutionIndex)
-        {
-            tokens.push({type: "specifier", specifier, precision, substitutionIndex});
+        function addSpecifierToken(specifier, precision, substitutionIndex) {
+            tokens.push({ type: "specifier", specifier: specifier, precision: precision, substitutionIndex: substitutionIndex });
         }
 
         var index = 0;
@@ -547,13 +437,12 @@ Object.defineProperty(String, "tokenizeFormatString",
             if (!isNaN(format[index])) {
                 // The first character is a number, it might be a substitution index.
                 var number = parseInt(format.substring(index), 10);
-                while (!isNaN(format[index]))
-                    ++index;
+                while (!isNaN(format[index])) ++index;
 
                 // If the number is greater than zero and ends with a "$",
                 // then this is a substitution index.
                 if (number > 0 && format[index] === "$") {
-                    substitutionIndex = (number - 1);
+                    substitutionIndex = number - 1;
                     ++index;
                 }
             }
@@ -565,11 +454,9 @@ Object.defineProperty(String, "tokenizeFormatString",
                 ++index;
 
                 precision = parseInt(format.substring(index), 10);
-                if (isNaN(precision))
-                    precision = 0;
+                if (isNaN(precision)) precision = 0;
 
-                while (!isNaN(format[index]))
-                    ++index;
+                while (!isNaN(format[index])) ++index;
             }
 
             addSpecifierToken(format[index], precision, substitutionIndex);
@@ -584,14 +471,12 @@ Object.defineProperty(String, "tokenizeFormatString",
     }
 });
 
-Object.defineProperty(String.prototype, "hash",
-{
-    get: function()
-    {
+Object.defineProperty(String.prototype, "hash", {
+    get: function get() {
         // Matches the wtf/StringHasher.h (SuperFastHash) algorithm.
 
         // Arbitrary start value to avoid mapping all 0's to all 0's.
-        const stringHashingStartValue = 0x9e3779b9;
+        var stringHashingStartValue = 2654435769;
 
         var result = stringHashingStartValue;
         var pendingCharacter = null;
@@ -603,7 +488,7 @@ Object.defineProperty(String.prototype, "hash",
             }
 
             result += pendingCharacter;
-            result = (result << 16) ^ ((currentCharacter << 11) ^ result);
+            result = result << 16 ^ (currentCharacter << 11 ^ result);
             result += result >> 11;
 
             pendingCharacter = null;
@@ -624,51 +509,40 @@ Object.defineProperty(String.prototype, "hash",
         result ^= result << 10;
 
         // Prevent 0 and negative results.
-        return (0xffffffff + result + 1).toString(36);
+        return (4294967295 + result + 1).toString(36);
     }
 });
 
-Object.defineProperty(String, "standardFormatters",
-{
+Object.defineProperty(String, "standardFormatters", {
     value: {
-        d: function(substitution)
-        {
+        d: function d(substitution) {
             return !isNaN(substitution) ? substitution : 0;
         },
 
-        f: function(substitution, token)
-        {
-            if (substitution && token.precision > -1)
-                substitution = substitution.toFixed(token.precision);
-            return !isNaN(substitution) ? substitution : (token.precision > -1 ? Number(0).toFixed(token.precision) : 0);
+        f: function f(substitution, token) {
+            if (substitution && token.precision > -1) substitution = substitution.toFixed(token.precision);
+            return !isNaN(substitution) ? substitution : token.precision > -1 ? Number(0).toFixed(token.precision) : 0;
         },
 
-        s: function(substitution)
-        {
+        s: function s(substitution) {
             return substitution;
         }
     }
 });
 
-Object.defineProperty(String, "format",
-{
-    value: function(format, substitutions, formatters, initialValue, append)
-    {
-        if (!format || !substitutions || !substitutions.length)
-            return {formattedResult: append(initialValue, format), unusedSubstitutions: substitutions};
+Object.defineProperty(String, "format", {
+    value: function value(format, substitutions, formatters, initialValue, append) {
+        if (!format || !substitutions || !substitutions.length) return { formattedResult: append(initialValue, format), unusedSubstitutions: substitutions };
 
-        function prettyFunctionName()
-        {
+        function prettyFunctionName() {
             return "String.format(\"" + format + "\", \"" + substitutions.join("\", \"") + "\")";
         }
 
-        function warn(msg)
-        {
+        function warn(msg) {
             console.warn(prettyFunctionName() + ": " + msg);
         }
 
-        function error(msg)
-        {
+        function error(msg) {
             console.error(prettyFunctionName() + ": " + msg);
         }
 
@@ -701,7 +575,7 @@ Object.defineProperty(String, "format",
 
             if (!(token.specifier in formatters)) {
                 // Encountered an unsupported format character, treat as a string.
-                warn("unsupported format character \u201C" + token.specifier + "\u201D. Treating as a string.");
+                warn("unsupported format character “" + token.specifier + "”. Treating as a string.");
                 result = append(result, substitutions[token.substitutionIndex]);
                 continue;
             }
@@ -711,155 +585,112 @@ Object.defineProperty(String, "format",
 
         var unusedSubstitutions = [];
         for (var i = 0; i < substitutions.length; ++i) {
-            if (i in usedSubstitutionIndexes)
-                continue;
+            if (i in usedSubstitutionIndexes) continue;
             unusedSubstitutions.push(substitutions[i]);
         }
 
-        return {formattedResult: result, unusedSubstitutions};
+        return { formattedResult: result, unusedSubstitutions: unusedSubstitutions };
     }
 });
 
-Object.defineProperty(String.prototype, "format",
-{
-    value: function()
-    {
-        return String.format(this, arguments, String.standardFormatters, "", function(a, b) { return a + b; }).formattedResult;
+Object.defineProperty(String.prototype, "format", {
+    value: function value() {
+        return String.format(this, arguments, String.standardFormatters, "", function (a, b) {
+            return a + b;
+        }).formattedResult;
     }
 });
 
-Object.defineProperty(String.prototype, "insertWordBreakCharacters",
-{
-    value: function()
-    {
+Object.defineProperty(String.prototype, "insertWordBreakCharacters", {
+    value: function value() {
         // Add zero width spaces after characters that are good to break after.
         // Otherwise a string with no spaces will not break and overflow its container.
         // This is mainly used on URL strings, so the characters are tailored for URLs.
-        return this.replace(/([\/;:\)\]\}&?])/g, "$1\u200b");
+        return this.replace(/([\/;:\)\]\}&?])/g, "$1​");
     }
 });
 
-Object.defineProperty(String.prototype, "removeWordBreakCharacters",
-{
-    value: function()
-    {
+Object.defineProperty(String.prototype, "removeWordBreakCharacters", {
+    value: function value() {
         // Undoes what insertWordBreakCharacters did.
         return this.replace(/\u200b/g, "");
     }
 });
 
-Object.defineProperty(Number, "constrain",
-{
-    value: function(num, min, max)
-    {
-        if (num < min)
-            num = min;
-        else if (num > max)
-            num = max;
+Object.defineProperty(Number, "constrain", {
+    value: function value(num, min, max) {
+        if (num < min) num = min;else if (num > max) num = max;
         return num;
     }
 });
 
-Object.defineProperty(Number, "secondsToString",
-{
-    value: function(seconds, higherResolution)
-    {
+Object.defineProperty(Number, "secondsToString", {
+    value: function value(seconds, higherResolution) {
         var ms = seconds * 1000;
 
-        if (higherResolution && Math.abs(ms) < 10)
-            return WebInspector.UIString("%.3fms").format(ms);
-        else if (Math.abs(ms) < 10)
-            return WebInspector.UIString("%.2fms").format(ms);
+        if (higherResolution && Math.abs(ms) < 10) return WebInspector.UIString("%.3fms").format(ms);else if (Math.abs(ms) < 10) return WebInspector.UIString("%.2fms").format(ms);
 
-        if (higherResolution && Math.abs(ms) < 100)
-            return WebInspector.UIString("%.2fms").format(ms);
-        else if (Math.abs(ms) < 100)
-            return WebInspector.UIString("%.1fms").format(ms);
+        if (higherResolution && Math.abs(ms) < 100) return WebInspector.UIString("%.2fms").format(ms);else if (Math.abs(ms) < 100) return WebInspector.UIString("%.1fms").format(ms);
 
-        if (higherResolution && Math.abs(ms) < 1000)
-            return WebInspector.UIString("%.1fms").format(ms);
-        else if (Math.abs(ms) < 1000)
-            return WebInspector.UIString("%.0fms").format(ms);
+        if (higherResolution && Math.abs(ms) < 1000) return WebInspector.UIString("%.1fms").format(ms);else if (Math.abs(ms) < 1000) return WebInspector.UIString("%.0fms").format(ms);
 
-        if (Math.abs(seconds) < 60)
-            return WebInspector.UIString("%.2fs").format(seconds);
+        if (Math.abs(seconds) < 60) return WebInspector.UIString("%.2fs").format(seconds);
 
         var minutes = seconds / 60;
-        if (Math.abs(minutes) < 60)
-            return WebInspector.UIString("%.1fmin").format(minutes);
+        if (Math.abs(minutes) < 60) return WebInspector.UIString("%.1fmin").format(minutes);
 
         var hours = minutes / 60;
-        if (Math.abs(hours) < 24)
-            return WebInspector.UIString("%.1fhrs").format(hours);
+        if (Math.abs(hours) < 24) return WebInspector.UIString("%.1fhrs").format(hours);
 
         var days = hours / 24;
         return WebInspector.UIString("%.1f days").format(days);
     }
 });
 
-Object.defineProperty(Number, "bytesToString",
-{
-    value: function(bytes, higherResolution)
-    {
-        if (higherResolution === undefined)
-            higherResolution = true;
+Object.defineProperty(Number, "bytesToString", {
+    value: function value(bytes, higherResolution) {
+        if (higherResolution === undefined) higherResolution = true;
 
-        if (Math.abs(bytes) < 1024)
-            return WebInspector.UIString("%.0f B").format(bytes);
+        if (Math.abs(bytes) < 1024) return WebInspector.UIString("%.0f B").format(bytes);
 
         var kilobytes = bytes / 1024;
-        if (Math.abs(kilobytes) < 10 || (higherResolution && Math.abs(kilobytes) < 1024))
-            return WebInspector.UIString("%.2f KB").format(kilobytes);
-        else if (Math.abs(kilobytes) < 1024)
-            return WebInspector.UIString("%.1f KB").format(kilobytes);
+        if (Math.abs(kilobytes) < 10 || higherResolution && Math.abs(kilobytes) < 1024) return WebInspector.UIString("%.2f KB").format(kilobytes);else if (Math.abs(kilobytes) < 1024) return WebInspector.UIString("%.1f KB").format(kilobytes);
 
         var megabytes = kilobytes / 1024;
-        if (higherResolution || Math.abs(megabytes) < 10)
-            return WebInspector.UIString("%.2f MB").format(megabytes);
-        else
-            return WebInspector.UIString("%.1f MB").format(megabytes);
+        if (higherResolution || Math.abs(megabytes) < 10) return WebInspector.UIString("%.2f MB").format(megabytes);else return WebInspector.UIString("%.1f MB").format(megabytes);
     }
 });
 
-Object.defineProperty(Uint32Array, "isLittleEndian",
-{
-    value: function()
-    {
-        if ("_isLittleEndian" in this)
-            return this._isLittleEndian;
+Object.defineProperty(Uint32Array, "isLittleEndian", {
+    value: function value() {
+        if ("_isLittleEndian" in this) return this._isLittleEndian;
 
         var buffer = new ArrayBuffer(4);
         var longData = new Uint32Array(buffer);
         var data = new Uint8Array(buffer);
 
-        longData[0] = 0x0a0b0c0d;
+        longData[0] = 168496141;
 
-        this._isLittleEndian = data[0] === 0x0d && data[1] === 0x0c && data[2] === 0x0b && data[3] === 0x0a;
+        this._isLittleEndian = data[0] === 13 && data[1] === 12 && data[2] === 11 && data[3] === 10;
 
         return this._isLittleEndian;
     }
 });
 
-function isEmptyObject(object)
-{
-    for (var property in object)
-        return false;
+function isEmptyObject(object) {
+    for (var property in object) return false;
     return true;
 }
 
-function isEnterKey(event)
-{
+function isEnterKey(event) {
     // Check if this is an IME event.
     return event.keyCode !== 229 && event.keyIdentifier === "Enter";
 }
 
-function resolveDotsInPath(path)
-{
-    if (!path)
-        return path;
+function resolveDotsInPath(path) {
+    if (!path) return path;
 
-    if (path.indexOf("./") === -1)
-        return path;
+    if (path.indexOf("./") === -1) return path;
 
     console.assert(path.charAt(0) === "/");
 
@@ -870,13 +701,11 @@ function resolveDotsInPath(path)
         var component = components[i];
 
         // Skip over "./".
-        if (component === ".")
-            continue;
+        if (component === ".") continue;
 
         // Rewind one component for "../".
         if (component === "..") {
-            if (result.length === 1)
-                continue;
+            if (result.length === 1) continue;
             result.pop();
             continue;
         }
@@ -887,10 +716,8 @@ function resolveDotsInPath(path)
     return result.join("/");
 }
 
-function parseMIMEType(fullMimeType)
-{
-    if (!fullMimeType)
-        return {type: fullMimeType, boundary: null, encoding: null};
+function parseMIMEType(fullMimeType) {
+    if (!fullMimeType) return { type: fullMimeType, boundary: null, encoding: null };
 
     var typeParts = fullMimeType.split(/\s*;\s*/);
     console.assert(typeParts.length >= 1);
@@ -901,24 +728,18 @@ function parseMIMEType(fullMimeType)
 
     for (var i = 1; i < typeParts.length; ++i) {
         var subparts = typeParts[i].split(/\s*=\s*/);
-        if (subparts.length !== 2)
-            continue;
+        if (subparts.length !== 2) continue;
 
-        if (subparts[0].toLowerCase() === "boundary")
-            boundary = subparts[1];
-        else if (subparts[0].toLowerCase() === "charset")
-            encoding = subparts[1].replace("^\"|\"$", ""); // Trim quotes.
+        if (subparts[0].toLowerCase() === "boundary") boundary = subparts[1];else if (subparts[0].toLowerCase() === "charset") encoding = subparts[1].replace("^\"|\"$", ""); // Trim quotes.
     }
 
-    return {type, boundary: boundary || null, encoding: encoding || null};
+    return { type: type, boundary: boundary || null, encoding: encoding || null };
 }
 
-function simpleGlobStringToRegExp(globString, regExpFlags)
-{
+function simpleGlobStringToRegExp(globString, regExpFlags) {
     // Only supports "*" globs.
 
-    if (!globString)
-        return null;
+    if (!globString) return null;
 
     // Escape everything from String.prototype.escapeForRegExp except "*".
     var regexString = globString.escapeCharacters("^[]{}()\\.$+?|");
@@ -946,84 +767,66 @@ function simpleGlobStringToRegExp(globString, regExpFlags)
     return new RegExp(regexString, regExpFlags);
 }
 
-Object.defineProperty(Array.prototype, "lowerBound",
-{
+Object.defineProperty(Array.prototype, "lowerBound", {
     // Return index of the leftmost element that is equal or greater
     // than the specimen object. If there's no such element (i.e. all
     // elements are smaller than the specimen) returns array.length.
     // The function works for sorted array.
-    value: function(object, comparator)
-    {
-        function defaultComparator(a, b)
-        {
+    value: function value(object, comparator) {
+        function defaultComparator(a, b) {
             return a - b;
         }
         comparator = comparator || defaultComparator;
         var l = 0;
         var r = this.length;
         while (l < r) {
-            var m = (l + r) >> 1;
-            if (comparator(object, this[m]) > 0)
-                l = m + 1;
-            else
-                r = m;
+            var m = l + r >> 1;
+            if (comparator(object, this[m]) > 0) l = m + 1;else r = m;
         }
         return r;
     }
 });
 
-Object.defineProperty(Array.prototype, "upperBound",
-{
+Object.defineProperty(Array.prototype, "upperBound", {
     // Return index of the leftmost element that is greater
     // than the specimen object. If there's no such element (i.e. all
     // elements are smaller than the specimen) returns array.length.
     // The function works for sorted array.
-    value: function(object, comparator)
-    {
-        function defaultComparator(a, b)
-        {
+    value: function value(object, comparator) {
+        function defaultComparator(a, b) {
             return a - b;
         }
         comparator = comparator || defaultComparator;
         var l = 0;
         var r = this.length;
         while (l < r) {
-            var m = (l + r) >> 1;
-            if (comparator(object, this[m]) >= 0)
-                l = m + 1;
-            else
-                r = m;
+            var m = l + r >> 1;
+            if (comparator(object, this[m]) >= 0) l = m + 1;else r = m;
         }
         return r;
     }
 });
 
-Object.defineProperty(Array.prototype, "binaryIndexOf",
-{
-    value: function(value, comparator)
-    {
-        var index = this.lowerBound(value, comparator);
-        return index < this.length && comparator(value, this[index]) === 0 ? index : -1;
+Object.defineProperty(Array.prototype, "binaryIndexOf", {
+    value: function value(_value2, comparator) {
+        var index = this.lowerBound(_value2, comparator);
+        return index < this.length && comparator(_value2, this[index]) === 0 ? index : -1;
     }
 });
 
-function isFunctionStringNativeCode(str)
-{
+function isFunctionStringNativeCode(str) {
     return str.endsWith("{\n    [native code]\n}");
 }
 
-function doubleQuotedString(str)
-{
+function doubleQuotedString(str) {
     return "\"" + str.replace(/"/g, "\\\"") + "\"";
 }
 
-function clamp(min, value, max)
-{
+function clamp(min, value, max) {
     return Math.min(Math.max(min, value), max);
 }
 
-function insertionIndexForObjectInListSortedByFunction(object, list, comparator, insertionIndexAfter)
-{
+function insertionIndexForObjectInListSortedByFunction(object, list, comparator, insertionIndexAfter) {
     if (insertionIndexAfter) {
         return list.upperBound(object, comparator);
     } else {
@@ -1031,16 +834,14 @@ function insertionIndexForObjectInListSortedByFunction(object, list, comparator,
     }
 }
 
-function insertObjectIntoSortedArray(object, array, comparator)
-{
+function insertObjectIntoSortedArray(object, array, comparator) {
     array.splice(insertionIndexForObjectInListSortedByFunction(object, array, comparator), 0, object);
 }
 
-function decodeBase64ToBlob(base64Data, mimeType)
-{
-    mimeType = mimeType || '';
+function decodeBase64ToBlob(base64Data, mimeType) {
+    mimeType = mimeType || "";
 
-    const sliceSize = 1024;
+    var sliceSize = 1024;
     var byteCharacters = atob(base64Data);
     var bytesLength = byteCharacters.length;
     var slicesCount = Math.ceil(bytesLength / sliceSize);
@@ -1051,11 +852,10 @@ function decodeBase64ToBlob(base64Data, mimeType)
         var end = Math.min(begin + sliceSize, bytesLength);
 
         var bytes = new Array(end - begin);
-        for (var offset = begin, i = 0 ; offset < end; ++i, ++offset)
-            bytes[i] = byteCharacters[offset].charCodeAt(0);
+        for (var offset = begin, i = 0; offset < end; ++i, ++offset) bytes[i] = byteCharacters[offset].charCodeAt(0);
 
         byteArrays[sliceIndex] = new Uint8Array(bytes);
     }
 
-    return new Blob(byteArrays, {type: mimeType});
+    return new Blob(byteArrays, { type: mimeType });
 }

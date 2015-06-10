@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ObjectPreview = class ObjectPreview extends WebInspector.Object
-{
-    constructor(type, subtype, description, lossless, overflow, properties, entries, size)
-    {
-        super();
+WebInspector.ObjectPreview = (function (_WebInspector$Object) {
+    function ObjectPreview(type, subtype, description, lossless, overflow, properties, entries, size) {
+        _classCallCheck(this, ObjectPreview);
+
+        _get(Object.getPrototypeOf(ObjectPreview.prototype), "constructor", this).call(this);
 
         console.assert(type);
         console.assert(typeof lossless === "boolean");
@@ -45,73 +53,83 @@ WebInspector.ObjectPreview = class ObjectPreview extends WebInspector.Object
         this._entries = entries || null;
     }
 
-    // Static
+    _inherits(ObjectPreview, _WebInspector$Object);
 
-    // Runtime.ObjectPreview.
-    static fromPayload(payload)
-    {
-        if (payload.properties)
-            payload.properties = payload.properties.map(function(property) { return WebInspector.PropertyPreview.fromPayload(property); });
-        if (payload.entries)
-            payload.entries = payload.entries.map(function(entry) { return WebInspector.CollectionEntryPreview.fromPayload(entry); });
-
-        if (payload.subtype === "array") {
-            // COMPATIBILITY (iOS 8): Runtime.ObjectPreview did not have size property,
-            // instead it was tacked onto the end of the description, like "Array[#]".
-            var match = payload.description.match(/\[(\d+)\]$/);
-            if (match) {
-                payload.size = parseInt(match[1]);
-                payload.description = payload.description.replace(/\[\d+\]$/, "");
-            }
+    _createClass(ObjectPreview, [{
+        key: "hasSize",
+        value: function hasSize() {
+            return this._size !== undefined && (this._subtype === "array" || this._subtype === "set" || this._subtype === "map" || this._subtype === "weakmap" || this._subtype === "weakset");
         }
+    }, {
+        key: "type",
 
-        return new WebInspector.ObjectPreview(payload.type, payload.subtype, payload.description, payload.lossless, payload.overflow, payload.properties, payload.entries, payload.size);
-    }
+        // Public
 
-    // Public
+        get: function () {
+            return this._type;
+        }
+    }, {
+        key: "subtype",
+        get: function () {
+            return this._subtype;
+        }
+    }, {
+        key: "description",
+        get: function () {
+            return this._description;
+        }
+    }, {
+        key: "lossless",
+        get: function () {
+            return this._lossless;
+        }
+    }, {
+        key: "overflow",
+        get: function () {
+            return this._overflow;
+        }
+    }, {
+        key: "propertyPreviews",
+        get: function () {
+            return this._properties;
+        }
+    }, {
+        key: "collectionEntryPreviews",
+        get: function () {
+            return this._entries;
+        }
+    }, {
+        key: "size",
+        get: function () {
+            return this._size;
+        }
+    }], [{
+        key: "fromPayload",
 
-    get type()
-    {
-        return this._type;
-    }
+        // Static
 
-    get subtype()
-    {
-        return this._subtype;
-    }
+        // Runtime.ObjectPreview.
+        value: function fromPayload(payload) {
+            if (payload.properties) payload.properties = payload.properties.map(function (property) {
+                return WebInspector.PropertyPreview.fromPayload(property);
+            });
+            if (payload.entries) payload.entries = payload.entries.map(function (entry) {
+                return WebInspector.CollectionEntryPreview.fromPayload(entry);
+            });
 
-    get description()
-    {
-        return this._description;
-    }
+            if (payload.subtype === "array") {
+                // COMPATIBILITY (iOS 8): Runtime.ObjectPreview did not have size property,
+                // instead it was tacked onto the end of the description, like "Array[#]".
+                var match = payload.description.match(/\[(\d+)\]$/);
+                if (match) {
+                    payload.size = parseInt(match[1]);
+                    payload.description = payload.description.replace(/\[\d+\]$/, "");
+                }
+            }
 
-    get lossless()
-    {
-        return this._lossless;
-    }
+            return new WebInspector.ObjectPreview(payload.type, payload.subtype, payload.description, payload.lossless, payload.overflow, payload.properties, payload.entries, payload.size);
+        }
+    }]);
 
-    get overflow()
-    {
-        return this._overflow;
-    }
-
-    get propertyPreviews()
-    {
-        return this._properties;
-    }
-
-    get collectionEntryPreviews()
-    {
-        return this._entries;
-    }
-
-    get size()
-    {
-        return this._size;
-    }
-
-    hasSize()
-    {
-        return this._size !== undefined && (this._subtype === "array" || this._subtype === "set" || this._subtype === "map" || this._subtype === "weakmap" || this._subtype === "weakset");
-    }
-};
+    return ObjectPreview;
+})(WebInspector.Object);

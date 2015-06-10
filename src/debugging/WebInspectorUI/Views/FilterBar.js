@@ -1,3 +1,13 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,19 +33,19 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.FilterBar = class FilterBar extends WebInspector.Object
-{
-    constructor(element)
-    {
-        super();
+WebInspector.FilterBar = (function (_WebInspector$Object) {
+    function FilterBar(element) {
+        _classCallCheck(this, FilterBar);
+
+        _get(Object.getPrototypeOf(FilterBar.prototype), "constructor", this).call(this);
 
         this._element = element || document.createElement("div");
         this._element.classList.add("filter-bar");
 
-        this._filtersNavigationBar = new WebInspector.NavigationBar;
+        this._filtersNavigationBar = new WebInspector.NavigationBar();
         this._element.appendChild(this._filtersNavigationBar.element);
 
-        this._filterFunctionsMap = new Map;
+        this._filterFunctionsMap = new Map();
 
         this._inputField = document.createElement("input");
         this._inputField.type = "search";
@@ -45,83 +55,83 @@ WebInspector.FilterBar = class FilterBar extends WebInspector.Object
         this._element.appendChild(this._inputField);
     }
 
-    // Public
+    _inherits(FilterBar, _WebInspector$Object);
 
-    get element()
-    {
-        return this._element;
-    }
+    _createClass(FilterBar, [{
+        key: "addFilterBarButton",
+        value: function addFilterBarButton(identifier, filterFunction, activatedByDefault, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss) {
+            var filterBarButton = new WebInspector.FilterBarButton(identifier, filterFunction, activatedByDefault, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss);
+            filterBarButton.addEventListener(WebInspector.ButtonNavigationItem.Event.Clicked, this._handleFilterBarButtonClicked, this);
+            filterBarButton.addEventListener(WebInspector.FilterBarButton.Event.ActivatedStateToggled, this._handleFilterButtonToggled, this);
+            this._filtersNavigationBar.addNavigationItem(filterBarButton);
+            if (filterBarButton.activated) {
+                this._filterFunctionsMap.set(filterBarButton.identifier, filterBarButton.filterFunction);
+                this._handleFilterChanged();
+            }
+        }
+    }, {
+        key: "hasActiveFilters",
+        value: function hasActiveFilters() {
+            return !!this._inputField.value || !!this._filterFunctionsMap.size;
+        }
+    }, {
+        key: "_handleFilterBarButtonClicked",
 
-    get placeholder()
-    {
-        return this._inputField.getAttribute("placeholder");
-    }
+        // Private
 
-    set placeholder(text)
-    {
-        this._inputField.setAttribute("placeholder", text);
-    }
-
-    get inputField()
-    {
-        return this._inputField;
-    }
-
-    get filters()
-    {
-        return {text: this._inputField.value, functions: [...this._filterFunctionsMap.values()]};
-    }
-
-    set filters(filters)
-    {
-        filters = filters || {};
-
-        var oldTextValue = this._inputField.value;
-        this._inputField.value = filters.text || "";
-        if (oldTextValue !== this._inputField.value)
-            this._handleFilterChanged();
-    }
-
-    addFilterBarButton(identifier, filterFunction, activatedByDefault, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss)
-    {
-        var filterBarButton = new WebInspector.FilterBarButton(identifier, filterFunction, activatedByDefault, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss);
-        filterBarButton.addEventListener(WebInspector.ButtonNavigationItem.Event.Clicked, this._handleFilterBarButtonClicked, this);
-        filterBarButton.addEventListener(WebInspector.FilterBarButton.Event.ActivatedStateToggled, this._handleFilterButtonToggled, this);
-        this._filtersNavigationBar.addNavigationItem(filterBarButton);
-        if (filterBarButton.activated) {
-            this._filterFunctionsMap.set(filterBarButton.identifier, filterBarButton.filterFunction);
+        value: function _handleFilterBarButtonClicked(event) {
+            var filterBarButton = event.target;
+            filterBarButton.toggle();
+        }
+    }, {
+        key: "_handleFilterButtonToggled",
+        value: function _handleFilterButtonToggled(event) {
+            var filterBarButton = event.target;
+            if (filterBarButton.activated) this._filterFunctionsMap.set(filterBarButton.identifier, filterBarButton.filterFunction);else this._filterFunctionsMap["delete"](filterBarButton.identifier);
             this._handleFilterChanged();
         }
-    }
+    }, {
+        key: "_handleFilterChanged",
+        value: function _handleFilterChanged() {
+            this.dispatchEventToListeners(WebInspector.FilterBar.Event.FilterDidChange);
+        }
+    }, {
+        key: "element",
 
-    hasActiveFilters()
-    {
-        return !!this._inputField.value || !!this._filterFunctionsMap.size;
-    }
+        // Public
 
-    // Private
+        get: function () {
+            return this._element;
+        }
+    }, {
+        key: "placeholder",
+        get: function () {
+            return this._inputField.getAttribute("placeholder");
+        },
+        set: function (text) {
+            this._inputField.setAttribute("placeholder", text);
+        }
+    }, {
+        key: "inputField",
+        get: function () {
+            return this._inputField;
+        }
+    }, {
+        key: "filters",
+        get: function () {
+            return { text: this._inputField.value, functions: [].concat(_toConsumableArray(this._filterFunctionsMap.values())) };
+        },
+        set: function (filters) {
+            filters = filters || {};
 
-    _handleFilterBarButtonClicked(event)
-    {
-        var filterBarButton = event.target;
-        filterBarButton.toggle();
-    }
+            var oldTextValue = this._inputField.value;
+            this._inputField.value = filters.text || "";
+            if (oldTextValue !== this._inputField.value) this._handleFilterChanged();
+        }
+    }]);
 
-    _handleFilterButtonToggled(event)
-    {
-        var filterBarButton = event.target;
-        if (filterBarButton.activated)
-            this._filterFunctionsMap.set(filterBarButton.identifier, filterBarButton.filterFunction);
-        else
-            this._filterFunctionsMap.delete(filterBarButton.identifier);
-        this._handleFilterChanged();
-    }
-
-    _handleFilterChanged()
-    {
-        this.dispatchEventToListeners(WebInspector.FilterBar.Event.FilterDidChange);
-    }
-};
+    return FilterBar;
+})(WebInspector.Object);
 
 WebInspector.FilterBar.Event = {
     FilterDidChange: "filter-bar-text-filter-did-change"

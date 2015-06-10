@@ -1,3 +1,5 @@
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i]; return arr2; } else { return Array.from(arr); } }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,7 +25,9 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.NavigationItem = function(identifier, role, label) {
+WebInspector.NavigationItem = function (identifier, role, label) {
+    var _element$classList;
+
     // FIXME: Convert this to a WebInspector.Object subclass, and call super().
     // WebInspector.Object.call(this);
 
@@ -32,76 +36,75 @@ WebInspector.NavigationItem = function(identifier, role, label) {
     this._element = document.createElement("div");
     this._hidden = false;
 
-    if (role)
-        this._element.setAttribute("role", role);
-    if (label)
-        this._element.setAttribute("aria-label", label);
+    if (role) this._element.setAttribute("role", role);
+    if (label) this._element.setAttribute("aria-label", label);
 
-    this._element.classList.add(...this._classNames);
+    (_element$classList = this._element.classList).add.apply(_element$classList, _toConsumableArray(this._classNames));
     this._element.navigationItem = this;
 };
 
 WebInspector.NavigationItem.StyleClassName = "item";
 WebInspector.NavigationItem.HiddenStyleClassName = "hidden";
 
-
-WebInspector.NavigationItem.prototype = {
+WebInspector.NavigationItem.prototype = Object.defineProperties({
     constructor: WebInspector.NavigationItem,
 
-    // Public
+    updateLayout: function updateLayout(expandOnly) {}
 
-    get identifier()
-    {
-        return this._identifier;
+}, {
+    identifier: { // Public
+
+        get: function () {
+            return this._identifier;
+        },
+        configurable: true,
+        enumerable: true
     },
-
-    get element()
-    {
-        return this._element;
+    element: {
+        get: function () {
+            return this._element;
+        },
+        configurable: true,
+        enumerable: true
     },
-
-    get parentNavigationBar()
-    {
-        return this._parentNavigationBar;
+    parentNavigationBar: {
+        get: function () {
+            return this._parentNavigationBar;
+        },
+        configurable: true,
+        enumerable: true
     },
+    hidden: {
+        get: function () {
+            return this._hidden;
+        },
+        set: function (flag) {
+            if (this._hidden === flag) return;
 
-    updateLayout: function(expandOnly)
-    {
-        // Implemented by subclasses.
+            this._hidden = flag;
+
+            if (flag) this._element.classList.add(WebInspector.NavigationItem.HiddenStyleClassName);else this._element.classList.remove(WebInspector.NavigationItem.HiddenStyleClassName);
+
+            if (this._parentNavigationBar) this._parentNavigationBar.updateLayoutSoon();
+        },
+        configurable: true,
+        enumerable: true
     },
+    _classNames: {
 
-    get hidden()
-    {
-        return this._hidden;
-    },
+        // Private
 
-    set hidden(flag)
-    {
-        if (this._hidden === flag)
-            return;
-
-        this._hidden = flag;
-
-        if (flag)
-            this._element.classList.add(WebInspector.NavigationItem.HiddenStyleClassName);
-        else
-            this._element.classList.remove(WebInspector.NavigationItem.HiddenStyleClassName);
-
-        if (this._parentNavigationBar)
-            this._parentNavigationBar.updateLayoutSoon();
-    },
-
-    // Private
-
-    get _classNames()
-    {
-        var classNames = [WebInspector.NavigationItem.StyleClassName];
-        if (this._identifier)
-            classNames.push(this._identifier);
-        if (this._additionalClassNames instanceof Array)
-            classNames = classNames.concat(this._additionalClassNames);
-        return classNames;
+        get: function () {
+            var classNames = [WebInspector.NavigationItem.StyleClassName];
+            if (this._identifier) classNames.push(this._identifier);
+            if (this._additionalClassNames instanceof Array) classNames = classNames.concat(this._additionalClassNames);
+            return classNames;
+        },
+        configurable: true,
+        enumerable: true
     }
-};
+});
 
 WebInspector.NavigationItem.prototype.__proto__ = WebInspector.Object.prototype;
+
+// Implemented by subclasses.

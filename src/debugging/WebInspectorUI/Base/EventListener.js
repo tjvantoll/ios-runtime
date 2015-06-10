@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2014, 2015 Apple Inc. All rights reserved.
  * Copyright (C) 2013, 2014 University of Washington. All rights reserved.
@@ -24,67 +28,61 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.EventListener = class EventListener
-{
-    constructor(thisObject, fireOnce)
-    {
+WebInspector.EventListener = (function () {
+    function EventListener(thisObject, fireOnce) {
+        _classCallCheck(this, EventListener);
+
         this._thisObject = thisObject;
         this._emitter = null;
         this._callback = null;
         this._fireOnce = fireOnce;
     }
 
-    // Public
+    _createClass(EventListener, [{
+        key: "connect",
 
-    connect(emitter, type, callback, usesCapture)
-    {
-        console.assert(!this._emitter && !this._callback, "EventListener already bound to a callback.", this);
-        console.assert(callback, "Missing callback for event: " + type);
-        console.assert(emitter, "Missing event emitter for event: " + type);
-        var emitterIsValid = emitter && (emitter instanceof WebInspector.Object || emitter instanceof Node || (typeof emitter.addEventListener === "function"));
-        console.assert(emitterIsValid,  "Event emitter ", emitter, " (type:" + type + ") is null or does not implement Node or WebInspector.Object!");
+        // Public
 
-        if (!emitterIsValid || !type || !callback)
-            return;
+        value: function connect(emitter, type, callback, usesCapture) {
+            console.assert(!this._emitter && !this._callback, "EventListener already bound to a callback.", this);
+            console.assert(callback, "Missing callback for event: " + type);
+            console.assert(emitter, "Missing event emitter for event: " + type);
+            var emitterIsValid = emitter && (emitter instanceof WebInspector.Object || emitter instanceof Node || typeof emitter.addEventListener === "function");
+            console.assert(emitterIsValid, "Event emitter ", emitter, " (type:" + type + ") is null or does not implement Node or WebInspector.Object!");
 
-        this._emitter = emitter;
-        this._type = type;
-        this._usesCapture = !!usesCapture;
+            if (!emitterIsValid || !type || !callback) return;
 
-        if (emitter instanceof Node)
-            callback = callback.bind(this._thisObject);
+            this._emitter = emitter;
+            this._type = type;
+            this._usesCapture = !!usesCapture;
 
-        if (this._fireOnce) {
-            var listener = this;
-            this._callback = function() {
-                listener.disconnect();
-                callback.apply(this, arguments);
-            };
-        } else
-            this._callback = callback;
+            if (emitter instanceof Node) callback = callback.bind(this._thisObject);
 
-        if (this._emitter instanceof Node)
-            this._emitter.addEventListener(this._type, this._callback, this._usesCapture);
-        else
-            this._emitter.addEventListener(this._type, this._callback, this._thisObject);
-    }
+            if (this._fireOnce) {
+                var listener = this;
+                this._callback = function () {
+                    listener.disconnect();
+                    callback.apply(this, arguments);
+                };
+            } else this._callback = callback;
 
-    disconnect()
-    {
-        console.assert(this._emitter && this._callback, "EventListener is not bound to a callback.", this);
+            if (this._emitter instanceof Node) this._emitter.addEventListener(this._type, this._callback, this._usesCapture);else this._emitter.addEventListener(this._type, this._callback, this._thisObject);
+        }
+    }, {
+        key: "disconnect",
+        value: function disconnect() {
+            console.assert(this._emitter && this._callback, "EventListener is not bound to a callback.", this);
 
-        if (!this._emitter || !this._callback)
-            return;
+            if (!this._emitter || !this._callback) return;
 
-        if (this._emitter instanceof Node)
-            this._emitter.removeEventListener(this._type, this._callback, this._usesCapture);
-        else
-            this._emitter.removeEventListener(this._type, this._callback, this._thisObject);
+            if (this._emitter instanceof Node) this._emitter.removeEventListener(this._type, this._callback, this._usesCapture);else this._emitter.removeEventListener(this._type, this._callback, this._thisObject);
 
-        if (this._fireOnce)
-            delete this._thisObject;
-        delete this._emitter;
-        delete this._type;
-        delete this._callback;
-    }
-};
+            if (this._fireOnce) delete this._thisObject;
+            delete this._emitter;
+            delete this._type;
+            delete this._callback;
+        }
+    }]);
+
+    return EventListener;
+})();

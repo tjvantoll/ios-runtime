@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ResourceTimelineDataGridNode = function(resourceTimelineRecord, graphOnly, graphDataSource)
-{
+WebInspector.ResourceTimelineDataGridNode = function (resourceTimelineRecord, graphOnly, graphDataSource) {
     WebInspector.TimelineDataGridNode.call(this, graphOnly, graphDataSource);
 
     this._resource = resourceTimelineRecord.resource;
@@ -48,91 +47,46 @@ WebInspector.Object.deprecatedAddConstructorFunctions(WebInspector.ResourceTimel
 WebInspector.ResourceTimelineDataGridNode.IconStyleClassName = "icon";
 WebInspector.ResourceTimelineDataGridNode.ErrorStyleClassName = "error";
 
-WebInspector.ResourceTimelineDataGridNode.prototype = {
+WebInspector.ResourceTimelineDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.ResourceTimelineDataGridNode,
     __proto__: WebInspector.TimelineDataGridNode.prototype,
 
-    // Public
-
-    get records()
-    {
-        return [this._record];
-    },
-
-    get resource()
-    {
-        return this._resource;
-    },
-
-    get data()
-    {
-        if (this._cachedData)
-            return this._cachedData;
-
-        var resource = this._resource;
-        var data = {};
-
-        if (!this._graphOnly) {
-            var zeroTime = this.graphDataSource ? this.graphDataSource.zeroTime : 0;
-
-            data.domain = WebInspector.displayNameForHost(resource.urlComponents.host);
-            data.scheme = resource.urlComponents.scheme ? resource.urlComponents.scheme.toUpperCase() : "";
-            data.method = resource.requestMethod;
-            data.type = resource.type;
-            data.statusCode = resource.statusCode;
-            data.cached = resource.cached;
-            data.size = resource.size;
-            data.transferSize = resource.transferSize;
-            data.requestSent = resource.requestSentTimestamp - zeroTime;
-            data.duration = resource.receiveDuration;
-            data.latency = resource.latency;
-        }
-
-        data.graph = this._record.startTime;
-
-        this._cachedData = data;
-        return data;
-    },
-
-    createCellContent: function(columnIdentifier, cell)
-    {
+    createCellContent: function createCellContent(columnIdentifier, cell) {
         var resource = this._resource;
 
-        if (resource.failed || resource.canceled || resource.statusCode >= 400)
-            cell.classList.add(WebInspector.ResourceTimelineDataGridNode.ErrorStyleClassName);
+        if (resource.failed || resource.canceled || resource.statusCode >= 400) cell.classList.add(WebInspector.ResourceTimelineDataGridNode.ErrorStyleClassName);
 
-        const emptyValuePlaceholderString = "\u2014";
+        var emptyValuePlaceholderString = "—";
         var value = this.data[columnIdentifier];
 
         switch (columnIdentifier) {
-        case "type":
-            return WebInspector.Resource.displayNameForType(value);
+            case "type":
+                return WebInspector.Resource.displayNameForType(value);
 
-        case "statusCode":
-            cell.title = resource.statusText || "";
-            return value || emptyValuePlaceholderString;
+            case "statusCode":
+                cell.title = resource.statusText || "";
+                return value || emptyValuePlaceholderString;
 
-        case "cached":
-            return value ? WebInspector.UIString("Yes") : WebInspector.UIString("No");
+            case "cached":
+                return value ? WebInspector.UIString("Yes") : WebInspector.UIString("No");
 
-        case "domain":
-            return value || emptyValuePlaceholderString;
+            case "domain":
+                return value || emptyValuePlaceholderString;
 
-        case "size":
-        case "transferSize":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.bytesToString(value, true);
+            case "size":
+            case "transferSize":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.bytesToString(value, true);
 
-        case "requestSent":
-        case "latency":
-        case "duration":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
+            case "requestSent":
+            case "latency":
+            case "duration":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
         }
 
         return WebInspector.TimelineDataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
     },
 
-    refresh: function()
-    {
+    refresh: function refresh() {
         if (this._scheduledRefreshIdentifier) {
             cancelAnimationFrame(this._scheduledRefreshIdentifier);
             delete this._scheduledRefreshIdentifier;
@@ -145,22 +99,65 @@ WebInspector.ResourceTimelineDataGridNode.prototype = {
 
     // Private
 
-    _needsRefresh: function()
-    {
+    _needsRefresh: function _needsRefresh() {
         if (this.dataGrid instanceof WebInspector.TimelineDataGrid) {
             this.dataGrid.dataGridNodeNeedsRefresh(this);
             return;
         }
 
-        if (this._scheduledRefreshIdentifier)
-            return;
+        if (this._scheduledRefreshIdentifier) return;
 
         this._scheduledRefreshIdentifier = requestAnimationFrame(this.refresh.bind(this));
     },
 
-    _timelineRecordUpdated: function(event)
-    {
-        if (this.isRecordVisible(this._record))
-            this.needsGraphRefresh();
+    _timelineRecordUpdated: function _timelineRecordUpdated(event) {
+        if (this.isRecordVisible(this._record)) this.needsGraphRefresh();
     }
-};
+}, {
+    records: { // Public
+
+        get: function () {
+            return [this._record];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    resource: {
+        get: function () {
+            return this._resource;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            if (this._cachedData) return this._cachedData;
+
+            var resource = this._resource;
+            var data = {};
+
+            if (!this._graphOnly) {
+                var zeroTime = this.graphDataSource ? this.graphDataSource.zeroTime : 0;
+
+                data.domain = WebInspector.displayNameForHost(resource.urlComponents.host);
+                data.scheme = resource.urlComponents.scheme ? resource.urlComponents.scheme.toUpperCase() : "";
+                data.method = resource.requestMethod;
+                data.type = resource.type;
+                data.statusCode = resource.statusCode;
+                data.cached = resource.cached;
+                data.size = resource.size;
+                data.transferSize = resource.transferSize;
+                data.requestSent = resource.requestSentTimestamp - zeroTime;
+                data.duration = resource.receiveDuration;
+                data.latency = resource.latency;
+            }
+
+            data.graph = this._record.startTime;
+
+            this._cachedData = data;
+            return data;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

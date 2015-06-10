@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014 Apple Inc. All rights reserved.
  *
@@ -23,34 +31,47 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.NetworkTimeline = class NetworkTimeline extends WebInspector.Timeline
-{
-    // Public
+WebInspector.NetworkTimeline = (function (_WebInspector$Timeline) {
+    function NetworkTimeline() {
+        _classCallCheck(this, NetworkTimeline);
 
-    recordForResource(resource)
-    {
-        console.assert(resource instanceof WebInspector.Resource);
-
-        return this._resourceRecordMap.get(resource) || null;
+        if (_WebInspector$Timeline != null) {
+            _WebInspector$Timeline.apply(this, arguments);
+        }
     }
 
-    reset(suppressEvents)
-    {
-        this._resourceRecordMap = new Map;
+    _inherits(NetworkTimeline, _WebInspector$Timeline);
 
-        super.reset(suppressEvents);
-    }
+    _createClass(NetworkTimeline, [{
+        key: "recordForResource",
 
-    addRecord(record)
-    {
-        console.assert(record instanceof WebInspector.ResourceTimelineRecord);
+        // Public
 
-        // Don't allow duplicate records for a resource.
-        if (this._resourceRecordMap.has(record.resource))
-            return;
+        value: function recordForResource(resource) {
+            console.assert(resource instanceof WebInspector.Resource);
 
-        this._resourceRecordMap.set(record.resource, record);
+            return this._resourceRecordMap.get(resource) || null;
+        }
+    }, {
+        key: "reset",
+        value: function reset(suppressEvents) {
+            this._resourceRecordMap = new Map();
 
-        super.addRecord(record);
-    }
-};
+            _get(Object.getPrototypeOf(NetworkTimeline.prototype), "reset", this).call(this, suppressEvents);
+        }
+    }, {
+        key: "addRecord",
+        value: function addRecord(record) {
+            console.assert(record instanceof WebInspector.ResourceTimelineRecord);
+
+            // Don't allow duplicate records for a resource.
+            if (this._resourceRecordMap.has(record.resource)) return;
+
+            this._resourceRecordMap.set(record.resource, record);
+
+            _get(Object.getPrototypeOf(NetworkTimeline.prototype), "addRecord", this).call(this, record);
+        }
+    }]);
+
+    return NetworkTimeline;
+})(WebInspector.Timeline);

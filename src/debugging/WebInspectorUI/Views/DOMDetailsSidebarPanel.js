@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,90 +31,90 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMDetailsSidebarPanel = class DOMDetailsSidebarPanel extends WebInspector.DetailsSidebarPanel
-{
-    constructor(identifier, displayName, singularDisplayName, element)
-    {
-        super(identifier, displayName, singularDisplayName, element);
+WebInspector.DOMDetailsSidebarPanel = (function (_WebInspector$DetailsSidebarPanel) {
+    function DOMDetailsSidebarPanel(identifier, displayName, singularDisplayName, element) {
+        _classCallCheck(this, DOMDetailsSidebarPanel);
+
+        _get(Object.getPrototypeOf(DOMDetailsSidebarPanel.prototype), "constructor", this).call(this, identifier, displayName, singularDisplayName, element);
 
         this.element.addEventListener("click", this._mouseWasClicked.bind(this), true);
 
         this._domNode = null;
     }
 
-    // Public
+    _inherits(DOMDetailsSidebarPanel, _WebInspector$DetailsSidebarPanel);
 
-    inspect(objects)
-    {
-        // Convert to a single item array if needed.
-        if (!(objects instanceof Array))
-            objects = [objects];
+    _createClass(DOMDetailsSidebarPanel, [{
+        key: "inspect",
 
-        var nodeToInspect = null;
+        // Public
 
-        // Iterate over the objects to find a WebInspector.DOMNode to inspect.
-        for (var i = 0; i < objects.length; ++i) {
-            if (objects[i] instanceof WebInspector.DOMNode) {
-                nodeToInspect = objects[i];
-                break;
+        value: function inspect(objects) {
+            // Convert to a single item array if needed.
+            if (!(objects instanceof Array)) objects = [objects];
+
+            var nodeToInspect = null;
+
+            // Iterate over the objects to find a WebInspector.DOMNode to inspect.
+            for (var i = 0; i < objects.length; ++i) {
+                if (objects[i] instanceof WebInspector.DOMNode) {
+                    nodeToInspect = objects[i];
+                    break;
+                }
             }
+
+            if (nodeToInspect && !this.supportsDOMNode(nodeToInspect)) nodeToInspect = null;
+
+            this.domNode = nodeToInspect;
+
+            return !!this._domNode;
         }
-
-        if (nodeToInspect && !this.supportsDOMNode(nodeToInspect))
-            nodeToInspect = null;
-
-        this.domNode = nodeToInspect;
-
-        return !!this._domNode;
-    }
-
-    get domNode()
-    {
-        return this._domNode;
-    }
-
-    set domNode(domNode)
-    {
-        if (domNode === this._domNode)
-            return;
-
-        if (this._domNode)
-            this.removeEventListeners();
-
-        this._domNode = domNode;
-
-        if (this._domNode)
-            this.addEventListeners();
-
-        this.needsRefresh();
-    }
-
-    supportsDOMNode(nodeToInspect)
-    {
-        // Implemented by subclasses.
-        return true;
-    }
-
-    addEventListeners()
-    {
-        // Implemented by subclasses.
-    }
-
-    removeEventListeners()
-    {
-        // Implemented by subclasses.
-    }
-
-    // Private
-
-    _mouseWasClicked(event)
-    {
-        if (this._domNode && this._domNode.ownerDocument) {
-            var mainResource = WebInspector.frameResourceManager.resourceForURL(this._domNode.ownerDocument.documentURL);
-            if (mainResource)
-                var parentFrame = mainResource.parentFrame;
+    }, {
+        key: "supportsDOMNode",
+        value: function supportsDOMNode(nodeToInspect) {
+            // Implemented by subclasses.
+            return true;
         }
+    }, {
+        key: "addEventListeners",
+        value: function addEventListeners() {}
+    }, {
+        key: "removeEventListeners",
+        value: function removeEventListeners() {}
+    }, {
+        key: "_mouseWasClicked",
 
-        WebInspector.handlePossibleLinkClick(event, parentFrame);
-    }
-};
+        // Private
+
+        value: function _mouseWasClicked(event) {
+            if (this._domNode && this._domNode.ownerDocument) {
+                var mainResource = WebInspector.frameResourceManager.resourceForURL(this._domNode.ownerDocument.documentURL);
+                if (mainResource) var parentFrame = mainResource.parentFrame;
+            }
+
+            WebInspector.handlePossibleLinkClick(event, parentFrame);
+        }
+    }, {
+        key: "domNode",
+        get: function () {
+            return this._domNode;
+        },
+        set: function (domNode) {
+            if (domNode === this._domNode) return;
+
+            if (this._domNode) this.removeEventListeners();
+
+            this._domNode = domNode;
+
+            if (this._domNode) this.addEventListeners();
+
+            this.needsRefresh();
+        }
+    }]);
+
+    return DOMDetailsSidebarPanel;
+})(WebInspector.DetailsSidebarPanel);
+
+// Implemented by subclasses.
+
+// Implemented by subclasses.

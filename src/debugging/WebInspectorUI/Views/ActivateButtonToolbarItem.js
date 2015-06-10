@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ActivateButtonToolbarItem = function(identifier, defaultToolTip, activatedToolTip, label, image, suppressEmboss, role)
-{
+WebInspector.ActivateButtonToolbarItem = function (identifier, defaultToolTip, activatedToolTip, label, image, suppressEmboss, role) {
     WebInspector.ActivateButtonNavigationItem.call(this, identifier, defaultToolTip, activatedToolTip, image, 32, 32, suppressEmboss, role);
 
     if (typeof label === "string") {
@@ -36,24 +35,24 @@ WebInspector.ActivateButtonToolbarItem = function(identifier, defaultToolTip, ac
     }
 };
 
-WebInspector.ActivateButtonToolbarItem.prototype = {
-    constructor: WebInspector.ActivateButtonToolbarItem,
+WebInspector.ActivateButtonToolbarItem.prototype = Object.defineProperties({
+    constructor: WebInspector.ActivateButtonToolbarItem
 
-    // Public
+}, {
+    label: { // Public
 
-    get label()
-    {
-        return this._labelElement.textContent;
-    },
+        get: function () {
+            return this._labelElement.textContent;
+        },
+        set: function (newLabel) {
+            console.assert(newLabel);
+            if (!newLabel || !this._labelElement) return;
 
-    set label(newLabel)
-    {
-        console.assert(newLabel);
-        if (!newLabel || !this._labelElement)
-            return;
-
-        this._labelElement.textContent = newLabel;
+            this._labelElement.textContent = newLabel;
+        },
+        configurable: true,
+        enumerable: true
     }
-};
+});
 
 WebInspector.ActivateButtonToolbarItem.prototype.__proto__ = WebInspector.ActivateButtonNavigationItem.prototype;

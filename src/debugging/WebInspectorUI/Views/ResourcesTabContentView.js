@@ -23,34 +23,33 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ResourcesTabContentView = function(identifier)
-{
+WebInspector.ResourcesTabContentView = function (identifier) {
     var tabBarItem = new WebInspector.TabBarItem("Images/Resources.svg", WebInspector.UIString("Resources"));
     var detailsSidebarPanels = [WebInspector.resourceDetailsSidebarPanel, WebInspector.probeDetailsSidebarPanel];
 
     // FIXME: Until ContentFlows are moved to the Elements tab, these details sidebar panels need to be included.
     detailsSidebarPanels = detailsSidebarPanels.concat([WebInspector.domNodeDetailsSidebarPanel, WebInspector.cssStyleDetailsSidebarPanel]);
-    if (WebInspector.layerTreeDetailsSidebarPanel)
-        detailsSidebarPanels.push(WebInspector.layerTreeDetailsSidebarPanel);
+    if (WebInspector.layerTreeDetailsSidebarPanel) detailsSidebarPanels.push(WebInspector.layerTreeDetailsSidebarPanel);
 
     WebInspector.ContentBrowserTabContentView.call(this, identifier || "resources", "resources", tabBarItem, WebInspector.ResourceSidebarPanel, detailsSidebarPanels);
 };
 
-WebInspector.ResourcesTabContentView.prototype = {
+WebInspector.ResourcesTabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ResourcesTabContentView,
     __proto__: WebInspector.ContentBrowserTabContentView.prototype,
 
-    // Public
-
-    get type()
-    {
-        return WebInspector.ResourcesTabContentView.Type;
-    },
-
-    canShowRepresentedObject: function(representedObject)
-    {
+    canShowRepresentedObject: function canShowRepresentedObject(representedObject) {
         return representedObject instanceof WebInspector.Frame || representedObject instanceof WebInspector.Resource || representedObject instanceof WebInspector.Script;
     }
-};
+}, {
+    type: { // Public
+
+        get: function () {
+            return WebInspector.ResourcesTabContentView.Type;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ResourcesTabContentView.Type = "resources";

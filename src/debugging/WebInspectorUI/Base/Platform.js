@@ -36,13 +36,12 @@ WebInspector.Platform = {
 (function () {
     // Check for a nightly build by looking for a plus in the version number and a small number of stylesheets (indicating combined resources).
     var versionMatch = / AppleWebKit\/([^ ]+)/.exec(navigator.userAgent);
-    if (versionMatch && versionMatch[1].indexOf("+") !== -1 && document.styleSheets.length < 10)
-        WebInspector.Platform.isNightlyBuild = true;
+    if (versionMatch && versionMatch[1].indexOf("+") !== -1 && document.styleSheets.length < 10) WebInspector.Platform.isNightlyBuild = true;
 
     var osVersionMatch = / Mac OS X (\d+)_(\d+)/.exec(navigator.appVersion);
     if (osVersionMatch && osVersionMatch[1] === "10") {
         WebInspector.Platform.version.base = 10;
-        switch(osVersionMatch[2]) {
+        switch (osVersionMatch[2]) {
             case "10":
                 WebInspector.Platform.version.name = "yosemite";
                 WebInspector.Platform.version.release = 10;

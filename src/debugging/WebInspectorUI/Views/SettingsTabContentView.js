@@ -23,23 +23,25 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.SettingsTabContentView = function(identifier)
-{
+WebInspector.SettingsTabContentView = function (identifier) {
     var tabBarItem = new WebInspector.TabBarItem("Images/Gear.svg", WebInspector.UIString("Settings"), true);
 
     WebInspector.TabContentView.call(this, identifier || "settings", "settings", tabBarItem);
 };
 
-WebInspector.SettingsTabContentView.prototype = {
+WebInspector.SettingsTabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.SettingsTabContentView,
-    __proto__: WebInspector.TabContentView.prototype,
+    __proto__: WebInspector.TabContentView.prototype
 
-    // Public
+}, {
+    type: { // Public
 
-    get type()
-    {
-        return WebInspector.SettingsTabContentView.Type;
+        get: function () {
+            return WebInspector.SettingsTabContentView.Type;
+        },
+        configurable: true,
+        enumerable: true
     }
-};
+});
 
 WebInspector.SettingsTabContentView.Type = "settings";

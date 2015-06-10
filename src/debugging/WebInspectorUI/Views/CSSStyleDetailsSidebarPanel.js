@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CSSStyleDetailsSidebarPanel = class CSSStyleDetailsSidebarPanel extends WebInspector.DOMDetailsSidebarPanel
-{
-    constructor()
-    {
-        super("css-style", WebInspector.UIString("Styles"), WebInspector.UIString("Style"));
+WebInspector.CSSStyleDetailsSidebarPanel = (function (_WebInspector$DOMDetailsSidebarPanel) {
+    function CSSStyleDetailsSidebarPanel() {
+        _classCallCheck(this, CSSStyleDetailsSidebarPanel);
+
+        _get(Object.getPrototypeOf(CSSStyleDetailsSidebarPanel.prototype), "constructor", this).call(this, "css-style", WebInspector.UIString("Styles"), WebInspector.UIString("Style"));
 
         this._selectedPanel = null;
 
@@ -43,7 +51,7 @@ WebInspector.CSSStyleDetailsSidebarPanel = class CSSStyleDetailsSidebarPanel ext
 
             var groupElement = null;
 
-            WebInspector.CSSStyleManager.ForceablePseudoClasses.forEach(function(pseudoClass) {
+            WebInspector.CSSStyleManager.ForceablePseudoClasses.forEach(function (pseudoClass) {
                 // We don't localize the label since it is a CSS pseudo-class from the CSS standard.
                 var label = pseudoClass.capitalize();
 
@@ -70,9 +78,9 @@ WebInspector.CSSStyleDetailsSidebarPanel = class CSSStyleDetailsSidebarPanel ext
             this.contentElement.appendChild(this._forcedPseudoClassContainer);
         }
 
-        this._computedStyleDetailsPanel = new WebInspector.ComputedStyleDetailsPanel;
-        this._rulesStyleDetailsPanel = new WebInspector.RulesStyleDetailsPanel;
-        this._metricsStyleDetailsPanel = new WebInspector.MetricsStyleDetailsPanel;
+        this._computedStyleDetailsPanel = new WebInspector.ComputedStyleDetailsPanel();
+        this._rulesStyleDetailsPanel = new WebInspector.RulesStyleDetailsPanel();
+        this._metricsStyleDetailsPanel = new WebInspector.MetricsStyleDetailsPanel();
 
         this._panels = [this._computedStyleDetailsPanel, this._rulesStyleDetailsPanel, this._metricsStyleDetailsPanel];
 
@@ -86,145 +94,142 @@ WebInspector.CSSStyleDetailsSidebarPanel = class CSSStyleDetailsSidebarPanel ext
         this._navigationBar.selectedNavigationItem = this._lastSelectedSectionSetting.value;
     }
 
-    // Public
+    _inherits(CSSStyleDetailsSidebarPanel, _WebInspector$DOMDetailsSidebarPanel);
 
-    supportsDOMNode(nodeToInspect)
-    {
-        return nodeToInspect.nodeType() === Node.ELEMENT_NODE;
-    }
+    _createClass(CSSStyleDetailsSidebarPanel, [{
+        key: "supportsDOMNode",
 
-    refresh()
-    {
-        var domNode = this.domNode;
-        if (!domNode)
-            return;
+        // Public
 
-        this.contentElement.scrollTop = this._initialScrollOffset;
-
-        for (var i = 0; i < this._panels.length; ++i) {
-            delete this._panels[i].element._savedScrollTop;
-            this._panels[i].markAsNeedsRefresh(domNode);
+        value: function supportsDOMNode(nodeToInspect) {
+            return nodeToInspect.nodeType() === Node.ELEMENT_NODE;
         }
+    }, {
+        key: "refresh",
+        value: function refresh() {
+            var domNode = this.domNode;
+            if (!domNode) return;
 
-        this._updatePseudoClassCheckboxes();
-    }
+            this.contentElement.scrollTop = this._initialScrollOffset;
 
-    visibilityDidChange()
-    {
-        WebInspector.SidebarPanel.prototype.visibilityDidChange.call(this);
+            for (var i = 0; i < this._panels.length; ++i) {
+                delete this._panels[i].element._savedScrollTop;
+                this._panels[i].markAsNeedsRefresh(domNode);
+            }
 
-        if (!this._selectedPanel)
-            return;
-
-        if (!this.visible) {
-            this._selectedPanel.hidden();
-            return;
+            this._updatePseudoClassCheckboxes();
         }
+    }, {
+        key: "visibilityDidChange",
+        value: function visibilityDidChange() {
+            WebInspector.SidebarPanel.prototype.visibilityDidChange.call(this);
 
-        this._navigationBar.updateLayout();
+            if (!this._selectedPanel) return;
 
-        this._updateNoForcedPseudoClassesScrollOffset();
+            if (!this.visible) {
+                this._selectedPanel.hidden();
+                return;
+            }
 
-        this._selectedPanel.shown();
-        this._selectedPanel.markAsNeedsRefresh(this.domNode);
-    }
+            this._navigationBar.updateLayout();
 
-    widthDidChange()
-    {
-        this._updateNoForcedPseudoClassesScrollOffset();
-
-        if (this._selectedPanel)
-            this._selectedPanel.widthDidChange();
-    }
-
-    // Protected
-
-    addEventListeners()
-    {
-        this.domNode.addEventListener(WebInspector.DOMNode.Event.EnabledPseudoClassesChanged, this._updatePseudoClassCheckboxes, this);
-    }
-
-    removeEventListeners()
-    {
-        this.domNode.removeEventListener(null, null, this);
-    }
-
-    // Private
-
-    get _initialScrollOffset()
-    {
-        if (!WebInspector.cssStyleManager.canForcePseudoClasses())
-            return 0;
-        return this.domNode && this.domNode.enabledPseudoClasses.length ? 0 : WebInspector.CSSStyleDetailsSidebarPanel.NoForcedPseudoClassesScrollOffset;
-    }
-
-    _updateNoForcedPseudoClassesScrollOffset()
-    {
-        if (this._forcedPseudoClassContainer)
-            WebInspector.CSSStyleDetailsSidebarPanel.NoForcedPseudoClassesScrollOffset = this._forcedPseudoClassContainer.offsetHeight;
-    }
-
-    _navigationItemSelected(event)
-    {
-        console.assert(event.target.selectedNavigationItem);
-        if (!event.target.selectedNavigationItem)
-            return;
-
-        var selectedNavigationItem = event.target.selectedNavigationItem;
-
-        var selectedPanel = null;
-        for (var i = 0; i < this._panels.length; ++i) {
-            if (this._panels[i].navigationItem !== selectedNavigationItem)
-                continue;
-            selectedPanel = this._panels[i];
-            break;
-        }
-
-        console.assert(selectedPanel);
-
-        if (this._selectedPanel) {
-            this._selectedPanel.hidden();
-            this._selectedPanel.element._savedScrollTop = this.contentElement.scrollTop;
-            this._selectedPanel.element.remove();
-        }
-
-        this._selectedPanel = selectedPanel;
-
-        if (this._selectedPanel) {
-            this.contentElement.appendChild(this._selectedPanel.element);
-
-            if (typeof this._selectedPanel.element._savedScrollTop === "number")
-                this.contentElement.scrollTop = this._selectedPanel.element._savedScrollTop;
-            else
-                this.contentElement.scrollTop = this._initialScrollOffset;
+            this._updateNoForcedPseudoClassesScrollOffset();
 
             this._selectedPanel.shown();
+            this._selectedPanel.markAsNeedsRefresh(this.domNode);
         }
+    }, {
+        key: "widthDidChange",
+        value: function widthDidChange() {
+            this._updateNoForcedPseudoClassesScrollOffset();
 
-        this._lastSelectedSectionSetting.value = selectedNavigationItem.identifier;
-    }
-
-    _forcedPseudoClassCheckboxChanged(pseudoClass, event)
-    {
-        if (!this.domNode)
-            return;
-
-        this.domNode.setPseudoClassEnabled(pseudoClass, event.target.checked);
-    }
-
-    _updatePseudoClassCheckboxes()
-    {
-        if (!this.domNode)
-            return;
-
-        var enabledPseudoClasses = this.domNode.enabledPseudoClasses;
-
-        for (var pseudoClass in this._forcedPseudoClassCheckboxes) {
-            var checkboxElement = this._forcedPseudoClassCheckboxes[pseudoClass];
-            checkboxElement.checked = enabledPseudoClasses.includes(pseudoClass);
+            if (this._selectedPanel) this._selectedPanel.widthDidChange();
         }
-    }
-};
+    }, {
+        key: "addEventListeners",
+
+        // Protected
+
+        value: function addEventListeners() {
+            this.domNode.addEventListener(WebInspector.DOMNode.Event.EnabledPseudoClassesChanged, this._updatePseudoClassCheckboxes, this);
+        }
+    }, {
+        key: "removeEventListeners",
+        value: function removeEventListeners() {
+            this.domNode.removeEventListener(null, null, this);
+        }
+    }, {
+        key: "_updateNoForcedPseudoClassesScrollOffset",
+        value: function _updateNoForcedPseudoClassesScrollOffset() {
+            if (this._forcedPseudoClassContainer) WebInspector.CSSStyleDetailsSidebarPanel.NoForcedPseudoClassesScrollOffset = this._forcedPseudoClassContainer.offsetHeight;
+        }
+    }, {
+        key: "_navigationItemSelected",
+        value: function _navigationItemSelected(event) {
+            console.assert(event.target.selectedNavigationItem);
+            if (!event.target.selectedNavigationItem) return;
+
+            var selectedNavigationItem = event.target.selectedNavigationItem;
+
+            var selectedPanel = null;
+            for (var i = 0; i < this._panels.length; ++i) {
+                if (this._panels[i].navigationItem !== selectedNavigationItem) continue;
+                selectedPanel = this._panels[i];
+                break;
+            }
+
+            console.assert(selectedPanel);
+
+            if (this._selectedPanel) {
+                this._selectedPanel.hidden();
+                this._selectedPanel.element._savedScrollTop = this.contentElement.scrollTop;
+                this._selectedPanel.element.remove();
+            }
+
+            this._selectedPanel = selectedPanel;
+
+            if (this._selectedPanel) {
+                this.contentElement.appendChild(this._selectedPanel.element);
+
+                if (typeof this._selectedPanel.element._savedScrollTop === "number") this.contentElement.scrollTop = this._selectedPanel.element._savedScrollTop;else this.contentElement.scrollTop = this._initialScrollOffset;
+
+                this._selectedPanel.shown();
+            }
+
+            this._lastSelectedSectionSetting.value = selectedNavigationItem.identifier;
+        }
+    }, {
+        key: "_forcedPseudoClassCheckboxChanged",
+        value: function _forcedPseudoClassCheckboxChanged(pseudoClass, event) {
+            if (!this.domNode) return;
+
+            this.domNode.setPseudoClassEnabled(pseudoClass, event.target.checked);
+        }
+    }, {
+        key: "_updatePseudoClassCheckboxes",
+        value: function _updatePseudoClassCheckboxes() {
+            if (!this.domNode) return;
+
+            var enabledPseudoClasses = this.domNode.enabledPseudoClasses;
+
+            for (var pseudoClass in this._forcedPseudoClassCheckboxes) {
+                var checkboxElement = this._forcedPseudoClassCheckboxes[pseudoClass];
+                checkboxElement.checked = enabledPseudoClasses.includes(pseudoClass);
+            }
+        }
+    }, {
+        key: "_initialScrollOffset",
+
+        // Private
+
+        get: function () {
+            if (!WebInspector.cssStyleManager.canForcePseudoClasses()) return 0;
+            return this.domNode && this.domNode.enabledPseudoClasses.length ? 0 : WebInspector.CSSStyleDetailsSidebarPanel.NoForcedPseudoClassesScrollOffset;
+        }
+    }]);
+
+    return CSSStyleDetailsSidebarPanel;
+})(WebInspector.DOMDetailsSidebarPanel);
 
 WebInspector.CSSStyleDetailsSidebarPanel.PseudoClassesElementStyleClassName = "pseudo-classes";
 WebInspector.CSSStyleDetailsSidebarPanel.PseudoClassesGroupElementStyleClassName = "group";

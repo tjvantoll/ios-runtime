@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CompletionSuggestionsView = class CompletionSuggestionsView extends WebInspector.Object
-{
-    constructor(delegate)
-    {
-        super();
+WebInspector.CompletionSuggestionsView = (function (_WebInspector$Object) {
+    function CompletionSuggestionsView(delegate) {
+        _classCallCheck(this, CompletionSuggestionsView);
+
+        _get(Object.getPrototypeOf(CompletionSuggestionsView.prototype), "constructor", this).call(this);
 
         this._delegate = delegate || null;
 
@@ -44,180 +52,167 @@ WebInspector.CompletionSuggestionsView = class CompletionSuggestionsView extends
         this._element.appendChild(this._containerElement);
     }
 
-    // Public
+    _inherits(CompletionSuggestionsView, _WebInspector$Object);
 
-    get delegate()
-    {
-        return this._delegate;
-    }
+    _createClass(CompletionSuggestionsView, [{
+        key: "selectNext",
+        value: function selectNext() {
+            var count = this._containerElement.children.length;
 
-    get visible()
-    {
-        return !!this._element.parentNode;
-    }
+            if (isNaN(this._selectedIndex) || this._selectedIndex === count - 1) this.selectedIndex = 0;else ++this.selectedIndex;
 
-    get selectedIndex()
-    {
-        return this._selectedIndex;
-    }
-
-    set selectedIndex(index)
-    {
-        var selectedItemElement = this._selectedItemElement;
-        if (selectedItemElement)
-            selectedItemElement.classList.remove(WebInspector.CompletionSuggestionsView.SelectedItemStyleClassName);
-
-        this._selectedIndex = index;
-
-        selectedItemElement = this._selectedItemElement;
-        if (!selectedItemElement)
-            return;
-
-        selectedItemElement.classList.add(WebInspector.CompletionSuggestionsView.SelectedItemStyleClassName);
-        selectedItemElement.scrollIntoViewIfNeeded(false);
-    }
-
-    selectNext()
-    {
-        var count = this._containerElement.children.length;
-
-        if (isNaN(this._selectedIndex) || this._selectedIndex === count - 1)
-            this.selectedIndex = 0;
-        else
-            ++this.selectedIndex;
-
-        var selectedItemElement = this._selectedItemElement;
-        if (selectedItemElement && this._delegate && typeof this._delegate.completionSuggestionsSelectedCompletion === "function")
-            this._delegate.completionSuggestionsSelectedCompletion(this, selectedItemElement.textContent);
-    }
-
-    selectPrevious()
-    {
-        if (isNaN(this._selectedIndex) || this._selectedIndex === 0)
-            this.selectedIndex = this._containerElement.children.length - 1;
-        else
-            --this.selectedIndex;
-
-        var selectedItemElement = this._selectedItemElement;
-        if (selectedItemElement && this._delegate && typeof this._delegate.completionSuggestionsSelectedCompletion === "function")
-            this._delegate.completionSuggestionsSelectedCompletion(this, selectedItemElement.textContent);
-    }
-
-    isHandlingClickEvent()
-    {
-        return this._mouseIsDown;
-    }
-
-    show(anchorBounds)
-    {
-        // Measure the container so we can know the intrinsic size of the items.
-        this._containerElement.style.position = "absolute";
-        document.body.appendChild(this._containerElement);
-
-        var containerWidth = this._containerElement.offsetWidth;
-        var containerHeight = this._containerElement.offsetHeight;
-
-        this._containerElement.removeAttribute("style");
-        this._element.appendChild(this._containerElement);
-
-        // Lay out the suggest-box relative to the anchorBounds.
-        var margin = 10;
-        var horizontalPadding = 22;
-        var absoluteMaximumHeight = 160;
-
-        var x = anchorBounds.origin.x;
-        var y = anchorBounds.origin.y + anchorBounds.size.height;
-
-        var maximumWidth = window.innerWidth - anchorBounds.origin.x - margin;
-        var width = Math.min(containerWidth, maximumWidth - horizontalPadding) + horizontalPadding;
-        var paddedWidth = containerWidth + horizontalPadding;
-
-        if (width < paddedWidth) {
-            // Shift the suggest box to the left to accommodate the content without trimming to the BODY edge.
-            maximumWidth = window.innerWidth - margin;
-            width = Math.min(containerWidth, maximumWidth - horizontalPadding) + horizontalPadding;
-            x = document.body.offsetWidth - width;
+            var selectedItemElement = this._selectedItemElement;
+            if (selectedItemElement && this._delegate && typeof this._delegate.completionSuggestionsSelectedCompletion === "function") this._delegate.completionSuggestionsSelectedCompletion(this, selectedItemElement.textContent);
         }
+    }, {
+        key: "selectPrevious",
+        value: function selectPrevious() {
+            if (isNaN(this._selectedIndex) || this._selectedIndex === 0) this.selectedIndex = this._containerElement.children.length - 1;else --this.selectedIndex;
 
-        var aboveHeight = anchorBounds.origin.y;
-        var underHeight = window.innerHeight - anchorBounds.origin.y - anchorBounds.size.height;
-        var maximumHeight = Math.min(absoluteMaximumHeight, Math.max(underHeight, aboveHeight) - margin);
-        var height = Math.min(containerHeight, maximumHeight);
-
-        // Position the suggestions below the anchor. If there is no room, position the suggestions above.
-        if (underHeight - height < 0)
-            y = aboveHeight - height;
-
-        this._element.style.left = x + "px";
-        this._element.style.top = y + "px";
-        this._element.style.width = width + "px";
-        this._element.style.height = height + "px";
-
-        document.body.appendChild(this._element);
-    }
-
-    hide()
-    {
-        this._element.remove();
-    }
-
-    update(completions, selectedIndex)
-    {
-        this._containerElement.removeChildren();
-
-        if (typeof selectedIndex === "number")
-            this._selectedIndex = selectedIndex;
-
-        for (var i = 0; i < completions.length; ++i) {
-            var itemElement = document.createElement("div");
-            itemElement.className = WebInspector.CompletionSuggestionsView.ItemElementStyleClassName;
-            itemElement.textContent = completions[i];
-            if (i === this._selectedIndex)
-                itemElement.classList.add(WebInspector.CompletionSuggestionsView.SelectedItemStyleClassName);
-            this._containerElement.appendChild(itemElement);
+            var selectedItemElement = this._selectedItemElement;
+            if (selectedItemElement && this._delegate && typeof this._delegate.completionSuggestionsSelectedCompletion === "function") this._delegate.completionSuggestionsSelectedCompletion(this, selectedItemElement.textContent);
         }
-    }
+    }, {
+        key: "isHandlingClickEvent",
+        value: function isHandlingClickEvent() {
+            return this._mouseIsDown;
+        }
+    }, {
+        key: "show",
+        value: function show(anchorBounds) {
+            // Measure the container so we can know the intrinsic size of the items.
+            this._containerElement.style.position = "absolute";
+            document.body.appendChild(this._containerElement);
 
-    // Private
+            var containerWidth = this._containerElement.offsetWidth;
+            var containerHeight = this._containerElement.offsetHeight;
 
-    get _selectedItemElement()
-    {
-        if (isNaN(this._selectedIndex))
-            return null;
+            this._containerElement.removeAttribute("style");
+            this._element.appendChild(this._containerElement);
 
-        var element = this._containerElement.children[this._selectedIndex] || null;
-        console.assert(element);
-        return element;
-    }
+            // Lay out the suggest-box relative to the anchorBounds.
+            var margin = 10;
+            var horizontalPadding = 22;
+            var absoluteMaximumHeight = 160;
 
-    _mouseDown(event)
-    {
-        if (event.button !== 0)
-            return;
-        this._mouseIsDown = true;
-    }
+            var x = anchorBounds.origin.x;
+            var y = anchorBounds.origin.y + anchorBounds.size.height;
 
-    _mouseUp(event)
-    {
-        if (event.button !== 0)
-            return;
-        this._mouseIsDown = false;
-    }
+            var maximumWidth = window.innerWidth - anchorBounds.origin.x - margin;
+            var width = Math.min(containerWidth, maximumWidth - horizontalPadding) + horizontalPadding;
+            var paddedWidth = containerWidth + horizontalPadding;
 
-    _itemClicked(event)
-    {
-        if (event.button !== 0)
-            return;
+            if (width < paddedWidth) {
+                // Shift the suggest box to the left to accommodate the content without trimming to the BODY edge.
+                maximumWidth = window.innerWidth - margin;
+                width = Math.min(containerWidth, maximumWidth - horizontalPadding) + horizontalPadding;
+                x = document.body.offsetWidth - width;
+            }
 
-        var itemElement = event.target.enclosingNodeOrSelfWithClass(WebInspector.CompletionSuggestionsView.ItemElementStyleClassName);
-        console.assert(itemElement);
-        if (!itemElement)
-            return;
+            var aboveHeight = anchorBounds.origin.y;
+            var underHeight = window.innerHeight - anchorBounds.origin.y - anchorBounds.size.height;
+            var maximumHeight = Math.min(absoluteMaximumHeight, Math.max(underHeight, aboveHeight) - margin);
+            var height = Math.min(containerHeight, maximumHeight);
 
-        if (this._delegate && typeof this._delegate.completionSuggestionsClickedCompletion === "function")
-            this._delegate.completionSuggestionsClickedCompletion(this, itemElement.textContent);
-    }
-};
+            // Position the suggestions below the anchor. If there is no room, position the suggestions above.
+            if (underHeight - height < 0) y = aboveHeight - height;
+
+            this._element.style.left = x + "px";
+            this._element.style.top = y + "px";
+            this._element.style.width = width + "px";
+            this._element.style.height = height + "px";
+
+            document.body.appendChild(this._element);
+        }
+    }, {
+        key: "hide",
+        value: function hide() {
+            this._element.remove();
+        }
+    }, {
+        key: "update",
+        value: function update(completions, selectedIndex) {
+            this._containerElement.removeChildren();
+
+            if (typeof selectedIndex === "number") this._selectedIndex = selectedIndex;
+
+            for (var i = 0; i < completions.length; ++i) {
+                var itemElement = document.createElement("div");
+                itemElement.className = WebInspector.CompletionSuggestionsView.ItemElementStyleClassName;
+                itemElement.textContent = completions[i];
+                if (i === this._selectedIndex) itemElement.classList.add(WebInspector.CompletionSuggestionsView.SelectedItemStyleClassName);
+                this._containerElement.appendChild(itemElement);
+            }
+        }
+    }, {
+        key: "_mouseDown",
+        value: function _mouseDown(event) {
+            if (event.button !== 0) return;
+            this._mouseIsDown = true;
+        }
+    }, {
+        key: "_mouseUp",
+        value: function _mouseUp(event) {
+            if (event.button !== 0) return;
+            this._mouseIsDown = false;
+        }
+    }, {
+        key: "_itemClicked",
+        value: function _itemClicked(event) {
+            if (event.button !== 0) return;
+
+            var itemElement = event.target.enclosingNodeOrSelfWithClass(WebInspector.CompletionSuggestionsView.ItemElementStyleClassName);
+            console.assert(itemElement);
+            if (!itemElement) return;
+
+            if (this._delegate && typeof this._delegate.completionSuggestionsClickedCompletion === "function") this._delegate.completionSuggestionsClickedCompletion(this, itemElement.textContent);
+        }
+    }, {
+        key: "delegate",
+
+        // Public
+
+        get: function () {
+            return this._delegate;
+        }
+    }, {
+        key: "visible",
+        get: function () {
+            return !!this._element.parentNode;
+        }
+    }, {
+        key: "selectedIndex",
+        get: function () {
+            return this._selectedIndex;
+        },
+        set: function (index) {
+            var selectedItemElement = this._selectedItemElement;
+            if (selectedItemElement) selectedItemElement.classList.remove(WebInspector.CompletionSuggestionsView.SelectedItemStyleClassName);
+
+            this._selectedIndex = index;
+
+            selectedItemElement = this._selectedItemElement;
+            if (!selectedItemElement) return;
+
+            selectedItemElement.classList.add(WebInspector.CompletionSuggestionsView.SelectedItemStyleClassName);
+            selectedItemElement.scrollIntoViewIfNeeded(false);
+        }
+    }, {
+        key: "_selectedItemElement",
+
+        // Private
+
+        get: function () {
+            if (isNaN(this._selectedIndex)) return null;
+
+            var element = this._containerElement.children[this._selectedIndex] || null;
+            console.assert(element);
+            return element;
+        }
+    }]);
+
+    return CompletionSuggestionsView;
+})(WebInspector.Object);
 
 WebInspector.CompletionSuggestionsView.StyleClassName = "completion-suggestions";
 WebInspector.CompletionSuggestionsView.ContainerElementStyleClassName = "completion-suggestions-container";

@@ -23,41 +23,42 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TimelineTabContentView = function(identifier)
-{
+WebInspector.TimelineTabContentView = function (identifier) {
     var tabBarItem = new WebInspector.TabBarItem("Images/Timeline.svg", WebInspector.UIString("Timelines"));
     var detailsSidebarPanels = [WebInspector.resourceDetailsSidebarPanel, WebInspector.probeDetailsSidebarPanel];
 
     WebInspector.ContentBrowserTabContentView.call(this, identifier || "timeline", "timeline", tabBarItem, WebInspector.TimelineSidebarPanel, detailsSidebarPanels);
 };
 
-WebInspector.TimelineTabContentView.prototype = {
+WebInspector.TimelineTabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.TimelineTabContentView,
     __proto__: WebInspector.ContentBrowserTabContentView.prototype,
 
-    // Public
-
-    get type()
-    {
-        return WebInspector.TimelineTabContentView.Type;
-    },
-
-    canShowRepresentedObject: function(representedObject)
-    {
-        if (representedObject instanceof WebInspector.TimelineRecording)
-            return true;
+    canShowRepresentedObject: function canShowRepresentedObject(representedObject) {
+        if (representedObject instanceof WebInspector.TimelineRecording) return true;
 
         // Only support showing a resource or script if we have that represented object in the sidebar.
-        if (representedObject instanceof WebInspector.Resource || representedObject instanceof WebInspector.Script)
-            return !!this.navigationSidebarPanel.treeElementForRepresentedObject(representedObject);
+        if (representedObject instanceof WebInspector.Resource || representedObject instanceof WebInspector.Script) return !!this.navigationSidebarPanel.treeElementForRepresentedObject(representedObject);
 
-        return false;
-    },
-
-    get supportsSplitContentBrowser()
-    {
         return false;
     }
-};
+
+}, {
+    type: { // Public
+
+        get: function () {
+            return WebInspector.TimelineTabContentView.Type;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSplitContentBrowser: {
+        get: function () {
+            return false;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.TimelineTabContentView.Type = "timeline";

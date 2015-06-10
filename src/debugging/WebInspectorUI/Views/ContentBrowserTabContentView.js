@@ -23,10 +23,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ContentBrowserTabContentView = function(identifier, styleClassNames, tabBarItem, navigationSidebarPanelClass, detailsSidebarPanels, disableBackForward)
-{
-    if (typeof styleClassNames === "string")
-        styleClassNames = [styleClassNames];
+WebInspector.ContentBrowserTabContentView = function (identifier, styleClassNames, tabBarItem, navigationSidebarPanelClass, detailsSidebarPanels, disableBackForward) {
+    if (typeof styleClassNames === "string") styleClassNames = [styleClassNames];
 
     styleClassNames.push("content-browser");
 
@@ -54,7 +52,7 @@ WebInspector.ContentBrowserTabContentView = function(identifier, styleClassNames
         this._showNavigationSidebarItem.activated = !WebInspector.navigationSidebar.collapsed;
 
         this._contentBrowser.navigationBar.insertNavigationItem(this._showNavigationSidebarItem, 0);
-        this._contentBrowser.navigationBar.insertNavigationItem(new WebInspector.DividerNavigationItem, 1);
+        this._contentBrowser.navigationBar.insertNavigationItem(new WebInspector.DividerNavigationItem(), 1);
 
         navigationSidebarPanel.contentBrowser = this._contentBrowser;
 
@@ -70,7 +68,7 @@ WebInspector.ContentBrowserTabContentView = function(identifier, styleClassNames
         this._showDetailsSidebarItem.activated = !WebInspector.detailsSidebar.collapsed;
         this._showDetailsSidebarItem.enabled = false;
 
-        this._contentBrowser.navigationBar.addNavigationItem(new WebInspector.DividerNavigationItem);
+        this._contentBrowser.navigationBar.addNavigationItem(new WebInspector.DividerNavigationItem());
         this._contentBrowser.navigationBar.addNavigationItem(this._showDetailsSidebarItem);
 
         WebInspector.detailsSidebar.addEventListener(WebInspector.Sidebar.Event.CollapsedStateDidChange, this._detailsSidebarCollapsedStateDidChange, this);
@@ -80,63 +78,43 @@ WebInspector.ContentBrowserTabContentView = function(identifier, styleClassNames
     this.element.appendChild(this._contentBrowser.element);
 };
 
-WebInspector.ContentBrowserTabContentView.prototype = {
+WebInspector.ContentBrowserTabContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ContentBrowserTabContentView,
     __proto__: WebInspector.TabContentView.prototype,
 
-    // Public
-
-    get contentBrowser()
-    {
-        return this._contentBrowser;
-    },
-
-    shown: function()
-    {
+    shown: function shown() {
         WebInspector.TabContentView.prototype.shown.call(this);
 
         this._contentBrowser.shown();
 
-        if (this.navigationSidebarPanel && !this._contentBrowser.currentContentView)
-            this.navigationSidebarPanel.showDefaultContentView();
+        if (this.navigationSidebarPanel && !this._contentBrowser.currentContentView) this.navigationSidebarPanel.showDefaultContentView();
     },
 
-    hidden: function()
-    {
+    hidden: function hidden() {
         WebInspector.TabContentView.prototype.hidden.call(this);
 
         this._contentBrowser.hidden();
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         WebInspector.TabContentView.prototype.closed.call(this);
 
         WebInspector.navigationSidebar.removeEventListener(null, null, this);
         WebInspector.detailsSidebar.removeEventListener(null, null, this);
 
-        if (this.navigationSidebarPanel && typeof this.navigationSidebarPanel.closed === "function")
-            this.navigationSidebarPanel.closed();
+        if (this.navigationSidebarPanel && typeof this.navigationSidebarPanel.closed === "function") this.navigationSidebarPanel.closed();
 
         this._contentBrowser.contentViewContainer.closeAllContentViews();
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         WebInspector.TabContentView.prototype.updateLayout.call(this);
 
         this._contentBrowser.updateLayout();
     },
 
-    get managesDetailsSidebarPanels()
-    {
-        return true;
-    },
-
-    showDetailsSidebarPanels: function()
-    {
-        if (!this.visible)
-            return;
+    showDetailsSidebarPanels: function showDetailsSidebarPanels() {
+        if (!this.visible) return;
 
         var currentRepresentedObjects = this._contentBrowser.currentRepresentedObjects;
         var currentSidebarPanels = WebInspector.detailsSidebar.sidebarPanels;
@@ -168,100 +146,113 @@ WebInspector.ContentBrowserTabContentView.prototype = {
             }
         }
 
-        if (!WebInspector.detailsSidebar.selectedSidebarPanel && currentSidebarPanels.length)
-            WebInspector.detailsSidebar.selectedSidebarPanel = currentSidebarPanels[0];
+        if (!WebInspector.detailsSidebar.selectedSidebarPanel && currentSidebarPanels.length) WebInspector.detailsSidebar.selectedSidebarPanel = currentSidebarPanels[0];
 
-        if (!WebInspector.detailsSidebar.sidebarPanels.length)
-            WebInspector.detailsSidebar.collapsed = true;
-        else if (wasSidebarEmpty)
-            WebInspector.detailsSidebar.collapsed = this.detailsSidebarCollapsedSetting.value;
+        if (!WebInspector.detailsSidebar.sidebarPanels.length) WebInspector.detailsSidebar.collapsed = true;else if (wasSidebarEmpty) WebInspector.detailsSidebar.collapsed = this.detailsSidebarCollapsedSetting.value;
 
         this._ignoreDetailsSidebarPanelCollapsedEvent = false;
         this._ignoreDetailsSidebarPanelSelectedEvent = false;
 
-        if (!this.detailsSidebarPanels.length)
-            return;
+        if (!this.detailsSidebarPanels.length) return;
 
         this._showDetailsSidebarItem.enabled = WebInspector.detailsSidebar.sidebarPanels.length;
     },
 
-    showRepresentedObject: function(representedObject, cookie)
-    {
-        if (this.navigationSidebarPanel)
-            this.navigationSidebarPanel.cancelRestoringState();
+    showRepresentedObject: function showRepresentedObject(representedObject, cookie) {
+        if (this.navigationSidebarPanel) this.navigationSidebarPanel.cancelRestoringState();
         this.contentBrowser.showContentViewForRepresentedObject(representedObject, cookie);
     },
 
     // ContentBrowser Delegate
 
-    contentBrowserTreeElementForRepresentedObject: function(contentBrowser, representedObject)
-    {
-        if (this.navigationSidebarPanel)
-            return this.navigationSidebarPanel.treeElementForRepresentedObject(representedObject);
+    contentBrowserTreeElementForRepresentedObject: function contentBrowserTreeElementForRepresentedObject(contentBrowser, representedObject) {
+        if (this.navigationSidebarPanel) return this.navigationSidebarPanel.treeElementForRepresentedObject(representedObject);
         return null;
     },
 
     // Private
 
-    _navigationSidebarCollapsedStateDidChange: function(event)
-    {
+    _navigationSidebarCollapsedStateDidChange: function _navigationSidebarCollapsedStateDidChange(event) {
         this._showNavigationSidebarItem.activated = !WebInspector.navigationSidebar.collapsed;
     },
 
-    _detailsSidebarCollapsedStateDidChange: function(event)
-    {
-        if (!this.visible)
-            return;
+    _detailsSidebarCollapsedStateDidChange: function _detailsSidebarCollapsedStateDidChange(event) {
+        if (!this.visible) return;
 
         this._showDetailsSidebarItem.activated = !WebInspector.detailsSidebar.collapsed;
         this._showDetailsSidebarItem.enabled = WebInspector.detailsSidebar.sidebarPanels.length;
 
-        if (this._ignoreDetailsSidebarPanelCollapsedEvent)
-            return;
+        if (this._ignoreDetailsSidebarPanelCollapsedEvent) return;
 
         this.detailsSidebarCollapsedSetting.value = WebInspector.detailsSidebar.collapsed;
     },
 
-    _detailsSidebarPanelSelected: function(event)
-    {
-        if (!this.visible)
-            return;
+    _detailsSidebarPanelSelected: function _detailsSidebarPanelSelected(event) {
+        if (!this.visible) return;
 
         this._showDetailsSidebarItem.enabled = WebInspector.detailsSidebar.sidebarPanels.length;
 
-        if (!WebInspector.detailsSidebar.selectedSidebarPanel || this._ignoreDetailsSidebarPanelSelectedEvent)
-            return;
+        if (!WebInspector.detailsSidebar.selectedSidebarPanel || this._ignoreDetailsSidebarPanelSelectedEvent) return;
 
         this._lastSelectedDetailsSidebarPanelSetting.value = WebInspector.detailsSidebar.selectedSidebarPanel.identifier;
     },
 
-    _contentBrowserCurrentContentViewDidChange: function(event)
-    {
+    _contentBrowserCurrentContentViewDidChange: function _contentBrowserCurrentContentViewDidChange(event) {
         var currentContentView = this._contentBrowser.currentContentView;
-        if (!currentContentView)
-            return;
+        if (!currentContentView) return;
 
         this._revealAndSelectRepresentedObjectInNavigationSidebar(currentContentView.representedObject);
     },
 
-    _revealAndSelectRepresentedObjectInNavigationSidebar: function(representedObject)
-    {
-        if (!this.navigationSidebarPanel)
-            return;
+    _revealAndSelectRepresentedObjectInNavigationSidebar: function _revealAndSelectRepresentedObjectInNavigationSidebar(representedObject) {
+        if (!this.navigationSidebarPanel) return;
 
         // If a tree outline is processing a selection currently then we can assume the selection does not
         // need to be changed. This is needed to allow breakpoint and call frame tree elements to be selected
         // without jumping back to selecting the resource tree element.
-        for (var contentTreeOutline of this.navigationSidebarPanel.visibleContentTreeOutlines) {
-            if (contentTreeOutline.processingSelectionChange)
-                return;
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+            for (var _iterator = this.navigationSidebarPanel.visibleContentTreeOutlines[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var contentTreeOutline = _step.value;
+
+                if (contentTreeOutline.processingSelectionChange) return;
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
 
         var treeElement = this.navigationSidebarPanel.treeElementForRepresentedObject(representedObject);
 
-        if (treeElement)
-            treeElement.revealAndSelect(true, false, true, true);
-        else if (this.navigationSidebarPanel.contentTreeOutline.selectedTreeElement)
-            this.navigationSidebarPanel.contentTreeOutline.selectedTreeElement.deselect(true);
+        if (treeElement) treeElement.revealAndSelect(true, false, true, true);else if (this.navigationSidebarPanel.contentTreeOutline.selectedTreeElement) this.navigationSidebarPanel.contentTreeOutline.selectedTreeElement.deselect(true);
     }
-};
+}, {
+    contentBrowser: { // Public
+
+        get: function () {
+            return this._contentBrowser;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    managesDetailsSidebarPanels: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

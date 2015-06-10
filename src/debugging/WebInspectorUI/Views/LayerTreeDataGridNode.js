@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.LayerTreeDataGridNode = function(layer)
-{
+WebInspector.LayerTreeDataGridNode = function (layer) {
     WebInspector.DataGridNode.call(this);
 
     this._outlets = {};
@@ -32,72 +31,31 @@ WebInspector.LayerTreeDataGridNode = function(layer)
     this.layer = layer;
 };
 
-WebInspector.LayerTreeDataGridNode.prototype = {
+WebInspector.LayerTreeDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.DataGridNode,
 
     // DataGridNode Overrides.
 
-    createCells: function()
-    {
+    createCells: function createCells() {
         WebInspector.DataGridNode.prototype.createCells.call(this);
 
         this._cellsWereCreated = true;
     },
 
-    createCellContent: function(columnIdentifier, cell)
-    {
+    createCellContent: function createCellContent(columnIdentifier, cell) {
         var cell = columnIdentifier === "name" ? this._makeNameCell() : this._makeOutlet(columnIdentifier, document.createTextNode());
         this._updateCell(columnIdentifier);
         return cell;
     },
 
-    // Public
-
-    get layer()
-    {
-        return this._layer;
-    },
-
-    set layer(layer)
-    {
-        this._layer = layer;
-
-        var domNode = WebInspector.domTreeManager.nodeForId(layer.nodeId);
-
-        this.data = {
-            name: domNode ? WebInspector.displayNameForNode(domNode) : WebInspector.UIString("Unknown node"),
-            paintCount: layer.paintCount || "\u2014",
-            memory: Number.bytesToString(layer.memory || 0)
-        };
-    },
-
-    get data()
-    {
-        return this._data;
-    },
-
-    set data(data)
-    {
-        Object.keys(data).forEach(function(columnIdentifier) {
-            if (this._data[columnIdentifier] === data[columnIdentifier])
-                return;
-
-            this._data[columnIdentifier] = data[columnIdentifier];
-            if (this._cellsWereCreated)
-                this._updateCell(columnIdentifier);
-        }, this);
-    },
-
     // Private
 
-    _makeOutlet: function(name, element)
-    {
+    _makeOutlet: function _makeOutlet(name, element) {
         this._outlets[name] = element;
         return element;
     },
 
-    _makeNameCell: function()
-    {
+    _makeNameCell: function _makeNameCell() {
         var fragment = document.createDocumentFragment();
 
         fragment.appendChild(document.createElement("img")).className = "icon";
@@ -116,54 +74,71 @@ WebInspector.LayerTreeDataGridNode.prototype = {
 
         var reflectionLabel = this._makeOutlet("reflectionLabel", document.createElement("span"));
         reflectionLabel.className = "reflection";
-        reflectionLabel.textContent = " \u2014 " + WebInspector.UIString("Reflection");
+        reflectionLabel.textContent = " — " + WebInspector.UIString("Reflection");
 
         return fragment;
     },
 
-    _updateCell: function(columnIdentifier)
-    {
+    _updateCell: function _updateCell(columnIdentifier) {
         var data = this._data[columnIdentifier];
-        if (columnIdentifier === "name")
-            this._updateNameCellData(data);
-        else
-            this._outlets[columnIdentifier].textContent = data;
+        if (columnIdentifier === "name") this._updateNameCellData(data);else this._outlets[columnIdentifier].textContent = data;
     },
 
-    _updateNameCellData: function(data)
-    {
+    _updateNameCellData: function _updateNameCellData(data) {
         var layer = this._layer;
         var label = this._outlets.label;
 
         this._outlets.nameLabel.textContent = data;
 
-        if (WebInspector.domTreeManager.nodeForId(layer.nodeId))
-            label.parentNode.insertBefore(this._outlets.goToButton, label.parentNode.firstChild);
-        else if (this._outlets.goToButton.parentNode)
-            label.parentNode.removeChild(this._outlets.goToButton);
+        if (WebInspector.domTreeManager.nodeForId(layer.nodeId)) label.parentNode.insertBefore(this._outlets.goToButton, label.parentNode.firstChild);else if (this._outlets.goToButton.parentNode) label.parentNode.removeChild(this._outlets.goToButton);
 
-        if (layer.pseudoElement)
-            label.appendChild(this._outlets.pseudoLabel).textContent = "::" + layer.pseudoElement;
-        else if (this._outlets.pseudoLabel.parentNode)
-            label.removeChild(this._outlets.pseudoLabel);
+        if (layer.pseudoElement) label.appendChild(this._outlets.pseudoLabel).textContent = "::" + layer.pseudoElement;else if (this._outlets.pseudoLabel.parentNode) label.removeChild(this._outlets.pseudoLabel);
 
-        if (layer.isReflection)
-            label.appendChild(this._outlets.reflectionLabel);
-        else if (this._outlets.reflectionLabel.parentNode)
-            label.removeChild(this._outlets.reflectionLabel);
+        if (layer.isReflection) label.appendChild(this._outlets.reflectionLabel);else if (this._outlets.reflectionLabel.parentNode) label.removeChild(this._outlets.reflectionLabel);
 
         var element = this.element;
-        if (layer.isReflection)
-            element.classList.add("reflection");
-        else if (layer.pseudoElement)
-            element.classList.add("pseudo-element");
+        if (layer.isReflection) element.classList.add("reflection");else if (layer.pseudoElement) element.classList.add("pseudo-element");
     },
 
-    _goToArrowWasClicked: function()
-    {
+    _goToArrowWasClicked: function _goToArrowWasClicked() {
         var domNode = WebInspector.domTreeManager.nodeForId(this._layer.nodeId);
         WebInspector.showMainFrameDOMTree(domNode);
     }
-};
+}, {
+    layer: { // Public
+
+        get: function () {
+            return this._layer;
+        },
+        set: function (layer) {
+            this._layer = layer;
+
+            var domNode = WebInspector.domTreeManager.nodeForId(layer.nodeId);
+
+            this.data = {
+                name: domNode ? WebInspector.displayNameForNode(domNode) : WebInspector.UIString("Unknown node"),
+                paintCount: layer.paintCount || "—",
+                memory: Number.bytesToString(layer.memory || 0)
+            };
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            return this._data;
+        },
+        set: function (data) {
+            Object.keys(data).forEach(function (columnIdentifier) {
+                if (this._data[columnIdentifier] === data[columnIdentifier]) return;
+
+                this._data[columnIdentifier] = data[columnIdentifier];
+                if (this._cellsWereCreated) this._updateCell(columnIdentifier);
+            }, this);
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.LayerTreeDataGridNode.prototype.__proto__ = WebInspector.DataGridNode.prototype;

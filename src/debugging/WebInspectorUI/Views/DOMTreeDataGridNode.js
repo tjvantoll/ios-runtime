@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DOMTreeDataGridNode = function(domNode)
-{
+WebInspector.DOMTreeDataGridNode = function (domNode) {
     WebInspector.DataGridNode.call(this);
 
     this._nameLabel = null;
@@ -32,21 +31,14 @@ WebInspector.DOMTreeDataGridNode = function(domNode)
     this._updateNodeName();
 };
 
-WebInspector.DOMTreeDataGridNode.prototype = {
+WebInspector.DOMTreeDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.DOMTreeDataGridNode,
     __proto__: WebInspector.DataGridNode.prototype,
 
-    get domNode()
-    {
-        return this._domNode;
-    },
-
     // DataGridNode Overrides.
 
-    createCellContent: function(columnIdentifier, cell)
-    {
-        if (columnIdentifier !== "name")
-            return WebInspector.DataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
+    createCellContent: function createCellContent(columnIdentifier, cell) {
+        if (columnIdentifier !== "name") return WebInspector.DataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
 
         var cell = this._makeNameCell();
         this._updateNameCellData();
@@ -55,13 +47,11 @@ WebInspector.DOMTreeDataGridNode.prototype = {
 
     // Private
 
-    _updateNodeName: function()
-    {
-        this.data = {name: WebInspector.displayNameForNode(this._domNode)};
+    _updateNodeName: function _updateNodeName() {
+        this.data = { name: WebInspector.displayNameForNode(this._domNode) };
     },
 
-    _makeNameCell: function()
-    {
+    _makeNameCell: function _makeNameCell() {
         var fragment = document.createDocumentFragment();
 
         fragment.appendChild(document.createElement("img")).className = "icon";
@@ -76,13 +66,19 @@ WebInspector.DOMTreeDataGridNode.prototype = {
         return fragment;
     },
 
-    _updateNameCellData: function()
-    {
+    _updateNameCellData: function _updateNameCellData() {
         this._nameLabel.textContent = this.data.name;
     },
 
-    _goToArrowWasClicked: function()
-    {
+    _goToArrowWasClicked: function _goToArrowWasClicked() {
         WebInspector.showMainFrameDOMTree(this._domNode);
     }
-};
+}, {
+    domNode: {
+        get: function () {
+            return this._domNode;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

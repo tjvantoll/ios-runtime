@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,77 +27,85 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.NetworkObserver = class NetworkObserver
-{
-    // Events defined by the "Network" domain.
-
-    requestWillBeSent(requestId, frameId, loaderId, documentURL, request, timestamp, initiator, redirectResponse, type)
-    {
-        WebInspector.frameResourceManager.resourceRequestWillBeSent(requestId, frameId, loaderId, request, type, redirectResponse, timestamp, initiator);
+WebInspector.NetworkObserver = (function () {
+    function NetworkObserver() {
+        _classCallCheck(this, NetworkObserver);
     }
 
-    requestServedFromCache(requestId)
-    {
-        WebInspector.frameResourceManager.markResourceRequestAsServedFromMemoryCache(requestId);
-    }
+    _createClass(NetworkObserver, [{
+        key: "requestWillBeSent",
 
-    responseReceived(requestId, frameId, loaderId, timestamp, type, response)
-    {
-        WebInspector.frameResourceManager.resourceRequestDidReceiveResponse(requestId, frameId, loaderId, type, response, timestamp);
-    }
+        // Events defined by the "Network" domain.
 
-    dataReceived(requestId, timestamp, dataLength, encodedDataLength)
-    {
-        WebInspector.frameResourceManager.resourceRequestDidReceiveData(requestId, dataLength, encodedDataLength, timestamp);
-    }
+        value: function requestWillBeSent(requestId, frameId, loaderId, documentURL, request, timestamp, initiator, redirectResponse, type) {
+            WebInspector.frameResourceManager.resourceRequestWillBeSent(requestId, frameId, loaderId, request, type, redirectResponse, timestamp, initiator);
+        }
+    }, {
+        key: "requestServedFromCache",
+        value: function requestServedFromCache(requestId) {
+            WebInspector.frameResourceManager.markResourceRequestAsServedFromMemoryCache(requestId);
+        }
+    }, {
+        key: "responseReceived",
+        value: function responseReceived(requestId, frameId, loaderId, timestamp, type, response) {
+            WebInspector.frameResourceManager.resourceRequestDidReceiveResponse(requestId, frameId, loaderId, type, response, timestamp);
+        }
+    }, {
+        key: "dataReceived",
+        value: function dataReceived(requestId, timestamp, dataLength, encodedDataLength) {
+            WebInspector.frameResourceManager.resourceRequestDidReceiveData(requestId, dataLength, encodedDataLength, timestamp);
+        }
+    }, {
+        key: "loadingFinished",
+        value: function loadingFinished(requestId, timestamp, sourceMapURL) {
+            WebInspector.frameResourceManager.resourceRequestDidFinishLoading(requestId, timestamp, sourceMapURL);
+        }
+    }, {
+        key: "loadingFailed",
+        value: function loadingFailed(requestId, timestamp, errorText, canceled) {
+            WebInspector.frameResourceManager.resourceRequestDidFailLoading(requestId, canceled, timestamp);
+        }
+    }, {
+        key: "requestServedFromMemoryCache",
+        value: function requestServedFromMemoryCache(requestId, frameId, loaderId, documentURL, timestamp, initiator, resource) {
+            WebInspector.frameResourceManager.resourceRequestWasServedFromMemoryCache(requestId, frameId, loaderId, resource, timestamp, initiator);
+        }
+    }, {
+        key: "webSocketWillSendHandshakeRequest",
+        value: function webSocketWillSendHandshakeRequest(requestId, timestamp, request) {}
+    }, {
+        key: "webSocketHandshakeResponseReceived",
+        value: function webSocketHandshakeResponseReceived(requestId, timestamp, response) {}
+    }, {
+        key: "webSocketCreated",
+        value: function webSocketCreated(requestId, url) {}
+    }, {
+        key: "webSocketClosed",
+        value: function webSocketClosed(requestId, timestamp) {}
+    }, {
+        key: "webSocketFrameReceived",
+        value: function webSocketFrameReceived(requestId, timestamp, response) {}
+    }, {
+        key: "webSocketFrameError",
+        value: function webSocketFrameError(requestId, timestamp, errorMessage) {}
+    }, {
+        key: "webSocketFrameSent",
+        value: function webSocketFrameSent(requestId, timestamp, response) {}
+    }]);
 
-    loadingFinished(requestId, timestamp, sourceMapURL)
-    {
-        WebInspector.frameResourceManager.resourceRequestDidFinishLoading(requestId, timestamp, sourceMapURL);
-    }
+    return NetworkObserver;
+})();
 
-    loadingFailed(requestId, timestamp, errorText, canceled)
-    {
-        WebInspector.frameResourceManager.resourceRequestDidFailLoading(requestId, canceled, timestamp);
-    }
+// FIXME: Not implemented.
 
-    requestServedFromMemoryCache(requestId, frameId, loaderId, documentURL, timestamp, initiator, resource)
-    {
-        WebInspector.frameResourceManager.resourceRequestWasServedFromMemoryCache(requestId, frameId, loaderId, resource, timestamp, initiator);
-    }
+// FIXME: Not implemented.
 
-    webSocketWillSendHandshakeRequest(requestId, timestamp, request)
-    {
-        // FIXME: Not implemented.
-    }
+// FIXME: Not implemented.
 
-    webSocketHandshakeResponseReceived(requestId, timestamp, response)
-    {
-        // FIXME: Not implemented.
-    }
+// FIXME: Not implemented.
 
-    webSocketCreated(requestId, url)
-    {
-        // FIXME: Not implemented.
-    }
+// FIXME: Not implemented.
 
-    webSocketClosed(requestId, timestamp)
-    {
-        // FIXME: Not implemented.
-    }
+// FIXME: Not implemented.
 
-    webSocketFrameReceived(requestId, timestamp, response)
-    {
-        // FIXME: Not implemented.
-    }
-
-    webSocketFrameError(requestId, timestamp, errorMessage)
-    {
-        // FIXME: Not implemented.
-    }
-
-    webSocketFrameSent(requestId, timestamp, response)
-    {
-        // FIXME: Not implemented.
-    }
-};
+// FIXME: Not implemented.

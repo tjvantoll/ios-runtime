@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ActivateButtonNavigationItem = function(identifier, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss, role)
-{
+WebInspector.ActivateButtonNavigationItem = function (identifier, defaultToolTip, activatedToolTip, image, imageWidth, imageHeight, suppressEmboss, role) {
     WebInspector.ButtonNavigationItem.call(this, identifier, defaultToolTip, image, imageWidth, imageHeight, suppressEmboss, role);
 
     this._defaultToolTip = defaultToolTip;
@@ -35,52 +34,17 @@ WebInspector.ActivateButtonNavigationItem = function(identifier, defaultToolTip,
 WebInspector.ActivateButtonNavigationItem.StyleClassName = "activate";
 WebInspector.ActivateButtonNavigationItem.ActivatedStyleClassName = "activated";
 
-WebInspector.ActivateButtonNavigationItem.prototype = {
+WebInspector.ActivateButtonNavigationItem.prototype = Object.defineProperties({
     constructor: WebInspector.ActivateButtonNavigationItem,
 
-    // Public
-
-    get defaultToolTip()
-    {
-        return this._defaultToolTip;
-    },
-
-    get activatedToolTip()
-    {
-        return this._activatedToolTip;
-    },
-
-    get activated()
-    {
-        return this.element.classList.contains(WebInspector.ActivateButtonNavigationItem.ActivatedStyleClassName);
-    },
-
-    set activated(flag)
-    {
-        if (flag) {
-            this.toolTip = this._activatedToolTip;
-            this.element.classList.add(WebInspector.ActivateButtonNavigationItem.ActivatedStyleClassName);
-            if (this._role === "tab")
-                this.element.setAttribute("aria-selected", "true");
-        } else {
-            this.toolTip = this._defaultToolTip;
-            this.element.classList.remove(WebInspector.ActivateButtonNavigationItem.ActivatedStyleClassName);
-            if (this._role === "tab")
-                this.element.removeAttribute("aria-selected");
-        }
-    },
-
-    generateStyleText: function(parentSelector)
-    {
+    generateStyleText: function generateStyleText(parentSelector) {
         var classNames = this._classNames.join(".");
 
-        if (this._suppressEmboss)
-            var styleText = parentSelector + " ." + classNames + " > .glyph { width: " +  this._imageWidth + "px; height: " + this._imageHeight + "px; }\n";
-        else {
+        if (this._suppressEmboss) var styleText = parentSelector + " ." + classNames + " > .glyph { width: " + this._imageWidth + "px; height: " + this._imageHeight + "px; }\n";else {
             var activatedClassName = "." + WebInspector.ActivateButtonNavigationItem.ActivatedStyleClassName;
 
             // Default state.
-            var styleText = parentSelector + " ." + classNames + " > .glyph { background-image: -webkit-canvas(" + this._canvasIdentifier(WebInspector.ButtonNavigationItem.States.Normal) + "); background-size: " +  this._imageWidth + "px " + this._imageHeight + "px; }\n";
+            var styleText = parentSelector + " ." + classNames + " > .glyph { background-image: -webkit-canvas(" + this._canvasIdentifier(WebInspector.ButtonNavigationItem.States.Normal) + "); background-size: " + this._imageWidth + "px " + this._imageHeight + "px; }\n";
 
             // Pressed state.
             styleText += parentSelector + " ." + classNames + ":not(.disabled):active > .glyph { background-image: -webkit-canvas(" + this._canvasIdentifier(WebInspector.ButtonNavigationItem.States.Active) + "); }\n";
@@ -98,6 +62,40 @@ WebInspector.ActivateButtonNavigationItem.prototype = {
     // Private
 
     _additionalClassNames: [WebInspector.ActivateButtonNavigationItem.StyleClassName, WebInspector.ButtonNavigationItem.StyleClassName]
-};
+}, {
+    defaultToolTip: { // Public
+
+        get: function () {
+            return this._defaultToolTip;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    activatedToolTip: {
+        get: function () {
+            return this._activatedToolTip;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    activated: {
+        get: function () {
+            return this.element.classList.contains(WebInspector.ActivateButtonNavigationItem.ActivatedStyleClassName);
+        },
+        set: function (flag) {
+            if (flag) {
+                this.toolTip = this._activatedToolTip;
+                this.element.classList.add(WebInspector.ActivateButtonNavigationItem.ActivatedStyleClassName);
+                if (this._role === "tab") this.element.setAttribute("aria-selected", "true");
+            } else {
+                this.toolTip = this._defaultToolTip;
+                this.element.classList.remove(WebInspector.ActivateButtonNavigationItem.ActivatedStyleClassName);
+                if (this._role === "tab") this.element.removeAttribute("aria-selected");
+            }
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ActivateButtonNavigationItem.prototype.__proto__ = WebInspector.ButtonNavigationItem.prototype;

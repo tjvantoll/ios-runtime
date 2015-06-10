@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014-2015 Apple Inc. All rights reserved.
  *
@@ -23,15 +31,15 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DebuggerDashboardView = class DebuggerDashboardView extends WebInspector.DashboardView
-{
-    constructor(representedObject)
-    {
-        super(representedObject, "debugger");
+WebInspector.DebuggerDashboardView = (function (_WebInspector$DashboardView) {
+    function DebuggerDashboardView(representedObject) {
+        _classCallCheck(this, DebuggerDashboardView);
+
+        _get(Object.getPrototypeOf(DebuggerDashboardView.prototype), "constructor", this).call(this, representedObject, "debugger");
 
         WebInspector.debuggerManager.addEventListener(WebInspector.DebuggerManager.Event.ActiveCallFrameDidChange, this._rebuildLocation, this);
 
-        this._navigationBar = new WebInspector.NavigationBar;
+        this._navigationBar = new WebInspector.NavigationBar();
         this.element.appendChild(this._navigationBar.element);
 
         var tooltip = WebInspector.UIString("Continue script execution (%s or %s)").format(WebInspector.pauseOrResumeKeyboardShortcut.displayName, WebInspector.pauseOrResumeAlternateKeyboardShortcut.displayName);
@@ -56,49 +64,54 @@ WebInspector.DebuggerDashboardView = class DebuggerDashboardView extends WebInsp
         this._rebuildLocation();
     }
 
-    // Private
+    _inherits(DebuggerDashboardView, _WebInspector$DashboardView);
 
-    _rebuildLocation()
-    {
-        if (!WebInspector.debuggerManager.activeCallFrame)
-            return;
+    _createClass(DebuggerDashboardView, [{
+        key: "_rebuildLocation",
 
-        this._locationElement.removeChildren();
+        // Private
 
-        var callFrame = WebInspector.debuggerManager.activeCallFrame;
-        var functionName = callFrame.functionName || WebInspector.UIString("(anonymous function)");
+        value: function _rebuildLocation() {
+            if (!WebInspector.debuggerManager.activeCallFrame) return;
 
-        var iconClassName = WebInspector.DebuggerDashboardView.FunctionIconStyleClassName;
+            this._locationElement.removeChildren();
 
-        // This is more than likely an event listener function with an "on" prefix and it is
-        // as long or longer than the shortest event listener name -- "oncut".
-        if (callFrame.functionName && callFrame.functionName.startsWith("on") && callFrame.functionName.length >= 5)
-            iconClassName = WebInspector.DebuggerDashboardView.EventListenerIconStyleClassName;
+            var callFrame = WebInspector.debuggerManager.activeCallFrame;
+            var functionName = callFrame.functionName || WebInspector.UIString("(anonymous function)");
 
-        var iconElement = document.createElement("div");
-        iconElement.classList.add(iconClassName);
-        this._locationElement.appendChild(iconElement);
+            var iconClassName = WebInspector.DebuggerDashboardView.FunctionIconStyleClassName;
 
-        var iconImageElement = document.createElement("img");
-        iconImageElement.className = WebInspector.DebuggerDashboardView.IconStyleClassName;
-        iconElement.appendChild(iconImageElement);
+            // This is more than likely an event listener function with an "on" prefix and it is
+            // as long or longer than the shortest event listener name -- "oncut".
+            if (callFrame.functionName && callFrame.functionName.startsWith("on") && callFrame.functionName.length >= 5) iconClassName = WebInspector.DebuggerDashboardView.EventListenerIconStyleClassName;
 
-        var nameElement = document.createElement("div");
-        nameElement.appendChild(document.createTextNode(functionName));
-        nameElement.classList.add(WebInspector.DebuggerDashboardView.FunctionNameStyleClassName);
-        this._locationElement.appendChild(nameElement);
+            var iconElement = document.createElement("div");
+            iconElement.classList.add(iconClassName);
+            this._locationElement.appendChild(iconElement);
 
-        var sourceCodeLocation = WebInspector.debuggerManager.activeCallFrame.sourceCodeLocation;
-        var shouldPreventLinkFloat = true;
-        var linkElement = WebInspector.createSourceCodeLocationLink(sourceCodeLocation, shouldPreventLinkFloat);
-        this._locationElement.appendChild(linkElement);
-    }
+            var iconImageElement = document.createElement("img");
+            iconImageElement.className = WebInspector.DebuggerDashboardView.IconStyleClassName;
+            iconElement.appendChild(iconImageElement);
 
-    _resumeButtonClicked()
-    {
-        WebInspector.debuggerManager.resume();
-    }
-};
+            var nameElement = document.createElement("div");
+            nameElement.appendChild(document.createTextNode(functionName));
+            nameElement.classList.add(WebInspector.DebuggerDashboardView.FunctionNameStyleClassName);
+            this._locationElement.appendChild(nameElement);
+
+            var sourceCodeLocation = WebInspector.debuggerManager.activeCallFrame.sourceCodeLocation;
+            var shouldPreventLinkFloat = true;
+            var linkElement = WebInspector.createSourceCodeLocationLink(sourceCodeLocation, shouldPreventLinkFloat);
+            this._locationElement.appendChild(linkElement);
+        }
+    }, {
+        key: "_resumeButtonClicked",
+        value: function _resumeButtonClicked() {
+            WebInspector.debuggerManager.resume();
+        }
+    }]);
+
+    return DebuggerDashboardView;
+})(WebInspector.DashboardView);
 
 WebInspector.DebuggerDashboardView.FunctionIconStyleClassName = WebInspector.CallFrameView.FunctionIconStyleClassName;
 WebInspector.DebuggerDashboardView.EventListenerIconStyleClassName = WebInspector.CallFrameView.EventListenerIconStyleClassName;

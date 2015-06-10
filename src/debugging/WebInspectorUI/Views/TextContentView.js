@@ -23,13 +23,12 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TextContentView = function(string, mimeType)
-{
+WebInspector.TextContentView = function (string, mimeType) {
     WebInspector.ContentView.call(this, string);
 
     this.element.classList.add(WebInspector.TextContentView.StyleClassName);
 
-    this._textEditor = new WebInspector.TextEditor;
+    this._textEditor = new WebInspector.TextEditor();
     this._textEditor.addEventListener(WebInspector.TextEditor.Event.NumberOfSearchResultsDidChange, this._numberOfSearchResultsDidChange, this);
     this._textEditor.addEventListener(WebInspector.TextEditor.Event.FormattingDidChange, this._textEditorFormattingDidChange, this);
 
@@ -53,125 +52,128 @@ WebInspector.TextContentView = function(string, mimeType)
 
 WebInspector.TextContentView.StyleClassName = "text";
 
-WebInspector.TextContentView.prototype = {
+WebInspector.TextContentView.prototype = Object.defineProperties({
     constructor: WebInspector.TextContentView,
 
-    // Public
-
-    get textEditor()
-    {
-        return this._textEditor;
-    },
-
-    get navigationItems()
-    {
-        return [this._prettyPrintButtonNavigationItem, this._showTypesButtonNavigationItem];
-    },
-
-    revealPosition: function(position, textRangeToSelect, forceUnformatted)
-    {
+    revealPosition: function revealPosition(position, textRangeToSelect, forceUnformatted) {
         this._textEditor.revealPosition(position, textRangeToSelect, forceUnformatted);
     },
 
-    shown: function()
-    {
+    shown: function shown() {
         WebInspector.ContentView.prototype.shown.call(this);
 
         this._textEditor.shown();
     },
 
-    hidden: function()
-    {
+    hidden: function hidden() {
         WebInspector.ContentView.prototype.hidden.call(this);
 
         this._textEditor.hidden();
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         WebInspector.ContentView.prototype.closed.call(this);
 
         this._textEditor.close();
     },
 
-    get supportsSave()
-    {
-        return true;
-    },
-
-    get saveData()
-    {
-        var url = "web-inspector:///" + encodeURI(WebInspector.UIString("Untitled")) + ".txt";
-        return {url, content: this._textEditor.string, forceSaveAs: true};
-    },
-
-    get supportsSearch()
-    {
-        return true;
-    },
-
-    get numberOfSearchResults()
-    {
-        return this._textEditor.numberOfSearchResults;
-    },
-
-    get hasPerformedSearch()
-    {
-        return this._textEditor.currentSearchQuery !== null;
-    },
-
-    set automaticallyRevealFirstSearchResult(reveal)
-    {
-        this._textEditor.automaticallyRevealFirstSearchResult = reveal;
-    },
-
-    performSearch: function(query)
-    {
+    performSearch: function performSearch(query) {
         this._textEditor.performSearch(query);
     },
 
-    searchCleared: function()
-    {
+    searchCleared: function searchCleared() {
         this._textEditor.searchCleared();
     },
 
-    searchQueryWithSelection: function()
-    {
+    searchQueryWithSelection: function searchQueryWithSelection() {
         return this._textEditor.searchQueryWithSelection();
     },
 
-    revealPreviousSearchResult: function(changeFocus)
-    {
+    revealPreviousSearchResult: function revealPreviousSearchResult(changeFocus) {
         this._textEditor.revealPreviousSearchResult(changeFocus);
     },
 
-    revealNextSearchResult: function(changeFocus)
-    {
+    revealNextSearchResult: function revealNextSearchResult(changeFocus) {
         this._textEditor.revealNextSearchResult(changeFocus);
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         this._textEditor.updateLayout();
     },
 
     // Private
 
-    _togglePrettyPrint: function(event)
-    {
+    _togglePrettyPrint: function _togglePrettyPrint(event) {
         var activated = !this._prettyPrintButtonNavigationItem.activated;
         this._textEditor.formatted = activated;
     },
 
-    _textEditorFormattingDidChange: function(event)
-    {
+    _textEditorFormattingDidChange: function _textEditorFormattingDidChange(event) {
         this._prettyPrintButtonNavigationItem.activated = this._textEditor.formatted;
     },
 
-    _numberOfSearchResultsDidChange: function(event)
-    {
+    _numberOfSearchResultsDidChange: function _numberOfSearchResultsDidChange(event) {
         this.dispatchEventToListeners(WebInspector.ContentView.Event.NumberOfSearchResultsDidChange);
     }
-};
+}, {
+    textEditor: { // Public
+
+        get: function () {
+            return this._textEditor;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    navigationItems: {
+        get: function () {
+            return [this._prettyPrintButtonNavigationItem, this._showTypesButtonNavigationItem];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSave: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    saveData: {
+        get: function () {
+            var url = "web-inspector:///" + encodeURI(WebInspector.UIString("Untitled")) + ".txt";
+            return { url: url, content: this._textEditor.string, forceSaveAs: true };
+        },
+        configurable: true,
+        enumerable: true
+    },
+    supportsSearch: {
+        get: function () {
+            return true;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    numberOfSearchResults: {
+        get: function () {
+            return this._textEditor.numberOfSearchResults;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    hasPerformedSearch: {
+        get: function () {
+            return this._textEditor.currentSearchQuery !== null;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    automaticallyRevealFirstSearchResult: {
+        set: function (reveal) {
+            this._textEditor.automaticallyRevealFirstSearchResult = reveal;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.TextContentView.prototype.__proto__ = WebInspector.ContentView.prototype;

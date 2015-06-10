@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,10 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CallFrameView = class CallFrameView extends WebInspector.Object
-{
-    constructor(callFrame)
-    {
+WebInspector.CallFrameView = (function (_WebInspector$Object) {
+    function CallFrameView(callFrame) {
+        _classCallCheck(this, CallFrameView);
+
+        _get(Object.getPrototypeOf(CallFrameView.prototype), "constructor", this).call(this);
         console.assert(callFrame instanceof WebInspector.CallFrame);
 
         var callFrameElement = document.createElement("div");
@@ -63,25 +72,28 @@ WebInspector.CallFrameView = class CallFrameView extends WebInspector.Object
             titlesElement.appendChild(titleElement);
 
             titlesElement.appendChild(subtitleElement);
-        } else
-            callFrameElement.appendChild(subtitleElement);
+        } else callFrameElement.appendChild(subtitleElement);
 
         return callFrameElement;
     }
 
-    static iconClassNameForCallFrame(callFrame)
-    {
-        // This is more than likely an event listener function with an "on" prefix and it is
-        // as long or longer than the shortest event listener name -- "oncut".
-        if (callFrame.functionName && callFrame.functionName.startsWith("on") && callFrame.functionName.length >= 5)
-            return WebInspector.CallFrameView.EventListenerIconStyleClassName;
+    _inherits(CallFrameView, _WebInspector$Object);
 
-        if (callFrame.nativeCode)
-            return WebInspector.CallFrameView.NativeIconStyleClassName;
+    _createClass(CallFrameView, null, [{
+        key: "iconClassNameForCallFrame",
+        value: function iconClassNameForCallFrame(callFrame) {
+            // This is more than likely an event listener function with an "on" prefix and it is
+            // as long or longer than the shortest event listener name -- "oncut".
+            if (callFrame.functionName && callFrame.functionName.startsWith("on") && callFrame.functionName.length >= 5) return WebInspector.CallFrameView.EventListenerIconStyleClassName;
 
-        return WebInspector.CallFrameView.FunctionIconStyleClassName;
-    }
-};
+            if (callFrame.nativeCode) return WebInspector.CallFrameView.NativeIconStyleClassName;
+
+            return WebInspector.CallFrameView.FunctionIconStyleClassName;
+        }
+    }]);
+
+    return CallFrameView;
+})(WebInspector.Object);
 
 WebInspector.CallFrameView.FunctionIconStyleClassName = "function-icon";
 WebInspector.CallFrameView.EventListenerIconStyleClassName = "event-listener-icon";

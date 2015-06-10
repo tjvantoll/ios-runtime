@@ -23,30 +23,29 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.IndexedDatabaseEntryDataGridNode = function(entry)
-{
+WebInspector.IndexedDatabaseEntryDataGridNode = function (entry) {
     WebInspector.DataGridNode.call(this, entry);
 
     this._entry = entry;
 };
 
-WebInspector.IndexedDatabaseEntryDataGridNode.prototype = {
+WebInspector.IndexedDatabaseEntryDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.IndexedDatabaseEntryDataGridNode,
     __proto__: WebInspector.DataGridNode.prototype,
 
-    // Public
-
-    get entry()
-    {
-        return this._entry;
-    },
-
-    createCellContent: function(columnIdentifier, cell)
-    {
+    createCellContent: function createCellContent(columnIdentifier, cell) {
         var value = this._entry[columnIdentifier];
-        if (value instanceof WebInspector.RemoteObject)
-            return WebInspector.FormattedValue.createObjectTreeOrFormattedValueForRemoteObject(value, null, true);
+        if (value instanceof WebInspector.RemoteObject) return WebInspector.FormattedValue.createObjectTreeOrFormattedValueForRemoteObject(value, null, true);
 
         return WebInspector.DataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
     }
-};
+}, {
+    entry: { // Public
+
+        get: function () {
+            return this._entry;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

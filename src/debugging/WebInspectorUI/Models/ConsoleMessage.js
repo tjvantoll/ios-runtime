@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,16 +31,18 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ConsoleMessage = class ConsoleMessage extends WebInspector.Object
-{
-    constructor(source, level, message, type, url, line, column, repeatCount, parameters, stackTrace, request)
-    {
-        super();
+WebInspector.ConsoleMessage = (function (_WebInspector$Object) {
+    function ConsoleMessage(source, level, message, type, url, line, column, repeatCount, parameters, stackTrace, request) {
+        _classCallCheck(this, ConsoleMessage);
+
+        _get(Object.getPrototypeOf(ConsoleMessage.prototype), "constructor", this).call(this);
 
         console.assert(typeof source === "string");
         console.assert(typeof level === "string");
         console.assert(typeof message === "string");
-        console.assert(!parameters || parameters.every(function(x) { return x instanceof WebInspector.RemoteObject; }));
+        console.assert(!parameters || parameters.every(function (x) {
+            return x instanceof WebInspector.RemoteObject;
+        }));
 
         this._source = source;
         this._level = level;
@@ -50,63 +60,70 @@ WebInspector.ConsoleMessage = class ConsoleMessage extends WebInspector.Object
         this._request = request;
     }
 
-    // Public
+    _inherits(ConsoleMessage, _WebInspector$Object);
 
-    get source()
-    {
-        return this._source;
-    }
+    _createClass(ConsoleMessage, [{
+        key: "source",
 
-    get level()
-    {
-        return this._level;
-    }
+        // Public
 
-    get messageText()
-    {
-        return this._messageText;
-    }
+        get: function () {
+            return this._source;
+        }
+    }, {
+        key: "level",
+        get: function () {
+            return this._level;
+        }
+    }, {
+        key: "messageText",
+        get: function () {
+            return this._messageText;
+        }
+    }, {
+        key: "type",
+        get: function () {
+            return this._type;
+        }
+    }, {
+        key: "url",
+        get: function () {
+            return this._url;
+        }
+    }, {
+        key: "line",
+        get: function () {
+            return this._line;
+        }
+    }, {
+        key: "column",
+        get: function () {
+            return this._column;
+        }
+    }, {
+        key: "repeatCount",
+        get: function () {
+            return this._repeatCount;
+        }
+    }, {
+        key: "parameters",
+        get: function () {
+            return this._parameters;
+        }
+    }, {
+        key: "stackTrace",
+        get: function () {
+            return this._stackTrace;
+        }
+    }, {
+        key: "request",
+        get: function () {
+            return this._request;
+        }
+    }]);
 
-    get type()
-    {
-        return this._type;
-    }
-
-    get url()
-    {
-        return this._url;
-    }
-
-    get line()
-    {
-        return this._line;
-    }
-
-    get column()
-    {
-        return this._column;
-    }
-
-    get repeatCount()
-    {
-        return this._repeatCount;
-    }
-
-    get parameters()
-    {
-        return this._parameters;
-    }
-
-    get stackTrace()
-    {
-        return this._stackTrace;
-    }
-
-    get request()
-    {
-        return this._request;
-    }
-};
+    return ConsoleMessage;
+})(WebInspector.Object);
 
 WebInspector.ConsoleMessage.MessageSource = {
     HTML: "html",
@@ -119,7 +136,7 @@ WebInspector.ConsoleMessage.MessageSource = {
     Rendering: "rendering",
     CSS: "css",
     Security: "security",
-    Other: "other",
+    Other: "other"
 };
 
 WebInspector.ConsoleMessage.MessageType = {
@@ -135,13 +152,13 @@ WebInspector.ConsoleMessage.MessageType = {
     Timing: "timing",
     Profile: "profile",
     ProfileEnd: "profileEnd",
-    Result: "result", // Frontend Only.
-};
+    Result: "result" };
 
 WebInspector.ConsoleMessage.MessageLevel = {
     Log: "log",
     Info: "info",
     Warning: "warning",
     Error: "error",
-    Debug: "debug",
+    Debug: "debug"
 };
+// Frontend Only.

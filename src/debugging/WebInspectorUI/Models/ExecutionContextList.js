@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,50 +31,57 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ExecutionContextList = class ExecutionContextList extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.ExecutionContextList = (function (_WebInspector$Object) {
+    function ExecutionContextList() {
+        _classCallCheck(this, ExecutionContextList);
+
+        _get(Object.getPrototypeOf(ExecutionContextList.prototype), "constructor", this).call(this);
 
         this._contexts = [];
         this._pageExecutionContext = null;
     }
 
-    // Public
+    _inherits(ExecutionContextList, _WebInspector$Object);
 
-    get pageExecutionContext()
-    {
-        return this._pageExecutionContext;
-    }
+    _createClass(ExecutionContextList, [{
+        key: "add",
+        value: function add(context) {
+            // FIXME: The backend sends duplicate page context execution contexts with the same id. Why?
+            if (context.isPageContext && this._pageExecutionContext) {
+                console.assert(context.id === this._pageExecutionContext.id);
+                return false;
+            }
 
-    get contexts()
-    {
-        return this._contexts;
-    }
+            this._contexts.push(context);
 
-    add(context)
-    {
-        // FIXME: The backend sends duplicate page context execution contexts with the same id. Why?
-        if (context.isPageContext && this._pageExecutionContext) {
-            console.assert(context.id === this._pageExecutionContext.id);
+            if (context.isPageContext) {
+                console.assert(!this._pageExecutionContext);
+                this._pageExecutionContext = context;
+                return true;
+            }
+
             return false;
         }
-
-        this._contexts.push(context);
-
-        if (context.isPageContext) {
-            console.assert(!this._pageExecutionContext);
-            this._pageExecutionContext = context;
-            return true;
+    }, {
+        key: "clear",
+        value: function clear() {
+            this._contexts = [];
+            this._pageExecutionContext = null;
         }
+    }, {
+        key: "pageExecutionContext",
 
-        return false;
-    }
+        // Public
 
-    clear()
-    {
-        this._contexts = [];
-        this._pageExecutionContext = null;
-    }
-};
+        get: function () {
+            return this._pageExecutionContext;
+        }
+    }, {
+        key: "contexts",
+        get: function () {
+            return this._contexts;
+        }
+    }]);
+
+    return ExecutionContextList;
+})(WebInspector.Object);

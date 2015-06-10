@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.HoverMenu = class HoverMenu extends WebInspector.Object
-{
-    constructor(delegate)
-    {
-        super();
+WebInspector.HoverMenu = (function (_WebInspector$Object) {
+    function HoverMenu(delegate) {
+        _classCallCheck(this, HoverMenu);
+
+        _get(Object.getPrototypeOf(HoverMenu.prototype), "constructor", this).call(this);
 
         this.delegate = delegate;
 
@@ -41,235 +49,194 @@ WebInspector.HoverMenu = class HoverMenu extends WebInspector.Object
         this._button.addEventListener("click", this);
     }
 
-    // Public
+    _inherits(HoverMenu, _WebInspector$Object);
 
-    get element()
-    {
-        return this._element;
-    }
+    _createClass(HoverMenu, [{
+        key: "present",
+        value: function present(rects) {
+            this._outlineElement.textContent = "";
 
-    present(rects)
-    {
-        this._outlineElement.textContent = "";
+            document.body.appendChild(this._element);
+            this._drawOutline(rects);
+            this._element.classList.add(WebInspector.HoverMenu.VisibleClassName);
 
-        document.body.appendChild(this._element);
-        this._drawOutline(rects);
-        this._element.classList.add(WebInspector.HoverMenu.VisibleClassName);
-
-        window.addEventListener("scroll", this, true);
-    }
-
-    dismiss(discrete)
-    {
-        if (this._element.parentNode !== document.body)
-            return;
-
-        if (discrete)
-            this._element.remove();
-
-        this._element.classList.remove(WebInspector.HoverMenu.VisibleClassName);
-
-        window.removeEventListener("scroll", this, true);
-    }
-
-    // Protected
-
-    handleEvent(event)
-    {
-        switch (event.type) {
-        case "scroll":
-            if (!this._element.contains(event.target))
-                this.dismiss(true);
-            break;
-        case "click":
-            this._handleClickEvent(event);
-            break;
-        case "transitionend":
-            if (!this._element.classList.contains(WebInspector.HoverMenu.VisibleClassName))
-                this._element.remove();
-            break;
+            window.addEventListener("scroll", this, true);
         }
-    }
+    }, {
+        key: "dismiss",
+        value: function dismiss(discrete) {
+            if (this._element.parentNode !== document.body) return;
 
-    // Private
+            if (discrete) this._element.remove();
 
-    _handleClickEvent(event)
-    {
-        if (this.delegate && typeof this.delegate.hoverMenuButtonWasPressed === "function")
-            this.delegate.hoverMenuButtonWasPressed(this);
-    }
+            this._element.classList.remove(WebInspector.HoverMenu.VisibleClassName);
 
-    _drawOutline(rects)
-    {
-        var buttonWidth = this._button.width;
-        var buttonHeight = this._button.height;
-        
-        // Add room for the button on the last line.
-        var lastRect = rects.pop();
-        lastRect.size.width += buttonWidth;
-        rects.push(lastRect);
-
-        if (rects.length === 1)
-            this._drawSingleLine(rects[0]);
-        else if (rects.length === 2 && rects[0].minX() >= rects[1].maxX())
-            this._drawTwoNonOverlappingLines(rects);
-        else
-            this._drawOverlappingLines(rects);
-
-        var bounds = WebInspector.Rect.unionOfRects(rects).pad(3); // padding + 1/2 stroke-width
-
-        var style = this._element.style;
-        style.left = bounds.minX() + "px";
-        style.top = bounds.minY() + "px";
-        style.width = bounds.size.width + "px";
-        style.height = bounds.size.height + "px";
-
-        this._outlineElement.style.width = bounds.size.width + "px";
-        this._outlineElement.style.height = bounds.size.height + "px";
-
-        this._button.style.left = (lastRect.maxX() - bounds.minX() - buttonWidth) + "px";
-        this._button.style.top = (lastRect.maxY() - bounds.minY() - buttonHeight) + "px";
-    }
-
-    _addRect(rect)
-    {
-        var r = 4;
-
-        var svgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        svgRect.setAttribute("x", 1);
-        svgRect.setAttribute("y", 1);
-        svgRect.setAttribute("width", rect.size.width);
-        svgRect.setAttribute("height", rect.size.height);
-        svgRect.setAttribute("rx", r);
-        svgRect.setAttribute("ry", r);
-        return this._outlineElement.appendChild(svgRect);
-    }
-
-    _addPath(commands, tx, ty)
-    {
-        var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        path.setAttribute("d", commands.join(" "));
-        path.setAttribute("transform", "translate(" + (tx + 1) + "," + (ty + 1) + ")");
-        return this._outlineElement.appendChild(path);
-    }
-
-    _drawSingleLine(rect)
-    {
-        this._addRect(rect.pad(2));
-    }
-
-    _drawTwoNonOverlappingLines(rects)
-    {
-        var r = 4;
-
-        var firstRect = rects[0].pad(2);
-        var secondRect = rects[1].pad(2);
-
-        var tx = -secondRect.minX();
-        var ty = -firstRect.minY();
-
-        var rect = firstRect;
-        this._addPath([
-            "M", rect.maxX(), rect.minY(),
-            "H", rect.minX() + r,
-            "q", -r, 0, -r, r,
-            "V", rect.maxY() - r,
-            "q", 0, r, r, r,
-            "H", rect.maxX()
-        ], tx, ty);
-        
-        rect = secondRect;
-        this._addPath([
-            "M", rect.minX(), rect.minY(),
-            "H", rect.maxX() - r,
-            "q", r, 0, r, r,
-            "V", rect.maxY() - r,
-            "q", 0, r, -r, r,
-            "H", rect.minX()
-        ], tx, ty);
-    }
-    
-    _drawOverlappingLines(rects)
-    {
-        var PADDING = 2;
-        var r = 4;
-
-        var minX = Number.MAX_VALUE;
-        var maxX = -Number.MAX_VALUE;
-        for (var rect of rects) {
-            var minX = Math.min(rect.minX(), minX);
-            var maxX = Math.max(rect.maxX(), maxX);
+            window.removeEventListener("scroll", this, true);
         }
+    }, {
+        key: "handleEvent",
 
-        minX -= PADDING;
-        maxX += PADDING;
+        // Protected
 
-        var minY = rects[0].minY() - PADDING;
-        var maxY = rects.lastValue.maxY() + PADDING;
-        var firstLineMinX = rects[0].minX() - PADDING;
-        var lastLineMaxX = rects.lastValue.maxX() + PADDING;
-        
-        if (firstLineMinX === minX && lastLineMaxX === maxX)
-            return this._addRect(new WebInspector.Rect(minX, minY, maxX - minX, maxY - minY));
-        
-        var lastLineMinY = rects.lastValue.minY() + PADDING;
-        if (rects[0].minX() === minX + PADDING) {
-            return this._addPath([
-                "M", minX + r, minY,
-                "H", maxX - r,
-                "q", r, 0, r, r,
-                "V", lastLineMinY - r,
-                "q", 0, r, -r, r,
-                "H", lastLineMaxX + r,
-                "q", -r, 0, -r, r,
-                "V", maxY - r,
-                "q", 0, r, -r, r,
-                "H", minX + r,
-                "q", -r, 0, -r, -r,
-                "V", minY + r,
-                "q", 0, -r, r, -r
-            ], -minX, -minY);
+        value: function handleEvent(event) {
+            switch (event.type) {
+                case "scroll":
+                    if (!this._element.contains(event.target)) this.dismiss(true);
+                    break;
+                case "click":
+                    this._handleClickEvent(event);
+                    break;
+                case "transitionend":
+                    if (!this._element.classList.contains(WebInspector.HoverMenu.VisibleClassName)) this._element.remove();
+                    break;
+            }
         }
+    }, {
+        key: "_handleClickEvent",
 
-        var firstLineMaxY = rects[0].maxY() - PADDING;
-        if (rects.lastValue.maxX() === maxX - PADDING) {
-            return this._addPath([
-                "M", firstLineMinX + r, minY,
-                "H", maxX - r,
-                "q", r, 0, r, r,
-                "V", maxY - r,
-                "q", 0, r, -r, r,
-                "H", minX + r,
-                "q", -r, 0, -r, -r,
-                "V", firstLineMaxY + r,
-                "q", 0, -r, r, -r,
-                "H", firstLineMinX - r,
-                "q", r, 0, r, -r,
-                "V", minY + r,
-                "q", 0, -r, r, -r
-            ], -minX, -minY);
+        // Private
+
+        value: function _handleClickEvent(event) {
+            if (this.delegate && typeof this.delegate.hoverMenuButtonWasPressed === "function") this.delegate.hoverMenuButtonWasPressed(this);
         }
+    }, {
+        key: "_drawOutline",
+        value: function _drawOutline(rects) {
+            var buttonWidth = this._button.width;
+            var buttonHeight = this._button.height;
 
-        return this._addPath([
-            "M", firstLineMinX + r, minY,
-            "H", maxX - r,
-            "q", r, 0, r, r,
-            "V", lastLineMinY - r,
-            "q", 0, r, -r, r,
-            "H", lastLineMaxX + r,
-            "q", -r, 0, -r, r,
-            "V", maxY - r,
-            "q", 0, r, -r, r,
-            "H", minX + r,
-            "q", -r, 0, -r, -r,
-            "V", firstLineMaxY + r,
-            "q", 0, -r, r, -r,
-            "H", firstLineMinX - r,
-            "q", r, 0, r, -r,
-            "V", minY + r,
-            "q", 0, -r, r, -r
-        ], -minX, -minY);
-    }
-};
+            // Add room for the button on the last line.
+            var lastRect = rects.pop();
+            lastRect.size.width += buttonWidth;
+            rects.push(lastRect);
+
+            if (rects.length === 1) this._drawSingleLine(rects[0]);else if (rects.length === 2 && rects[0].minX() >= rects[1].maxX()) this._drawTwoNonOverlappingLines(rects);else this._drawOverlappingLines(rects);
+
+            var bounds = WebInspector.Rect.unionOfRects(rects).pad(3); // padding + 1/2 stroke-width
+
+            var style = this._element.style;
+            style.left = bounds.minX() + "px";
+            style.top = bounds.minY() + "px";
+            style.width = bounds.size.width + "px";
+            style.height = bounds.size.height + "px";
+
+            this._outlineElement.style.width = bounds.size.width + "px";
+            this._outlineElement.style.height = bounds.size.height + "px";
+
+            this._button.style.left = lastRect.maxX() - bounds.minX() - buttonWidth + "px";
+            this._button.style.top = lastRect.maxY() - bounds.minY() - buttonHeight + "px";
+        }
+    }, {
+        key: "_addRect",
+        value: function _addRect(rect) {
+            var r = 4;
+
+            var svgRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            svgRect.setAttribute("x", 1);
+            svgRect.setAttribute("y", 1);
+            svgRect.setAttribute("width", rect.size.width);
+            svgRect.setAttribute("height", rect.size.height);
+            svgRect.setAttribute("rx", r);
+            svgRect.setAttribute("ry", r);
+            return this._outlineElement.appendChild(svgRect);
+        }
+    }, {
+        key: "_addPath",
+        value: function _addPath(commands, tx, ty) {
+            var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", commands.join(" "));
+            path.setAttribute("transform", "translate(" + (tx + 1) + "," + (ty + 1) + ")");
+            return this._outlineElement.appendChild(path);
+        }
+    }, {
+        key: "_drawSingleLine",
+        value: function _drawSingleLine(rect) {
+            this._addRect(rect.pad(2));
+        }
+    }, {
+        key: "_drawTwoNonOverlappingLines",
+        value: function _drawTwoNonOverlappingLines(rects) {
+            var r = 4;
+
+            var firstRect = rects[0].pad(2);
+            var secondRect = rects[1].pad(2);
+
+            var tx = -secondRect.minX();
+            var ty = -firstRect.minY();
+
+            var rect = firstRect;
+            this._addPath(["M", rect.maxX(), rect.minY(), "H", rect.minX() + r, "q", -r, 0, -r, r, "V", rect.maxY() - r, "q", 0, r, r, r, "H", rect.maxX()], tx, ty);
+
+            rect = secondRect;
+            this._addPath(["M", rect.minX(), rect.minY(), "H", rect.maxX() - r, "q", r, 0, r, r, "V", rect.maxY() - r, "q", 0, r, -r, r, "H", rect.minX()], tx, ty);
+        }
+    }, {
+        key: "_drawOverlappingLines",
+        value: function _drawOverlappingLines(rects) {
+            var PADDING = 2;
+            var r = 4;
+
+            var minX = Number.MAX_VALUE;
+            var maxX = -Number.MAX_VALUE;
+            var _iteratorNormalCompletion = true;
+            var _didIteratorError = false;
+            var _iteratorError = undefined;
+
+            try {
+                for (var _iterator = rects[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                    var rect = _step.value;
+
+                    var minX = Math.min(rect.minX(), minX);
+                    var maxX = Math.max(rect.maxX(), maxX);
+                }
+            } catch (err) {
+                _didIteratorError = true;
+                _iteratorError = err;
+            } finally {
+                try {
+                    if (!_iteratorNormalCompletion && _iterator["return"]) {
+                        _iterator["return"]();
+                    }
+                } finally {
+                    if (_didIteratorError) {
+                        throw _iteratorError;
+                    }
+                }
+            }
+
+            minX -= PADDING;
+            maxX += PADDING;
+
+            var minY = rects[0].minY() - PADDING;
+            var maxY = rects.lastValue.maxY() + PADDING;
+            var firstLineMinX = rects[0].minX() - PADDING;
+            var lastLineMaxX = rects.lastValue.maxX() + PADDING;
+
+            if (firstLineMinX === minX && lastLineMaxX === maxX) return this._addRect(new WebInspector.Rect(minX, minY, maxX - minX, maxY - minY));
+
+            var lastLineMinY = rects.lastValue.minY() + PADDING;
+            if (rects[0].minX() === minX + PADDING) {
+                return this._addPath(["M", minX + r, minY, "H", maxX - r, "q", r, 0, r, r, "V", lastLineMinY - r, "q", 0, r, -r, r, "H", lastLineMaxX + r, "q", -r, 0, -r, r, "V", maxY - r, "q", 0, r, -r, r, "H", minX + r, "q", -r, 0, -r, -r, "V", minY + r, "q", 0, -r, r, -r], -minX, -minY);
+            }
+
+            var firstLineMaxY = rects[0].maxY() - PADDING;
+            if (rects.lastValue.maxX() === maxX - PADDING) {
+                return this._addPath(["M", firstLineMinX + r, minY, "H", maxX - r, "q", r, 0, r, r, "V", maxY - r, "q", 0, r, -r, r, "H", minX + r, "q", -r, 0, -r, -r, "V", firstLineMaxY + r, "q", 0, -r, r, -r, "H", firstLineMinX - r, "q", r, 0, r, -r, "V", minY + r, "q", 0, -r, r, -r], -minX, -minY);
+            }
+
+            return this._addPath(["M", firstLineMinX + r, minY, "H", maxX - r, "q", r, 0, r, r, "V", lastLineMinY - r, "q", 0, r, -r, r, "H", lastLineMaxX + r, "q", -r, 0, -r, r, "V", maxY - r, "q", 0, r, -r, r, "H", minX + r, "q", -r, 0, -r, -r, "V", firstLineMaxY + r, "q", 0, -r, r, -r, "H", firstLineMinX - r, "q", r, 0, r, -r, "V", minY + r, "q", 0, -r, r, -r], -minX, -minY);
+        }
+    }, {
+        key: "element",
+
+        // Public
+
+        get: function () {
+            return this._element;
+        }
+    }]);
+
+    return HoverMenu;
+})(WebInspector.Object);
 
 WebInspector.HoverMenu.VisibleClassName = "visible";

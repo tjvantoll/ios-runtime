@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.FindBanner = class FindBanner extends WebInspector.Object
-{
-    constructor(delegate, element)
-    {
-        super();
+WebInspector.FindBanner = (function (_WebInspector$Object) {
+    function FindBanner(delegate, element) {
+        _classCallCheck(this, FindBanner);
+
+        _get(Object.getPrototypeOf(FindBanner.prototype), "constructor", this).call(this);
 
         this._delegate = delegate || null;
 
@@ -91,244 +99,215 @@ WebInspector.FindBanner = class FindBanner extends WebInspector.Object
         this._generateButtonsGlyphsIfNeeded();
     }
 
-    // Public
+    _inherits(FindBanner, _WebInspector$Object);
 
-    get delegate()
-    {
-        return this._delegate;
-    }
+    _createClass(FindBanner, [{
+        key: "show",
+        value: function show() {
+            console.assert(this._targetElement);
+            if (!this._targetElement) return;
 
-    set delegate(newDelegate)
-    {
-        this._delegate = newDelegate || null;
-    }
+            console.assert(this._targetElement.parentNode);
+            if (!this._targetElement.parentNode) return;
 
-    get element()
-    {
-        return this._element;
-    }
+            if (this._element.parentNode !== this._targetElement.parentNode) this._targetElement.parentNode.insertBefore(this._element, this._targetElement);
 
-    get inputField()
-    {
-        return this._inputField;
-    }
+            function delayedWork() {
+                this._targetElement.classList.add(WebInspector.FindBanner.ShowingFindBannerStyleClassName);
+                this._element.classList.add(WebInspector.FindBanner.ShowingStyleClassName);
 
-    get searchQuery()
-    {
-        return this._inputField.value || "";
-    }
+                this._inputField.select();
+            }
 
-    set searchQuery(query)
-    {
-        this._inputField.value = query || "";
-    }
+            // Delay adding the classes in case the target element and/or the find banner were just added to
+            // the document. Adding the class right away will prevent the animation from working the first time.
+            setTimeout(delayedWork.bind(this), 0);
 
-    get numberOfResults()
-    {
-        return this._numberOfResults;
-    }
-
-    set numberOfResults(numberOfResults)
-    {
-        if (numberOfResults === undefined || isNaN(numberOfResults))
-            numberOfResults = null;
-
-        this._numberOfResults = numberOfResults;
-
-        this._previousResultButton.disabled = this._nextResultButton.disabled = (numberOfResults <= 0);
-
-        if (numberOfResults === null)
-            this._resultCountLabel.textContent = "";
-        else if (numberOfResults <= 0)
-            this._resultCountLabel.textContent = WebInspector.UIString("Not found");
-        else if (numberOfResults === 1)
-            this._resultCountLabel.textContent = WebInspector.UIString("1 match");
-        else if (numberOfResults > 1)
-            this._resultCountLabel.textContent = WebInspector.UIString("%d matches").format(numberOfResults);
-    }
-
-    get targetElement()
-    {
-        return this._targetElement;
-    }
-
-    set targetElement(element)
-    {
-        function delayedWork()
-        {
-            oldTargetElement.classList.remove(WebInspector.FindBanner.NoTransitionStyleClassName);
-            this._element.classList.remove(WebInspector.FindBanner.NoTransitionStyleClassName);
+            this.dispatchEventToListeners(WebInspector.FindBanner.Event.DidShow);
         }
+    }, {
+        key: "hide",
+        value: function hide() {
+            console.assert(this._targetElement);
+            if (!this._targetElement) return;
 
-        if (this._targetElement) {
-            var oldTargetElement = this._targetElement;
+            this._inputField.blur();
 
-            this._targetElement.classList.add(WebInspector.FindBanner.NoTransitionStyleClassName);
-            this._targetElement.classList.remove(WebInspector.FindBanner.SupportsFindBannerStyleClassName);
             this._targetElement.classList.remove(WebInspector.FindBanner.ShowingFindBannerStyleClassName);
-
-            this._element.classList.add(WebInspector.FindBanner.NoTransitionStyleClassName);
             this._element.classList.remove(WebInspector.FindBanner.ShowingStyleClassName);
 
-            // Delay so we can remove the no transition style class after the other style changes are committed.
-            setTimeout(delayedWork.bind(this), 0);
+            this.dispatchEventToListeners(WebInspector.FindBanner.Event.DidHide);
         }
-
-        this._targetElement = element || null;
-
-        if (this._targetElement)
-            this._targetElement.classList.add(WebInspector.FindBanner.SupportsFindBannerStyleClassName);
-    }
-
-    get showing()
-    {
-        return this._element.classList.contains(WebInspector.FindBanner.ShowingStyleClassName);
-    }
-
-    show()
-    {
-        console.assert(this._targetElement);
-        if (!this._targetElement)
-            return;
-
-        console.assert(this._targetElement.parentNode);
-        if (!this._targetElement.parentNode)
-            return;
-
-        if (this._element.parentNode !== this._targetElement.parentNode)
-            this._targetElement.parentNode.insertBefore(this._element, this._targetElement);
-
-        function delayedWork()
-        {
-            this._targetElement.classList.add(WebInspector.FindBanner.ShowingFindBannerStyleClassName);
-            this._element.classList.add(WebInspector.FindBanner.ShowingStyleClassName);
-
-            this._inputField.select();
+    }, {
+        key: "enableKeyboardShortcuts",
+        value: function enableKeyboardShortcuts() {
+            this._populateFindKeyboardShortcut.disabled = false;
+            this._findNextKeyboardShortcut.disabled = false;
+            this._findPreviousKeyboardShortcut.disabled = false;
         }
+    }, {
+        key: "disableKeyboardShortcuts",
+        value: function disableKeyboardShortcuts() {
+            this._populateFindKeyboardShortcut.disabled = true;
+            this._findNextKeyboardShortcut.disabled = true;
+            this._findPreviousKeyboardShortcut.disabled = true;
+        }
+    }, {
+        key: "_inputFieldKeyDown",
 
-        // Delay adding the classes in case the target element and/or the find banner were just added to
-        // the document. Adding the class right away will prevent the animation from working the first time.
-        setTimeout(delayedWork.bind(this), 0);
+        // Private
 
-        this.dispatchEventToListeners(WebInspector.FindBanner.Event.DidShow);
-    }
+        value: function _inputFieldKeyDown(event) {
+            if (event.keyIdentifier === "Shift") this._searchBackwards = true;else if (event.keyIdentifier === "Enter") this._searchKeyPressed = true;
+        }
+    }, {
+        key: "_inputFieldKeyUp",
+        value: function _inputFieldKeyUp(event) {
+            if (event.keyIdentifier === "Shift") this._searchBackwards = false;else if (event.keyIdentifier === "Enter") this._searchKeyPressed = false;
+        }
+    }, {
+        key: "_inputFieldSearch",
+        value: function _inputFieldSearch(event) {
+            if (this._inputField.value) {
+                if (this._previousSearchValue !== this.searchQuery) {
+                    if (this._delegate && typeof this._delegate.findBannerPerformSearch === "function") this._delegate.findBannerPerformSearch(this, this.searchQuery);
+                } else if (this._searchKeyPressed && this._numberOfResults > 0) {
+                    if (this._searchBackwards) {
+                        if (this._delegate && typeof this._delegate.findBannerRevealPreviousResult === "function") this._delegate.findBannerRevealPreviousResult(this);
+                    } else {
+                        if (this._delegate && typeof this._delegate.findBannerRevealNextResult === "function") this._delegate.findBannerRevealNextResult(this);
+                    }
+                }
+            } else {
+                this.numberOfResults = null;
 
-    hide()
-    {
-        console.assert(this._targetElement);
-        if (!this._targetElement)
-            return;
+                if (this._delegate && typeof this._delegate.findBannerSearchCleared === "function") this._delegate.findBannerSearchCleared(this);
+            }
 
-        this._inputField.blur();
+            this._previousSearchValue = this.searchQuery;
+        }
+    }, {
+        key: "_populateSearchQueryFromSelection",
+        value: function _populateSearchQueryFromSelection(event) {
+            if (this._delegate && typeof this._delegate.findBannerSearchQueryForSelection === "function") {
+                var query = this._delegate.findBannerSearchQueryForSelection(this);
+                if (query) {
+                    this.searchQuery = query;
 
-        this._targetElement.classList.remove(WebInspector.FindBanner.ShowingFindBannerStyleClassName);
-        this._element.classList.remove(WebInspector.FindBanner.ShowingStyleClassName);
-
-        this.dispatchEventToListeners(WebInspector.FindBanner.Event.DidHide);
-    }
-
-    enableKeyboardShortcuts()
-    {
-        this._populateFindKeyboardShortcut.disabled = false;
-        this._findNextKeyboardShortcut.disabled = false;
-        this._findPreviousKeyboardShortcut.disabled = false;
-    }
-
-    disableKeyboardShortcuts()
-    {
-        this._populateFindKeyboardShortcut.disabled = true;
-        this._findNextKeyboardShortcut.disabled = true;
-        this._findPreviousKeyboardShortcut.disabled = true;
-    }
-
-    // Private
-
-    _inputFieldKeyDown(event)
-    {
-        if (event.keyIdentifier === "Shift")
-            this._searchBackwards = true;
-        else if (event.keyIdentifier === "Enter")
-            this._searchKeyPressed = true;
-    }
-
-    _inputFieldKeyUp(event)
-    {
-        if (event.keyIdentifier === "Shift")
-            this._searchBackwards = false;
-        else if (event.keyIdentifier === "Enter")
-            this._searchKeyPressed = false;
-    }
-
-    _inputFieldSearch(event)
-    {
-        if (this._inputField.value) {
-            if (this._previousSearchValue !== this.searchQuery) {
-                if (this._delegate && typeof this._delegate.findBannerPerformSearch === "function")
-                    this._delegate.findBannerPerformSearch(this, this.searchQuery);
-            } else if (this._searchKeyPressed && this._numberOfResults > 0) {
-                if (this._searchBackwards) {
-                    if (this._delegate && typeof this._delegate.findBannerRevealPreviousResult === "function")
-                        this._delegate.findBannerRevealPreviousResult(this);
-                } else {
-                    if (this._delegate && typeof this._delegate.findBannerRevealNextResult === "function")
-                        this._delegate.findBannerRevealNextResult(this);
+                    if (this._delegate && typeof this._delegate.findBannerPerformSearch === "function") this._delegate.findBannerPerformSearch(this, this.searchQuery);
                 }
             }
-        } else {
-            this.numberOfResults = null;
-
-            if (this._delegate && typeof this._delegate.findBannerSearchCleared === "function")
-                this._delegate.findBannerSearchCleared(this);
         }
+    }, {
+        key: "_previousResultButtonClicked",
+        value: function _previousResultButtonClicked(event) {
+            if (this._delegate && typeof this._delegate.findBannerRevealPreviousResult === "function") this._delegate.findBannerRevealPreviousResult(this);
+        }
+    }, {
+        key: "_nextResultButtonClicked",
+        value: function _nextResultButtonClicked(event) {
+            if (this._delegate && typeof this._delegate.findBannerRevealNextResult === "function") this._delegate.findBannerRevealNextResult(this);
+        }
+    }, {
+        key: "_doneButtonClicked",
+        value: function _doneButtonClicked(event) {
+            this.hide();
+        }
+    }, {
+        key: "_generateButtonsGlyphsIfNeeded",
+        value: function _generateButtonsGlyphsIfNeeded() {
+            if (WebInspector.FindBanner._generatedButtonsGlyphs) return;
 
-        this._previousSearchValue = this.searchQuery;
-    }
+            WebInspector.FindBanner._generatedButtonsGlyphs = true;
 
-    _populateSearchQueryFromSelection(event)
-    {
-        if (this._delegate && typeof this._delegate.findBannerSearchQueryForSelection === "function") {
-            var query = this._delegate.findBannerSearchQueryForSelection(this);
-            if (query) {
-                this.searchQuery = query;
+            var specifications = {};
+            specifications["normal"] = { fillColor: [81, 81, 81] };
+            specifications["normal-active"] = { fillColor: [37, 37, 37] };
 
-                if (this._delegate && typeof this._delegate.findBannerPerformSearch === "function")
-                    this._delegate.findBannerPerformSearch(this, this.searchQuery);
+            generateColoredImagesForCSS("Images/BackArrow.svg", specifications, 7, 11, "find-banner-previous-arrow-");
+            generateColoredImagesForCSS("Images/ForwardArrow.svg", specifications, 7, 11, "find-banner-next-arrow-");
+        }
+    }, {
+        key: "delegate",
+
+        // Public
+
+        get: function () {
+            return this._delegate;
+        },
+        set: function (newDelegate) {
+            this._delegate = newDelegate || null;
+        }
+    }, {
+        key: "element",
+        get: function () {
+            return this._element;
+        }
+    }, {
+        key: "inputField",
+        get: function () {
+            return this._inputField;
+        }
+    }, {
+        key: "searchQuery",
+        get: function () {
+            return this._inputField.value || "";
+        },
+        set: function (query) {
+            this._inputField.value = query || "";
+        }
+    }, {
+        key: "numberOfResults",
+        get: function () {
+            return this._numberOfResults;
+        },
+        set: function (numberOfResults) {
+            if (numberOfResults === undefined || isNaN(numberOfResults)) numberOfResults = null;
+
+            this._numberOfResults = numberOfResults;
+
+            this._previousResultButton.disabled = this._nextResultButton.disabled = numberOfResults <= 0;
+
+            if (numberOfResults === null) this._resultCountLabel.textContent = "";else if (numberOfResults <= 0) this._resultCountLabel.textContent = WebInspector.UIString("Not found");else if (numberOfResults === 1) this._resultCountLabel.textContent = WebInspector.UIString("1 match");else if (numberOfResults > 1) this._resultCountLabel.textContent = WebInspector.UIString("%d matches").format(numberOfResults);
+        }
+    }, {
+        key: "targetElement",
+        get: function () {
+            return this._targetElement;
+        },
+        set: function (element) {
+            function delayedWork() {
+                oldTargetElement.classList.remove(WebInspector.FindBanner.NoTransitionStyleClassName);
+                this._element.classList.remove(WebInspector.FindBanner.NoTransitionStyleClassName);
             }
+
+            if (this._targetElement) {
+                var oldTargetElement = this._targetElement;
+
+                this._targetElement.classList.add(WebInspector.FindBanner.NoTransitionStyleClassName);
+                this._targetElement.classList.remove(WebInspector.FindBanner.SupportsFindBannerStyleClassName);
+                this._targetElement.classList.remove(WebInspector.FindBanner.ShowingFindBannerStyleClassName);
+
+                this._element.classList.add(WebInspector.FindBanner.NoTransitionStyleClassName);
+                this._element.classList.remove(WebInspector.FindBanner.ShowingStyleClassName);
+
+                // Delay so we can remove the no transition style class after the other style changes are committed.
+                setTimeout(delayedWork.bind(this), 0);
+            }
+
+            this._targetElement = element || null;
+
+            if (this._targetElement) this._targetElement.classList.add(WebInspector.FindBanner.SupportsFindBannerStyleClassName);
         }
-    }
+    }, {
+        key: "showing",
+        get: function () {
+            return this._element.classList.contains(WebInspector.FindBanner.ShowingStyleClassName);
+        }
+    }]);
 
-    _previousResultButtonClicked(event)
-    {
-        if (this._delegate && typeof this._delegate.findBannerRevealPreviousResult === "function")
-            this._delegate.findBannerRevealPreviousResult(this);
-    }
-
-    _nextResultButtonClicked(event)
-    {
-        if (this._delegate && typeof this._delegate.findBannerRevealNextResult === "function")
-            this._delegate.findBannerRevealNextResult(this);
-    }
-
-    _doneButtonClicked(event)
-    {
-        this.hide();
-    }
-
-    _generateButtonsGlyphsIfNeeded()
-    {
-        if (WebInspector.FindBanner._generatedButtonsGlyphs)
-            return;
-
-        WebInspector.FindBanner._generatedButtonsGlyphs = true;
-
-        var specifications = {};
-        specifications["normal"] = {fillColor: [81, 81, 81]};
-        specifications["normal-active"] = {fillColor: [37, 37, 37]};
-
-        generateColoredImagesForCSS("Images/BackArrow.svg", specifications, 7, 11, "find-banner-previous-arrow-");
-        generateColoredImagesForCSS("Images/ForwardArrow.svg", specifications, 7, 11, "find-banner-next-arrow-");
-    }
-};
+    return FindBanner;
+})(WebInspector.Object);
 
 WebInspector.FindBanner.SupportsFindBannerStyleClassName = "supports-find-banner";
 WebInspector.FindBanner.ShowingFindBannerStyleClassName = "showing-find-banner";

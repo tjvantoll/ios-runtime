@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.NetworkTimelineView = function(timeline, extraArguments)
-{
+WebInspector.NetworkTimelineView = function (timeline, extraArguments) {
     WebInspector.TimelineView.call(this, timeline, extraArguments);
 
     console.assert(timeline.type === WebInspector.TimelineRecord.Type.Network);
@@ -32,7 +31,7 @@ WebInspector.NetworkTimelineView = function(timeline, extraArguments)
     this.navigationSidebarTreeOutline.element.classList.add(WebInspector.NavigationSidebarPanel.HideDisclosureButtonsStyleClassName);
     this.navigationSidebarTreeOutline.element.classList.add(WebInspector.NetworkTimelineView.TreeOutlineStyleClassName);
 
-    var columns = {domain: {}, type: {}, method: {}, scheme: {}, statusCode: {}, cached: {}, size: {}, transferSize: {}, requestSent: {}, latency: {}, duration: {}};
+    var columns = { domain: {}, type: {}, method: {}, scheme: {}, statusCode: {}, cached: {}, size: {}, transferSize: {}, requestSent: {}, latency: {}, duration: {} };
 
     columns.domain.title = WebInspector.UIString("Domain");
     columns.domain.width = "10%";
@@ -40,7 +39,7 @@ WebInspector.NetworkTimelineView = function(timeline, extraArguments)
     columns.type.title = WebInspector.UIString("Type");
     columns.type.width = "8%";
 
-    var typeToLabelMap = new Map;
+    var typeToLabelMap = new Map();
     for (var key in WebInspector.Resource.Type) {
         var value = WebInspector.Resource.Type[key];
         typeToLabelMap.set(value, WebInspector.Resource.displayNameForType(value, true));
@@ -80,8 +79,7 @@ WebInspector.NetworkTimelineView = function(timeline, extraArguments)
     columns.duration.width = "9%";
     columns.duration.aligned = "right";
 
-    for (var column in columns)
-        columns[column].sortable = true;
+    for (var column in columns) columns[column].sortable = true;
 
     this._dataGrid = new WebInspector.TimelineDataGrid(this.navigationSidebarTreeOutline, columns);
     this._dataGrid.addEventListener(WebInspector.TimelineDataGrid.Event.FiltersDidChange, this._dataGridFiltersDidChange, this);
@@ -100,41 +98,30 @@ WebInspector.NetworkTimelineView = function(timeline, extraArguments)
 WebInspector.NetworkTimelineView.StyleClassName = "network";
 WebInspector.NetworkTimelineView.TreeOutlineStyleClassName = "network";
 
-WebInspector.NetworkTimelineView.prototype = {
+WebInspector.NetworkTimelineView.prototype = Object.defineProperties({
     constructor: WebInspector.NetworkTimelineView,
     __proto__: WebInspector.TimelineView.prototype,
 
-    // Public
-
-    get navigationSidebarTreeOutlineLabel()
-    {
-        return WebInspector.UIString("Resources");
-    },
-
-    shown: function()
-    {
+    shown: function shown() {
         WebInspector.ContentView.prototype.shown.call(this);
 
         this._dataGrid.shown();
     },
 
-    hidden: function()
-    {
+    hidden: function hidden() {
         this._dataGrid.hidden();
 
         WebInspector.ContentView.prototype.hidden.call(this);
     },
 
-    closed: function()
-    {
+    closed: function closed() {
         console.assert(this.representedObject instanceof WebInspector.Timeline);
         this.representedObject.removeEventListener(null, null, this);
 
         this._dataGrid.closed();
     },
 
-    updateLayout: function()
-    {
+    updateLayout: function updateLayout() {
         WebInspector.TimelineView.prototype.updateLayout.call(this);
 
         this._dataGrid.updateLayout();
@@ -142,13 +129,11 @@ WebInspector.NetworkTimelineView.prototype = {
         this._processPendingRecords();
     },
 
-    matchTreeElementAgainstCustomFilters: function(treeElement)
-    {
+    matchTreeElementAgainstCustomFilters: function matchTreeElementAgainstCustomFilters(treeElement) {
         return this._dataGrid.treeElementMatchesActiveScopeFilters(treeElement);
     },
 
-    reset: function()
-    {
+    reset: function reset() {
         WebInspector.TimelineView.prototype.reset.call(this);
 
         this._dataGrid.reset();
@@ -156,15 +141,12 @@ WebInspector.NetworkTimelineView.prototype = {
 
     // Protected
 
-    canShowContentViewForTreeElement: function(treeElement)
-    {
-        if (treeElement instanceof WebInspector.ResourceTreeElement || treeElement instanceof WebInspector.ScriptTreeElement)
-            return true;
+    canShowContentViewForTreeElement: function canShowContentViewForTreeElement(treeElement) {
+        if (treeElement instanceof WebInspector.ResourceTreeElement || treeElement instanceof WebInspector.ScriptTreeElement) return true;
         return WebInspector.TimelineView.prototype.canShowContentViewForTreeElement(treeElement);
     },
 
-    showContentViewForTreeElement: function(treeElement)
-    {
+    showContentViewForTreeElement: function showContentViewForTreeElement(treeElement) {
         if (treeElement instanceof WebInspector.ResourceTreeElement || treeElement instanceof WebInspector.ScriptTreeElement) {
             WebInspector.showSourceCode(treeElement.representedObject);
             return;
@@ -173,46 +155,59 @@ WebInspector.NetworkTimelineView.prototype = {
         console.error("Unknown tree element selected.", treeElement);
     },
 
-    treeElementPathComponentSelected: function(event)
-    {
+    treeElementPathComponentSelected: function treeElementPathComponentSelected(event) {
         var dataGridNode = this._dataGrid.dataGridNodeForTreeElement(event.data.pathComponent.generalTreeElement);
-        if (!dataGridNode)
-            return;
+        if (!dataGridNode) return;
         dataGridNode.revealAndSelect();
     },
 
-    treeElementSelected: function(treeElement, selectedByUser)
-    {
-        if (this._dataGrid.shouldIgnoreSelectionEvent())
-            return;
+    treeElementSelected: function treeElementSelected(treeElement, selectedByUser) {
+        if (this._dataGrid.shouldIgnoreSelectionEvent()) return;
 
         WebInspector.TimelineView.prototype.treeElementSelected.call(this, treeElement, selectedByUser);
     },
 
     // Private
 
-    _processPendingRecords: function()
-    {
-        if (!this._pendingRecords.length)
-            return;
+    _processPendingRecords: function _processPendingRecords() {
+        if (!this._pendingRecords.length) return;
 
-        for (var resourceTimelineRecord of this._pendingRecords) {
-            // Skip the record if it already exists in the tree.
-            var treeElement = this.navigationSidebarTreeOutline.findTreeElement(resourceTimelineRecord.resource);
-            if (treeElement)
-                continue;
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-            treeElement = new WebInspector.ResourceTreeElement(resourceTimelineRecord.resource);
-            var dataGridNode = new WebInspector.ResourceTimelineDataGridNode(resourceTimelineRecord, false, this);
+        try {
+            for (var _iterator = this._pendingRecords[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                var resourceTimelineRecord = _step.value;
 
-            this._dataGrid.addRowInSortOrder(treeElement, dataGridNode);
+                // Skip the record if it already exists in the tree.
+                var treeElement = this.navigationSidebarTreeOutline.findTreeElement(resourceTimelineRecord.resource);
+                if (treeElement) continue;
+
+                treeElement = new WebInspector.ResourceTreeElement(resourceTimelineRecord.resource);
+                var dataGridNode = new WebInspector.ResourceTimelineDataGridNode(resourceTimelineRecord, false, this);
+
+                this._dataGrid.addRowInSortOrder(treeElement, dataGridNode);
+            }
+        } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+        } finally {
+            try {
+                if (!_iteratorNormalCompletion && _iterator["return"]) {
+                    _iterator["return"]();
+                }
+            } finally {
+                if (_didIteratorError) {
+                    throw _iteratorError;
+                }
+            }
         }
 
         this._pendingRecords = [];
     },
 
-    _networkTimelineRecordAdded: function(event)
-    {
+    _networkTimelineRecordAdded: function _networkTimelineRecordAdded(event) {
         var resourceTimelineRecord = event.data.record;
         console.assert(resourceTimelineRecord instanceof WebInspector.ResourceTimelineRecord);
 
@@ -221,13 +216,20 @@ WebInspector.NetworkTimelineView.prototype = {
         this.needsLayout();
     },
 
-    _dataGridFiltersDidChange: function(event)
-    {
+    _dataGridFiltersDidChange: function _dataGridFiltersDidChange(event) {
         this.timelineSidebarPanel.updateFilter();
     },
 
-    _dataGridNodeSelected: function(event)
-    {
+    _dataGridNodeSelected: function _dataGridNodeSelected(event) {
         this.dispatchEventToListeners(WebInspector.ContentView.Event.SelectionPathComponentsDidChange);
     }
-};
+}, {
+    navigationSidebarTreeOutlineLabel: { // Public
+
+        get: function () {
+            return WebInspector.UIString("Resources");
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

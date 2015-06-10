@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,14 +31,13 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ApplicationCacheManager = class ApplicationCacheManager extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.ApplicationCacheManager = (function (_WebInspector$Object) {
+    function ApplicationCacheManager() {
+        _classCallCheck(this, ApplicationCacheManager);
 
-        if (window.ApplicationCacheAgent)
-            ApplicationCacheAgent.enable();
+        _get(Object.getPrototypeOf(ApplicationCacheManager.prototype), "constructor", this).call(this);
+
+        if (window.ApplicationCacheAgent) ApplicationCacheAgent.enable();
 
         WebInspector.Frame.addEventListener(WebInspector.Frame.Event.MainResourceDidChange, this._mainResourceDidChange, this);
         WebInspector.Frame.addEventListener(WebInspector.Frame.Event.ChildFrameWasRemoved, this._childFrameWasRemoved, this);
@@ -40,151 +47,144 @@ WebInspector.ApplicationCacheManager = class ApplicationCacheManager extends Web
         this.initialize();
     }
 
-    // Public
+    _inherits(ApplicationCacheManager, _WebInspector$Object);
 
-    initialize()
-    {
-        this._applicationCacheObjects = {};
+    _createClass(ApplicationCacheManager, [{
+        key: "initialize",
 
-        if (window.ApplicationCacheAgent)
-            ApplicationCacheAgent.getFramesWithManifests(this._framesWithManifestsLoaded.bind(this));
-    }
+        // Public
 
-    get applicationCacheObjects()
-    {
-        var applicationCacheObjects = [];
-        for (var id in this._applicationCacheObjects)
-            applicationCacheObjects.push(this._applicationCacheObjects[id]);
-        return applicationCacheObjects;
-    }
+        value: function initialize() {
+            this._applicationCacheObjects = {};
 
-    networkStateUpdated(isNowOnline)
-    {
-        this._online = isNowOnline;
+            if (window.ApplicationCacheAgent) ApplicationCacheAgent.getFramesWithManifests(this._framesWithManifestsLoaded.bind(this));
+        }
+    }, {
+        key: "networkStateUpdated",
+        value: function networkStateUpdated(isNowOnline) {
+            this._online = isNowOnline;
 
-        this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.NetworkStateUpdated, {online: this._online});
-    }
+            this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.NetworkStateUpdated, { online: this._online });
+        }
+    }, {
+        key: "applicationCacheStatusUpdated",
+        value: function applicationCacheStatusUpdated(frameId, manifestURL, status) {
+            var frame = WebInspector.frameResourceManager.frameForIdentifier(frameId);
+            if (!frame) return;
 
-    get online()
-    {
-        return this._online;
-    }
+            this._frameManifestUpdated(frame, manifestURL, status);
+        }
+    }, {
+        key: "requestApplicationCache",
+        value: function requestApplicationCache(frame, callback) {
+            function callbackWrapper(error, applicationCache) {
+                if (error) {
+                    callback(null);
+                    return;
+                }
 
-    applicationCacheStatusUpdated(frameId, manifestURL, status)
-    {
-        var frame = WebInspector.frameResourceManager.frameForIdentifier(frameId);
-        if (!frame)
-            return;
+                callback(applicationCache);
+            }
 
-        this._frameManifestUpdated(frame, manifestURL, status);
-    }
+            ApplicationCacheAgent.getApplicationCacheForFrame(frame.id, callbackWrapper);
+        }
+    }, {
+        key: "_mainResourceDidChange",
 
-    requestApplicationCache(frame, callback)
-    {
-        function callbackWrapper(error, applicationCache)
-        {
-            if (error) {
-                callback(null);
+        // Private
+
+        value: function _mainResourceDidChange(event) {
+            console.assert(event.target instanceof WebInspector.Frame);
+
+            if (event.target.isMainFrame()) {
+                // If we are dealing with the main frame, we want to clear our list of objects, because we are navigating to a new page.
+                this.initialize();
+
+                this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.Cleared);
+
                 return;
             }
 
-            callback(applicationCache);
+            if (window.ApplicationCacheAgent) ApplicationCacheAgent.getManifestForFrame(event.target.id, this._manifestForFrameLoaded.bind(this, event.target.id));
         }
-
-        ApplicationCacheAgent.getApplicationCacheForFrame(frame.id, callbackWrapper);
-    }
-
-    // Private
-
-    _mainResourceDidChange(event)
-    {
-        console.assert(event.target instanceof WebInspector.Frame);
-
-        if (event.target.isMainFrame()) {
-            // If we are dealing with the main frame, we want to clear our list of objects, because we are navigating to a new page.
-            this.initialize();
-
-            this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.Cleared);
-
-            return;
+    }, {
+        key: "_childFrameWasRemoved",
+        value: function _childFrameWasRemoved(event) {
+            this._frameManifestRemoved(event.data.childFrame);
         }
+    }, {
+        key: "_manifestForFrameLoaded",
+        value: function _manifestForFrameLoaded(frameId, error, manifestURL) {
+            if (error) return;
 
-        if (window.ApplicationCacheAgent)
-            ApplicationCacheAgent.getManifestForFrame(event.target.id, this._manifestForFrameLoaded.bind(this, event.target.id));
-    }
+            var frame = WebInspector.frameResourceManager.frameForIdentifier(frameId);
+            if (!frame) return;
 
-    _childFrameWasRemoved(event)
-    {
-        this._frameManifestRemoved(event.data.childFrame);
-    }
-
-    _manifestForFrameLoaded(frameId, error, manifestURL)
-    {
-        if (error)
-            return;
-
-        var frame = WebInspector.frameResourceManager.frameForIdentifier(frameId);
-        if (!frame)
-            return;
-
-        if (!manifestURL)
-            this._frameManifestRemoved(frame);
-    }
-
-    _framesWithManifestsLoaded(error, framesWithManifests)
-    {
-        if (error)
-            return;
-
-        for (var i = 0; i < framesWithManifests.length; ++i) {
-            var frame = WebInspector.frameResourceManager.frameForIdentifier(framesWithManifests[i].frameId);
-            if (!frame)
-                continue;
-
-            this._frameManifestUpdated(frame, framesWithManifests[i].manifestURL, framesWithManifests[i].status);
+            if (!manifestURL) this._frameManifestRemoved(frame);
         }
-    }
+    }, {
+        key: "_framesWithManifestsLoaded",
+        value: function _framesWithManifestsLoaded(error, framesWithManifests) {
+            if (error) return;
 
-    _frameManifestUpdated(frame, manifestURL, status)
-    {
-        if (status === WebInspector.ApplicationCacheManager.Status.Uncached) {
-            this._frameManifestRemoved(frame);
-            return;
+            for (var i = 0; i < framesWithManifests.length; ++i) {
+                var frame = WebInspector.frameResourceManager.frameForIdentifier(framesWithManifests[i].frameId);
+                if (!frame) continue;
+
+                this._frameManifestUpdated(frame, framesWithManifests[i].manifestURL, framesWithManifests[i].status);
+            }
         }
+    }, {
+        key: "_frameManifestUpdated",
+        value: function _frameManifestUpdated(frame, manifestURL, status) {
+            if (status === WebInspector.ApplicationCacheManager.Status.Uncached) {
+                this._frameManifestRemoved(frame);
+                return;
+            }
 
-        if (!manifestURL)
-            return;
+            if (!manifestURL) return;
 
-        var manifestFrame = this._applicationCacheObjects[frame.id];
-        if (manifestFrame && manifestURL !== manifestFrame.manifest.manifestURL)
-            this._frameManifestRemoved(frame);
+            var manifestFrame = this._applicationCacheObjects[frame.id];
+            if (manifestFrame && manifestURL !== manifestFrame.manifest.manifestURL) this._frameManifestRemoved(frame);
 
-        var oldStatus = manifestFrame ? manifestFrame.status : -1;
-        var statusChanged = manifestFrame && status !== oldStatus;
-        if (manifestFrame)
-            manifestFrame.status = status;
+            var oldStatus = manifestFrame ? manifestFrame.status : -1;
+            var statusChanged = manifestFrame && status !== oldStatus;
+            if (manifestFrame) manifestFrame.status = status;
 
-        if (!this._applicationCacheObjects[frame.id]) {
-            var cacheManifest = new WebInspector.ApplicationCacheManifest(manifestURL);
-            this._applicationCacheObjects[frame.id] = new WebInspector.ApplicationCacheFrame(frame, cacheManifest, status);
+            if (!this._applicationCacheObjects[frame.id]) {
+                var cacheManifest = new WebInspector.ApplicationCacheManifest(manifestURL);
+                this._applicationCacheObjects[frame.id] = new WebInspector.ApplicationCacheFrame(frame, cacheManifest, status);
 
-            this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.FrameManifestAdded, {frameManifest: this._applicationCacheObjects[frame.id]});
+                this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.FrameManifestAdded, { frameManifest: this._applicationCacheObjects[frame.id] });
+            }
+
+            if (statusChanged) this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.FrameManifestStatusChanged, { frameManifest: this._applicationCacheObjects[frame.id] });
         }
+    }, {
+        key: "_frameManifestRemoved",
+        value: function _frameManifestRemoved(frame) {
+            if (!this._applicationCacheObjects[frame.id]) return;
 
-        if (statusChanged)
-            this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.FrameManifestStatusChanged, {frameManifest: this._applicationCacheObjects[frame.id]});
-    }
+            delete this._applicationCacheObjects[frame.id];
 
-    _frameManifestRemoved(frame)
-    {
-        if (!this._applicationCacheObjects[frame.id])
-            return;
+            this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.FrameManifestRemoved, { frame: frame });
+        }
+    }, {
+        key: "applicationCacheObjects",
+        get: function () {
+            var applicationCacheObjects = [];
+            for (var id in this._applicationCacheObjects) applicationCacheObjects.push(this._applicationCacheObjects[id]);
+            return applicationCacheObjects;
+        }
+    }, {
+        key: "online",
+        get: function () {
+            return this._online;
+        }
+    }]);
 
-        delete this._applicationCacheObjects[frame.id];
-
-        this.dispatchEventToListeners(WebInspector.ApplicationCacheManager.Event.FrameManifestRemoved, {frame});
-    }
-};
+    return ApplicationCacheManager;
+})(WebInspector.Object);
 
 WebInspector.ApplicationCacheManager.Event = {
     Cleared: "application-cache-manager-cleared",

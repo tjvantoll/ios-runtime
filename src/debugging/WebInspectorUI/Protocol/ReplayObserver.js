@@ -1,3 +1,7 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * Copyright (C) 2013 University of Washington. All rights reserved.
  * Copyright (C) 2014 Apple Inc. All rights reserved.
@@ -25,96 +29,102 @@
  */
 
 // FIXME: This ReplayPosition class shouldn't be here, no matter how simple it is.
-WebInspector.ReplayPosition = class ReplayPosition
-{
-    constructor(segmentOffset, inputOffset)
-    {
-        this.segmentOffset = segmentOffset;
-        this.inputOffset = inputOffset;
-    }
+WebInspector.ReplayPosition = function ReplayPosition(segmentOffset, inputOffset) {
+    _classCallCheck(this, ReplayPosition);
+
+    this.segmentOffset = segmentOffset;
+    this.inputOffset = inputOffset;
 };
 
-WebInspector.ReplayObserver = class ReplayObserver
-{
-    // Events defined by the "Replay" domain.
-
-    captureStarted()
-    {
-        WebInspector.replayManager.captureStarted();
+WebInspector.ReplayObserver = (function () {
+    function ReplayObserver() {
+        _classCallCheck(this, ReplayObserver);
     }
 
-    captureStopped()
-    {
-        WebInspector.replayManager.captureStopped();
-    }
+    _createClass(ReplayObserver, [{
+        key: "captureStarted",
 
-    playbackStarted()
-    {
-        WebInspector.replayManager.playbackStarted();
-    }
+        // Events defined by the "Replay" domain.
 
-    playbackHitPosition(replayPosition, timestamp)
-    {
-        WebInspector.replayManager.playbackHitPosition(new WebInspector.ReplayPosition(replayPosition.segmentOffset, replayPosition.inputOffset), timestamp);
-    }
+        value: function captureStarted() {
+            WebInspector.replayManager.captureStarted();
+        }
+    }, {
+        key: "captureStopped",
+        value: function captureStopped() {
+            WebInspector.replayManager.captureStopped();
+        }
+    }, {
+        key: "playbackStarted",
+        value: function playbackStarted() {
+            WebInspector.replayManager.playbackStarted();
+        }
+    }, {
+        key: "playbackHitPosition",
+        value: function playbackHitPosition(replayPosition, timestamp) {
+            WebInspector.replayManager.playbackHitPosition(new WebInspector.ReplayPosition(replayPosition.segmentOffset, replayPosition.inputOffset), timestamp);
+        }
+    }, {
+        key: "playbackPaused",
+        value: function playbackPaused(replayPosition) {
+            WebInspector.replayManager.playbackPaused(new WebInspector.ReplayPosition(replayPosition.segmentOffset, replayPosition.inputOffset));
+        }
+    }, {
+        key: "playbackFinished",
+        value: function playbackFinished() {
+            WebInspector.replayManager.playbackFinished();
+        }
+    }, {
+        key: "inputSuppressionChanged",
+        value: function inputSuppressionChanged(willSuppress) {}
+    }, {
+        key: "sessionCreated",
+        value: function sessionCreated(sessionId) {
+            WebInspector.replayManager.sessionCreated(sessionId);
+        }
+    }, {
+        key: "sessionModified",
+        value: function sessionModified(sessionId) {
+            WebInspector.replayManager.sessionModified(sessionId);
+        }
+    }, {
+        key: "sessionRemoved",
+        value: function sessionRemoved(sessionId) {
+            WebInspector.replayManager.sessionRemoved(sessionId);
+        }
+    }, {
+        key: "sessionLoaded",
+        value: function sessionLoaded(sessionId) {
+            WebInspector.replayManager.sessionLoaded(sessionId);
+        }
+    }, {
+        key: "segmentCreated",
+        value: function segmentCreated(segmentId) {
+            WebInspector.replayManager.segmentCreated(segmentId);
+        }
+    }, {
+        key: "segmentRemoved",
+        value: function segmentRemoved(segmentId) {
+            WebInspector.replayManager.segmentRemoved(segmentId);
+        }
+    }, {
+        key: "segmentCompleted",
+        value: function segmentCompleted(segmentId) {
+            WebInspector.replayManager.segmentCompleted(segmentId);
+        }
+    }, {
+        key: "segmentLoaded",
+        value: function segmentLoaded(segmentId) {
+            WebInspector.replayManager.segmentLoaded(segmentId);
+        }
+    }, {
+        key: "segmentUnloaded",
+        value: function segmentUnloaded() {
+            WebInspector.replayManager.segmentUnloaded();
+        }
+    }]);
 
-    playbackPaused(replayPosition)
-    {
-        WebInspector.replayManager.playbackPaused(new WebInspector.ReplayPosition(replayPosition.segmentOffset, replayPosition.inputOffset));
-    }
+    return ReplayObserver;
+})();
 
-    playbackFinished()
-    {
-        WebInspector.replayManager.playbackFinished();
-    }
-
-    inputSuppressionChanged(willSuppress)
-    {
-        // Not handled yet.
-    }
-
-    sessionCreated(sessionId)
-    {
-        WebInspector.replayManager.sessionCreated(sessionId);
-    }
-
-    sessionModified(sessionId)
-    {
-        WebInspector.replayManager.sessionModified(sessionId);
-    }
-
-    sessionRemoved(sessionId)
-    {
-        WebInspector.replayManager.sessionRemoved(sessionId);
-    }
-
-    sessionLoaded(sessionId)
-    {
-        WebInspector.replayManager.sessionLoaded(sessionId);
-    }
-
-    segmentCreated(segmentId)
-    {
-        WebInspector.replayManager.segmentCreated(segmentId);
-    }
-
-    segmentRemoved(segmentId)
-    {
-        WebInspector.replayManager.segmentRemoved(segmentId);
-    }
-
-    segmentCompleted(segmentId)
-    {
-        WebInspector.replayManager.segmentCompleted(segmentId);
-    }
-
-    segmentLoaded(segmentId)
-    {
-        WebInspector.replayManager.segmentLoaded(segmentId);
-    }
-
-    segmentUnloaded()
-    {
-        WebInspector.replayManager.segmentUnloaded();
-    }
-};
+// Not handled yet.

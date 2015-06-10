@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.IndeterminateProgressSpinner = function()
-{
+WebInspector.IndeterminateProgressSpinner = function () {
     // FIXME: Convert this to a WebInspector.Object subclass, and call super().
     // WebInspector.Object.call(this);
 
@@ -34,15 +33,18 @@ WebInspector.IndeterminateProgressSpinner = function()
 
 WebInspector.IndeterminateProgressSpinner.StyleClassName = "indeterminate-progress-spinner";
 
-WebInspector.IndeterminateProgressSpinner.prototype = {
-    constructor: WebInspector.IndeterminateProgressSpinner,
+WebInspector.IndeterminateProgressSpinner.prototype = Object.defineProperties({
+    constructor: WebInspector.IndeterminateProgressSpinner
 
-    // Public
+}, {
+    element: { // Public
 
-    get element()
-    {
-        return this._element;
+        get: function () {
+            return this._element;
+        },
+        configurable: true,
+        enumerable: true
     }
-};
+});
 
 WebInspector.IndeterminateProgressSpinner.prototype.__proto__ = WebInspector.Object.prototype;

@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ScriptTimelineDataGridNode = function(scriptTimelineRecord, baseStartTime, rangeStartTime, rangeEndTime)
-{
+WebInspector.ScriptTimelineDataGridNode = function (scriptTimelineRecord, baseStartTime, rangeStartTime, rangeEndTime) {
     WebInspector.TimelineDataGridNode.call(this, false, null);
 
     this._record = scriptTimelineRecord;
@@ -38,61 +37,21 @@ WebInspector.Object.deprecatedAddConstructorFunctions(WebInspector.ScriptTimelin
 
 WebInspector.ScriptTimelineDataGridNode.IconStyleClassName = "icon";
 
-WebInspector.ScriptTimelineDataGridNode.prototype = {
+WebInspector.ScriptTimelineDataGridNode.prototype = Object.defineProperties({
     constructor: WebInspector.ScriptTimelineDataGridNode,
     __proto__: WebInspector.TimelineDataGridNode.prototype,
 
-    // Public
-
-    get record()
-    {
-        return this._record;
-    },
-
-    get records()
-    {
-        return [this._record];
-    },
-
-    get baseStartTime()
-    {
-        return this._baseStartTime;
-    },
-
-    get rangeStartTime()
-    {
-        return this._rangeStartTime;
-    },
-
-    get rangeEndTime()
-    {
-        return this._rangeEndTime;
-    },
-
-    get data()
-    {
-        var startTime = Math.max(this._rangeStartTime, this._record.startTime);
-        var duration = Math.min(this._record.startTime + this._record.duration, this._rangeEndTime) - startTime;
-        var callFrameOrSourceCodeLocation = this._record.initiatorCallFrame || this._record.sourceCodeLocation;
-
-        return {eventType: this._record.eventType, startTime, selfTime: duration, totalTime: duration,
-            averageTime: duration, callCount: 1, location: callFrameOrSourceCodeLocation};
-    },
-
-    updateRangeTimes: function(startTime, endTime)
-    {
+    updateRangeTimes: function updateRangeTimes(startTime, endTime) {
         var oldRangeStartTime = this._rangeStartTime;
         var oldRangeEndTime = this._rangeEndTime;
 
-        if (oldRangeStartTime === startTime && oldRangeEndTime === endTime)
-            return;
+        if (oldRangeStartTime === startTime && oldRangeEndTime === endTime) return;
 
         this._rangeStartTime = startTime;
         this._rangeEndTime = endTime;
 
         // If we have no duration the range does not matter.
-        if (!this._record.duration)
-            return;
+        if (!this._record.duration) return;
 
         // We only need a refresh if the new range time changes the visible portion of this record.
         var recordStart = this._record.startTime;
@@ -102,28 +61,75 @@ WebInspector.ScriptTimelineDataGridNode.prototype = {
         var newStartBoundary = clamp(recordStart, startTime, recordEnd);
         var newEndBoundary = clamp(recordStart, endTime, recordEnd);
 
-        if (oldStartBoundary !== newStartBoundary || oldEndBoundary !== newEndBoundary)
-            this.needsRefresh();
+        if (oldStartBoundary !== newStartBoundary || oldEndBoundary !== newEndBoundary) this.needsRefresh();
     },
 
-    createCellContent: function(columnIdentifier, cell)
-    {
-        const emptyValuePlaceholderString = "\u2014";
+    createCellContent: function createCellContent(columnIdentifier, cell) {
+        var emptyValuePlaceholderString = "—";
         var value = this.data[columnIdentifier];
 
         switch (columnIdentifier) {
-        case "eventType":
-            return WebInspector.ScriptTimelineRecord.EventType.displayName(value, this._record.details);
+            case "eventType":
+                return WebInspector.ScriptTimelineRecord.EventType.displayName(value, this._record.details);
 
-        case "startTime":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value - this._baseStartTime, true);
+            case "startTime":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value - this._baseStartTime, true);
 
-        case "selfTime":
-        case "totalTime":
-        case "averageTime":
-            return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
+            case "selfTime":
+            case "totalTime":
+            case "averageTime":
+                return isNaN(value) ? emptyValuePlaceholderString : Number.secondsToString(value, true);
         }
 
         return WebInspector.TimelineDataGridNode.prototype.createCellContent.call(this, columnIdentifier, cell);
     }
-};
+}, {
+    record: { // Public
+
+        get: function () {
+            return this._record;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    records: {
+        get: function () {
+            return [this._record];
+        },
+        configurable: true,
+        enumerable: true
+    },
+    baseStartTime: {
+        get: function () {
+            return this._baseStartTime;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    rangeStartTime: {
+        get: function () {
+            return this._rangeStartTime;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    rangeEndTime: {
+        get: function () {
+            return this._rangeEndTime;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    data: {
+        get: function () {
+            var startTime = Math.max(this._rangeStartTime, this._record.startTime);
+            var duration = Math.min(this._record.startTime + this._record.duration, this._rangeEndTime) - startTime;
+            var callFrameOrSourceCodeLocation = this._record.initiatorCallFrame || this._record.sourceCodeLocation;
+
+            return { eventType: this._record.eventType, startTime: startTime, selfTime: duration, totalTime: duration,
+                averageTime: duration, callCount: 1, location: callFrameOrSourceCodeLocation };
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

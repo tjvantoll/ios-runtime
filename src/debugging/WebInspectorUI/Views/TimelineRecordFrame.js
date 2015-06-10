@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.TimelineRecordFrame = function(graphDataSource, record)
-{
+WebInspector.TimelineRecordFrame = function (graphDataSource, record) {
     // FIXME: Convert this to a WebInspector.Object subclass, and call super().
     // WebInspector.Object.call(this);
 
@@ -42,43 +41,23 @@ WebInspector.TimelineRecordFrame.StyleClassName = "timeline-record-frame";
 WebInspector.TimelineRecordFrame.MaximumWidthPixels = 16;
 WebInspector.TimelineRecordFrame.MinimumWidthPixels = 4;
 
-WebInspector.TimelineRecordFrame.prototype = {
+WebInspector.TimelineRecordFrame.prototype = Object.defineProperties({
     constructor: WebInspector.TimelineRecordFrame,
     __proto__: WebInspector.Object.prototype,
 
-    // Public
-
-    get element()
-    {
-        return this._element;
-    },
-
-    get record()
-    {
-        return this._record;
-    },
-
-    set record(record)
-    {
-        this._record = record;
-    },
-
-    refresh(graphDataSource)
-    {
-        if (!this._record)
-            return false;
+    refresh: function refresh(graphDataSource) {
+        if (!this._record) return false;
 
         var frameIndex = this._record.frameIndex;
         var graphStartFrameIndex = Math.floor(graphDataSource.startTime);
         var graphEndFrameIndex = graphDataSource.endTime;
 
         // If this frame is completely before or after the bounds of the graph, return early.
-        if (frameIndex < graphStartFrameIndex || frameIndex > graphEndFrameIndex)
-            return false;
+        if (frameIndex < graphStartFrameIndex || frameIndex > graphEndFrameIndex) return false;
 
-        this._element.style.width = (1 / graphDataSource.timelineOverview.secondsPerPixel) + "px";
+        this._element.style.width = 1 / graphDataSource.timelineOverview.secondsPerPixel + "px";
 
-        var graphDuration = graphDataSource.endTime - graphDataSource.startTime
+        var graphDuration = graphDataSource.endTime - graphDataSource.startTime;
         var recordLeftPosition = (frameIndex - graphDataSource.startTime) / graphDuration;
         this._updateElementPosition(this._element, recordLeftPosition, "left");
         this._updateChildElements(graphDataSource);
@@ -88,16 +67,13 @@ WebInspector.TimelineRecordFrame.prototype = {
 
     // Private
 
-    _updateChildElements(graphDataSource)
-    {
+    _updateChildElements: function _updateChildElements(graphDataSource) {
         this._element.removeChildren();
 
         console.assert(this._record);
-        if (!this._record)
-            return;
+        if (!this._record) return;
 
-        if (graphDataSource.graphHeightSeconds === 0)
-            return;
+        if (graphDataSource.graphHeightSeconds === 0) return;
 
         var frameElement = document.createElement("div");
         frameElement.classList.add("frame");
@@ -106,35 +82,48 @@ WebInspector.TimelineRecordFrame.prototype = {
         var frameHeight = this._record.duration / graphDataSource.graphHeightSeconds;
         this._updateElementPosition(frameElement, frameHeight, "height");
 
-        function createDurationElement(duration, recordType)
-        {
+        function createDurationElement(duration, recordType) {
             var element = document.createElement("div");
             this._updateElementPosition(element, duration / this._record.duration, "height");
             element.classList.add("duration");
-            if (recordType)
-                element.classList.add(recordType);
+            if (recordType) element.classList.add(recordType);
             return element;
         }
 
-        if (this._record.durationRemainder > 0)
-            frameElement.appendChild(createDurationElement.call(this, this._record.durationRemainder));
+        if (this._record.durationRemainder > 0) frameElement.appendChild(createDurationElement.call(this, this._record.durationRemainder));
 
         for (var type in WebInspector.TimelineRecord.Type) {
             var recordType = WebInspector.TimelineRecord.Type[type];
             var duration = this._record.durationForRecords(recordType);
-            if (duration === 0)
-                continue;
+            if (duration === 0) continue;
             frameElement.appendChild(createDurationElement.call(this, duration, recordType));
         }
     },
 
-    _updateElementPosition(element, newPosition, property)
-    {
+    _updateElementPosition: function _updateElementPosition(element, newPosition, property) {
         newPosition *= 100;
         newPosition = newPosition.toFixed(2);
 
         var currentPosition = parseFloat(element.style[property]).toFixed(2);
-        if (currentPosition !== newPosition)
-            element.style[property] = newPosition + "%";
+        if (currentPosition !== newPosition) element.style[property] = newPosition + "%";
     }
-};
+}, {
+    element: { // Public
+
+        get: function () {
+            return this._element;
+        },
+        configurable: true,
+        enumerable: true
+    },
+    record: {
+        get: function () {
+            return this._record;
+        },
+        set: function (record) {
+            this._record = record;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});

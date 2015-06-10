@@ -1,3 +1,9 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,25 +29,39 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Revision = class Revision extends WebInspector.Object
-{
-    // Public
+WebInspector.Revision = (function (_WebInspector$Object) {
+    function Revision() {
+        _classCallCheck(this, Revision);
 
-    apply()
-    {
-        // Implemented by subclasses.
-        console.error("Needs to be implemented by a subclass.");
+        if (_WebInspector$Object != null) {
+            _WebInspector$Object.apply(this, arguments);
+        }
     }
 
-    revert()
-    {
-        // Implemented by subclasses.
-        console.error("Needs to be implemented by a subclass.");
-    }
+    _inherits(Revision, _WebInspector$Object);
 
-    copy()
-    {
-        // Override by subclasses.
-        return this;
-    }
-};
+    _createClass(Revision, [{
+        key: "apply",
+
+        // Public
+
+        value: function apply() {
+            // Implemented by subclasses.
+            console.error("Needs to be implemented by a subclass.");
+        }
+    }, {
+        key: "revert",
+        value: function revert() {
+            // Implemented by subclasses.
+            console.error("Needs to be implemented by a subclass.");
+        }
+    }, {
+        key: "copy",
+        value: function copy() {
+            // Override by subclasses.
+            return this;
+        }
+    }]);
+
+    return Revision;
+})(WebInspector.Object);

@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ImageResourceContentView = function(resource)
-{
+WebInspector.ImageResourceContentView = function (resource) {
     WebInspector.ResourceContentView.call(this, resource, WebInspector.ImageResourceContentView.StyleClassName);
 
     this._imageElement = null;
@@ -32,27 +31,30 @@ WebInspector.ImageResourceContentView = function(resource)
 
 WebInspector.ImageResourceContentView.StyleClassName = "image";
 
-WebInspector.ImageResourceContentView.prototype = {
+WebInspector.ImageResourceContentView.prototype = Object.defineProperties({
     constructor: WebInspector.ImageResourceContentView,
 
-    // Public
-
-    get imageElement()
-    {
-        return this._imageElement;
-    },
-
-    contentAvailable: function(content, base64Encoded)
-    {
+    contentAvailable: function contentAvailable(content, base64Encoded) {
         this.element.removeChildren();
 
         var objectURL = this.resource.createObjectURL();
         this._imageElement = document.createElement("img");
-        this._imageElement.addEventListener("load", function() { URL.revokeObjectURL(objectURL); });
+        this._imageElement.addEventListener("load", function () {
+            URL.revokeObjectURL(objectURL);
+        });
         this._imageElement.src = objectURL;
 
         this.element.appendChild(this._imageElement);
     }
-};
+}, {
+    imageElement: { // Public
+
+        get: function () {
+            return this._imageElement;
+        },
+        configurable: true,
+        enumerable: true
+    }
+});
 
 WebInspector.ImageResourceContentView.prototype.__proto__ = WebInspector.ResourceContentView.prototype;

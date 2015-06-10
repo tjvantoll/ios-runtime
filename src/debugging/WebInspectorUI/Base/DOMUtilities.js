@@ -29,8 +29,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.displayNameForNode = function(node)
-{
+WebInspector.displayNameForNode = function (node) {
     var title = node.nodeNameInCorrectCase();
 
     var idAttribute = node.getAttribute("id");
@@ -38,8 +37,7 @@ WebInspector.displayNameForNode = function(node)
         if (/[\s'"]/.test(idAttribute)) {
             idAttribute = idAttribute.replace(/\\/g, "\\\\").replace(/\"/g, "\\\"");
             title += "[id=\"" + idAttribute + "\"]";
-        } else
-            title += "#" + idAttribute;
+        } else title += "#" + idAttribute;
     }
 
     var classAttribute = node.getAttribute("class");
@@ -59,36 +57,30 @@ WebInspector.displayNameForNode = function(node)
     return title;
 };
 
-WebInspector.roleSelectorForNode = function(node)
-{
+WebInspector.roleSelectorForNode = function (node) {
     // This is proposed syntax for CSS 4 computed role selector :role(foo) and subject to change.
     // See http://lists.w3.org/Archives/Public/www-style/2013Jul/0104.html
     var title = "";
     var role = node.computedRole();
-    if (role)
-        title = ":role(" + role + ")";
+    if (role) title = ":role(" + role + ")";
     return title;
 };
 
-WebInspector.linkifyAccessibilityNodeReference = function(node)
-{
-    if (!node)
-        return null;
+WebInspector.linkifyAccessibilityNodeReference = function (node) {
+    if (!node) return null;
     // Same as linkifyNodeReference except the link text has the classnames removed...
     // ...for list brevity, and both text and title have roleSelectorForNode appended.
     var link = WebInspector.linkifyNodeReference(node);
     var tagIdSelector = link.title;
     var classSelectorIndex = tagIdSelector.indexOf(".");
-    if (classSelectorIndex > -1)
-        tagIdSelector = tagIdSelector.substring(0, classSelectorIndex);
+    if (classSelectorIndex > -1) tagIdSelector = tagIdSelector.substring(0, classSelectorIndex);
     var roleSelector = WebInspector.roleSelectorForNode(node);
     link.textContent = tagIdSelector + roleSelector;
     link.title += roleSelector;
     return link;
 };
 
-WebInspector.linkifyNodeReference = function(node)
-{
+WebInspector.linkifyNodeReference = function (node) {
     var displayName = WebInspector.displayNameForNode(node);
 
     var link = document.createElement("span");

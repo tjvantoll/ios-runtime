@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2014 Apple Inc. All rights reserved.
  *
@@ -30,11 +38,11 @@
 //  - formatted information does require initialization, done by overriding public APIs.
 //  - display information does require initialization, done by overriding private funnel API resolveMappedLocation.
 
-WebInspector.LazySourceCodeLocation = class LazySourceCodeLocation extends WebInspector.SourceCodeLocation
-{
-    constructor(sourceCode, lineNumber, columnNumber)
-    {
-        super(null, lineNumber, columnNumber);
+WebInspector.LazySourceCodeLocation = (function (_WebInspector$SourceCodeLocation) {
+    function LazySourceCodeLocation(sourceCode, lineNumber, columnNumber) {
+        _classCallCheck(this, LazySourceCodeLocation);
+
+        _get(Object.getPrototypeOf(LazySourceCodeLocation.prototype), "constructor", this).call(this, null, lineNumber, columnNumber);
 
         console.assert(sourceCode);
 
@@ -42,71 +50,77 @@ WebInspector.LazySourceCodeLocation = class LazySourceCodeLocation extends WebIn
         this._lazySourceCode = sourceCode;
     }
 
-    // Public
+    _inherits(LazySourceCodeLocation, _WebInspector$SourceCodeLocation);
 
-    isEqual(other)
-    {
-        if (!other)
-            return false;
-        return this._lazySourceCode === other._sourceCode && this._lineNumber === other._lineNumber && this._columnNumber === other._columnNumber;
-    }
+    _createClass(LazySourceCodeLocation, [{
+        key: "isEqual",
 
-    get sourceCode()
-    {
-        return this._lazySourceCode;
-    }
+        // Public
 
-    set sourceCode(sourceCode)
-    {
-        // Getter and setter must be provided together.
-        this.setSourceCode(sourceCode);
-    }
-
-    get formattedLineNumber()
-    {
-        this._lazyInitialization();
-        return this._formattedLineNumber;
-    }
-
-    get formattedColumnNumber()
-    {
-        this._lazyInitialization();
-        return this._formattedColumnNumber;
-    }
-
-    formattedPosition()
-    {
-        this._lazyInitialization();
-        return new WebInspector.SourceCodePosition(this._formattedLineNumber, this._formattedColumnNumber);
-    }
-
-    hasFormattedLocation()
-    {
-        this._lazyInitialization();
-        return super.hasFormattedLocation();
-    }
-
-    hasDifferentDisplayLocation()
-    {
-        this._lazyInitialization();
-        return super.hasDifferentDisplayLocation();
-    }
-
-    // Protected
-
-    resolveMappedLocation()
-    {
-        this._lazyInitialization();
-        super.resolveMappedLocation();
-    }
-
-    // Private
-
-    _lazyInitialization()
-    {
-        if (!this._initialized) {
-            this._initialized = true;
-            this.sourceCode = this._lazySourceCode;
+        value: function isEqual(other) {
+            if (!other) return false;
+            return this._lazySourceCode === other._sourceCode && this._lineNumber === other._lineNumber && this._columnNumber === other._columnNumber;
         }
-    }
-};
+    }, {
+        key: "formattedPosition",
+        value: function formattedPosition() {
+            this._lazyInitialization();
+            return new WebInspector.SourceCodePosition(this._formattedLineNumber, this._formattedColumnNumber);
+        }
+    }, {
+        key: "hasFormattedLocation",
+        value: function hasFormattedLocation() {
+            this._lazyInitialization();
+            return _get(Object.getPrototypeOf(LazySourceCodeLocation.prototype), "hasFormattedLocation", this).call(this);
+        }
+    }, {
+        key: "hasDifferentDisplayLocation",
+        value: function hasDifferentDisplayLocation() {
+            this._lazyInitialization();
+            return _get(Object.getPrototypeOf(LazySourceCodeLocation.prototype), "hasDifferentDisplayLocation", this).call(this);
+        }
+    }, {
+        key: "resolveMappedLocation",
+
+        // Protected
+
+        value: function resolveMappedLocation() {
+            this._lazyInitialization();
+            _get(Object.getPrototypeOf(LazySourceCodeLocation.prototype), "resolveMappedLocation", this).call(this);
+        }
+    }, {
+        key: "_lazyInitialization",
+
+        // Private
+
+        value: function _lazyInitialization() {
+            if (!this._initialized) {
+                this._initialized = true;
+                this.sourceCode = this._lazySourceCode;
+            }
+        }
+    }, {
+        key: "sourceCode",
+        get: function () {
+            return this._lazySourceCode;
+        },
+        set: function (sourceCode) {
+            // Getter and setter must be provided together.
+            this.setSourceCode(sourceCode);
+        }
+    }, {
+        key: "formattedLineNumber",
+        get: function () {
+            this._lazyInitialization();
+            return this._formattedLineNumber;
+        }
+    }, {
+        key: "formattedColumnNumber",
+        get: function () {
+            this._lazyInitialization();
+            return this._formattedColumnNumber;
+        }
+    }]);
+
+    return LazySourceCodeLocation;
+})(WebInspector.SourceCodeLocation);

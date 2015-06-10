@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CSSStyleSheet = class CSSStyleSheet extends WebInspector.SourceCode
-{
-    constructor(id)
-    {
-        super();
+WebInspector.CSSStyleSheet = (function (_WebInspector$SourceCode) {
+    function CSSStyleSheet(id) {
+        _classCallCheck(this, CSSStyleSheet);
+
+        _get(Object.getPrototypeOf(CSSStyleSheet.prototype), "constructor", this).call(this);
 
         console.assert(id);
 
@@ -36,122 +44,125 @@ WebInspector.CSSStyleSheet = class CSSStyleSheet extends WebInspector.SourceCode
         this._parentFrame = null;
     }
 
-    // Static
+    _inherits(CSSStyleSheet, _WebInspector$SourceCode);
 
-    static resetUniqueDisplayNameNumbers()
-    {
-        WebInspector.CSSStyleSheet._nextUniqueDisplayNameNumber = 1;
-    }
+    _createClass(CSSStyleSheet, [{
+        key: "isInlineStyle",
+        value: function isInlineStyle() {
+            return !!this._inlineStyle;
+        }
+    }, {
+        key: "markAsInlineStyle",
+        value: function markAsInlineStyle() {
+            this._inlineStyle = true;
+        }
+    }, {
+        key: "updateInfo",
 
-    // Public
+        // Protected
 
-    get id()
-    {
-        return this._id;
-    }
+        value: function updateInfo(url, parentFrame) {
+            this._url = url || null;
+            delete this._urlComponents;
 
-    get parentFrame()
-    {
-        return this._parentFrame;
-    }
+            this._parentFrame = parentFrame || null;
+        }
+    }, {
+        key: "handleCurrentRevisionContentChange",
+        value: function handleCurrentRevisionContentChange() {
+            if (!this._id) return;
 
-    get url()
-    {
-        return this._url;
-    }
+            function contentDidChange(error) {
+                if (error) return;
 
-    get urlComponents()
-    {
-        if (!this._urlComponents)
-            this._urlComponents = parseURL(this._url);
-        return this._urlComponents;
-    }
+                DOMAgent.markUndoableState();
 
-    get mimeType()
-    {
-        return "text/css";
-    }
+                this.dispatchEventToListeners(WebInspector.CSSStyleSheet.Event.ContentDidChange);
+            }
 
-    get displayName()
-    {
-        if (this._url)
-            return WebInspector.displayNameForURL(this._url, this.urlComponents);
+            this._ignoreNextContentDidChangeNotification = true;
 
-        // Assign a unique number to the StyleSheet object so it will stay the same.
-        if (!this._uniqueDisplayNameNumber)
-            this._uniqueDisplayNameNumber = this.constructor._nextUniqueDisplayNameNumber++;
+            CSSAgent.setStyleSheetText(this._id, this.currentRevision.content, contentDidChange.bind(this));
+        }
+    }, {
+        key: "requestContentFromBackend",
+        value: function requestContentFromBackend() {
+            if (!this._id) {
+                // There is no identifier to request content with. Reject the promise to cause the
+                // pending callbacks to get null content.
+                return Promise.reject(new Error("There is no identifier to request content with."));
+            }
 
-        return WebInspector.UIString("Anonymous StyleSheet %d").format(this._uniqueDisplayNameNumber);
-    }
+            return CSSAgent.getStyleSheetText(this._id);
+        }
+    }, {
+        key: "noteContentDidChange",
+        value: function noteContentDidChange() {
+            if (this._ignoreNextContentDidChangeNotification) {
+                delete this._ignoreNextContentDidChangeNotification;
+                return false;
+            }
 
-    isInlineStyle()
-    {
-        return !!this._inlineStyle;
-    }
-
-    markAsInlineStyle()
-    {
-        this._inlineStyle = true;
-    }
-
-    // Protected
-
-    updateInfo(url, parentFrame)
-    {
-        this._url = url || null;
-        delete this._urlComponents;
-
-        this._parentFrame = parentFrame || null;
-    }
-
-    get revisionForRequestedContent()
-    {
-        return this.currentRevision;
-    }
-
-    handleCurrentRevisionContentChange()
-    {
-        if (!this._id)
-            return;
-
-        function contentDidChange(error)
-        {
-            if (error)
-                return;
-
-            DOMAgent.markUndoableState();
-
+            this.markContentAsStale();
             this.dispatchEventToListeners(WebInspector.CSSStyleSheet.Event.ContentDidChange);
+            return true;
         }
+    }, {
+        key: "id",
 
-        this._ignoreNextContentDidChangeNotification = true;
+        // Public
 
-        CSSAgent.setStyleSheetText(this._id, this.currentRevision.content, contentDidChange.bind(this));
-    }
-
-    requestContentFromBackend()
-    {
-        if (!this._id) {
-            // There is no identifier to request content with. Reject the promise to cause the
-            // pending callbacks to get null content.
-            return Promise.reject(new Error("There is no identifier to request content with."));
+        get: function () {
+            return this._id;
         }
-
-        return CSSAgent.getStyleSheetText(this._id);
-    }
-
-    noteContentDidChange()
-    {
-        if (this._ignoreNextContentDidChangeNotification) {
-            delete this._ignoreNextContentDidChangeNotification;
-            return false;
+    }, {
+        key: "parentFrame",
+        get: function () {
+            return this._parentFrame;
         }
+    }, {
+        key: "url",
+        get: function () {
+            return this._url;
+        }
+    }, {
+        key: "urlComponents",
+        get: function () {
+            if (!this._urlComponents) this._urlComponents = parseURL(this._url);
+            return this._urlComponents;
+        }
+    }, {
+        key: "mimeType",
+        get: function () {
+            return "text/css";
+        }
+    }, {
+        key: "displayName",
+        get: function () {
+            if (this._url) return WebInspector.displayNameForURL(this._url, this.urlComponents);
 
-        this.markContentAsStale();
-        this.dispatchEventToListeners(WebInspector.CSSStyleSheet.Event.ContentDidChange);
-        return true;
-    }
-};
+            // Assign a unique number to the StyleSheet object so it will stay the same.
+            if (!this._uniqueDisplayNameNumber) this._uniqueDisplayNameNumber = this.constructor._nextUniqueDisplayNameNumber++;
+
+            return WebInspector.UIString("Anonymous StyleSheet %d").format(this._uniqueDisplayNameNumber);
+        }
+    }, {
+        key: "revisionForRequestedContent",
+        get: function () {
+            return this.currentRevision;
+        }
+    }], [{
+        key: "resetUniqueDisplayNameNumbers",
+
+        // Static
+
+        value: function resetUniqueDisplayNameNumbers() {
+            WebInspector.CSSStyleSheet._nextUniqueDisplayNameNumber = 1;
+        }
+    }]);
+
+    return CSSStyleSheet;
+})(WebInspector.SourceCode);
 
 WebInspector.CSSStyleSheet._nextUniqueDisplayNameNumber = 1;
 

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  *  Copyright (C) 2013 University of Washington. All rights reserved.
  *
@@ -24,11 +32,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.BackForwardEntry = class BackForwardEntry extends WebInspector.Object
-{
-    constructor(contentView, cookie)
-    {
-        super();
+WebInspector.BackForwardEntry = (function (_WebInspector$Object) {
+    function BackForwardEntry(contentView, cookie) {
+        _classCallCheck(this, BackForwardEntry);
+
+        _get(Object.getPrototypeOf(BackForwardEntry.prototype), "constructor", this).call(this);
 
         this._contentView = contentView;
 
@@ -39,85 +47,88 @@ WebInspector.BackForwardEntry = class BackForwardEntry extends WebInspector.Obje
         contentView.saveToCookie(this._cookie);
     }
 
-    // Public
+    _inherits(BackForwardEntry, _WebInspector$Object);
 
-    get contentView()
-    {
-        return this._contentView;
-    }
+    _createClass(BackForwardEntry, [{
+        key: "prepareToShow",
+        value: function prepareToShow(shouldCallShown) {
+            this._restoreFromCookie();
 
-    get cookie()
-    {
-        // Cookies are immutable; they represent a specific navigation action.
-        return Object.shallowCopy(this._cookie);
-    }
-
-    prepareToShow(shouldCallShown)
-    {
-        this._restoreFromCookie();
-
-        this.contentView.visible = true;
-        if (shouldCallShown)
-            this.contentView.shown();
-        this.contentView.updateLayout();
-    }
-
-    prepareToHide()
-    {
-        this.contentView.visible = false;
-        this.contentView.hidden();
-
-        this._saveScrollPositions();
-    }
-
-    // Private
-
-    _restoreFromCookie()
-    {
-        this._restoreScrollPositions();
-        this.contentView.restoreFromCookie(this.cookie);
-    }
-
-    _restoreScrollPositions()
-    {
-        // If no scroll positions are saved, do nothing.
-        if (!this._scrollPositions.length)
-            return;
-
-        var scrollableElements = this.contentView.scrollableElements || [];
-        console.assert(this._scrollPositions.length === scrollableElements.length);
-
-        for (var i = 0; i < scrollableElements.length; ++i) {
-            var position = this._scrollPositions[i];
-            var element = scrollableElements[i];
-            if (!element)
-                continue;
-
-            // Restore the top scroll position by either scrolling to the bottom or to the saved position.
-            element.scrollTop = position.isScrolledToBottom ? element.scrollHeight : position.scrollTop;
-
-            // Don't restore the left scroll position when scrolled to the bottom. This way the when content changes
-            // the user won't be left in a weird horizontal position.
-            element.scrollLeft = position.isScrolledToBottom ? 0 : position.scrollLeft;
+            this.contentView.visible = true;
+            if (shouldCallShown) this.contentView.shown();
+            this.contentView.updateLayout();
         }
-    }
+    }, {
+        key: "prepareToHide",
+        value: function prepareToHide() {
+            this.contentView.visible = false;
+            this.contentView.hidden();
 
-    _saveScrollPositions()
-    {
-        var scrollableElements = this.contentView.scrollableElements || [];
-        var scrollPositions = [];
-        for (var i = 0; i < scrollableElements.length; ++i) {
-            var element = scrollableElements[i];
-            if (!element)
-                continue;
-
-            var position = { scrollTop: element.scrollTop, scrollLeft: element.scrollLeft };
-            if (this.contentView.shouldKeepElementsScrolledToBottom)
-                position.isScrolledToBottom = element.isScrolledToBottom();
-
-            scrollPositions.push(position);
+            this._saveScrollPositions();
         }
+    }, {
+        key: "_restoreFromCookie",
 
-        this._scrollPositions = scrollPositions;
-    }
-};
+        // Private
+
+        value: function _restoreFromCookie() {
+            this._restoreScrollPositions();
+            this.contentView.restoreFromCookie(this.cookie);
+        }
+    }, {
+        key: "_restoreScrollPositions",
+        value: function _restoreScrollPositions() {
+            // If no scroll positions are saved, do nothing.
+            if (!this._scrollPositions.length) return;
+
+            var scrollableElements = this.contentView.scrollableElements || [];
+            console.assert(this._scrollPositions.length === scrollableElements.length);
+
+            for (var i = 0; i < scrollableElements.length; ++i) {
+                var position = this._scrollPositions[i];
+                var element = scrollableElements[i];
+                if (!element) continue;
+
+                // Restore the top scroll position by either scrolling to the bottom or to the saved position.
+                element.scrollTop = position.isScrolledToBottom ? element.scrollHeight : position.scrollTop;
+
+                // Don't restore the left scroll position when scrolled to the bottom. This way the when content changes
+                // the user won't be left in a weird horizontal position.
+                element.scrollLeft = position.isScrolledToBottom ? 0 : position.scrollLeft;
+            }
+        }
+    }, {
+        key: "_saveScrollPositions",
+        value: function _saveScrollPositions() {
+            var scrollableElements = this.contentView.scrollableElements || [];
+            var scrollPositions = [];
+            for (var i = 0; i < scrollableElements.length; ++i) {
+                var element = scrollableElements[i];
+                if (!element) continue;
+
+                var position = { scrollTop: element.scrollTop, scrollLeft: element.scrollLeft };
+                if (this.contentView.shouldKeepElementsScrolledToBottom) position.isScrolledToBottom = element.isScrolledToBottom();
+
+                scrollPositions.push(position);
+            }
+
+            this._scrollPositions = scrollPositions;
+        }
+    }, {
+        key: "contentView",
+
+        // Public
+
+        get: function () {
+            return this._contentView;
+        }
+    }, {
+        key: "cookie",
+        get: function () {
+            // Cookies are immutable; they represent a specific navigation action.
+            return Object.shallowCopy(this._cookie);
+        }
+    }]);
+
+    return BackForwardEntry;
+})(WebInspector.Object);

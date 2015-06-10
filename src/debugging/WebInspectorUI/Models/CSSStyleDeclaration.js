@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.CSSStyleDeclaration = class CSSStyleDeclaration extends WebInspector.Object
-{
-    constructor(nodeStyles, ownerStyleSheet, id, type, node, inherited, text, properties, styleSheetTextRange)
-    {
-        super();
+WebInspector.CSSStyleDeclaration = (function (_WebInspector$Object) {
+    function CSSStyleDeclaration(nodeStyles, ownerStyleSheet, id, type, node, inherited, text, properties, styleSheetTextRange) {
+        _classCallCheck(this, CSSStyleDeclaration);
+
+        _get(Object.getPrototypeOf(CSSStyleDeclaration.prototype), "constructor", this).call(this);
 
         console.assert(nodeStyles);
         this._nodeStyles = nodeStyles;
@@ -46,227 +54,211 @@ WebInspector.CSSStyleDeclaration = class CSSStyleDeclaration extends WebInspecto
         this.update(text, properties, styleSheetTextRange, true);
     }
 
-    // Public
+    _inherits(CSSStyleDeclaration, _WebInspector$Object);
 
-    get id()
-    {
-        return this._id;
-    }
+    _createClass(CSSStyleDeclaration, [{
+        key: "update",
+        value: function update(text, properties, styleSheetTextRange, dontFireEvents) {
+            text = text || "";
+            properties = properties || [];
 
-    get ownerStyleSheet()
-    {
-        return this._ownerStyleSheet;
-    }
+            var oldProperties = this._properties || [];
+            var oldText = this._text;
 
-    get type()
-    {
-        return this._type;
-    }
+            this._text = text;
+            this._properties = properties;
+            this._styleSheetTextRange = styleSheetTextRange;
+            this._propertyNameMap = {};
 
-    get inherited()
-    {
-        return this._inherited;
-    }
+            delete this._visibleProperties;
 
-    get node()
-    {
-        return this._node;
-    }
+            var editable = this.editable;
 
-    get editable()
-    {
-        if (!this._id)
+            for (var i = 0; i < this._properties.length; ++i) {
+                var property = this._properties[i];
+                property.ownerStyle = this;
+
+                // Store the property in a map if we arn't editable. This
+                // allows for quick lookup for computed style. Editable
+                // styles don't use the map since they need to account for
+                // overridden properties.
+                if (!editable) this._propertyNameMap[property.name] = property;else {
+                    // Remove from pendingProperties (if it was pending).
+                    this._pendingProperties.remove(property);
+                }
+            }
+
+            var removedProperties = [];
+            for (var i = 0; i < oldProperties.length; ++i) {
+                var oldProperty = oldProperties[i];
+
+                if (!this._properties.includes(oldProperty)) {
+                    // Clear the index, since it is no longer valid.
+                    oldProperty.index = NaN;
+
+                    removedProperties.push(oldProperty);
+
+                    // Keep around old properties in pending in case they
+                    // are needed again during editing.
+                    if (editable) this._pendingProperties.push(oldProperty);
+                }
+            }
+
+            if (dontFireEvents) return;
+
+            var addedProperties = [];
+            for (var i = 0; i < this._properties.length; ++i) {
+                if (!oldProperties.includes(this._properties[i])) addedProperties.push(this._properties[i]);
+            }
+
+            // Don't fire the event if there is text and it hasn't changed.
+            if (oldText && this._text && oldText === this._text) {
+                // We shouldn't have any added or removed properties in this case.
+                console.assert(!addedProperties.length && !removedProperties.length);
+                if (!addedProperties.length && !removedProperties.length) return;
+            }
+
+            function delayed() {
+                this.dispatchEventToListeners(WebInspector.CSSStyleDeclaration.Event.PropertiesChanged, { addedProperties: addedProperties, removedProperties: removedProperties });
+            }
+
+            // Delay firing the PropertiesChanged event so DOMNodeStyles has a chance to mark overridden and associated properties.
+            setTimeout(delayed.bind(this), 0);
+        }
+    }, {
+        key: "propertyForName",
+        value: function propertyForName(name, dontCreateIfMissing) {
+            console.assert(name);
+            if (!name) return null;
+
+            if (!this.editable) return this._propertyNameMap[name] || null;
+
+            // Editable styles don't use the map since they need to
+            // account for overridden properties.
+
+            function findMatch(properties) {
+                for (var i = 0; i < properties.length; ++i) {
+                    var property = properties[i];
+                    if (property.canonicalName !== name && property.name !== name) continue;
+                    if (bestMatchProperty && !bestMatchProperty.overridden && property.overridden) continue;
+                    bestMatchProperty = property;
+                }
+            }
+
+            var bestMatchProperty = null;
+
+            findMatch(this._properties);
+
+            if (bestMatchProperty) return bestMatchProperty;
+
+            if (dontCreateIfMissing || !this.editable) return null;
+
+            findMatch(this._pendingProperties, true);
+
+            if (bestMatchProperty) return bestMatchProperty;
+
+            var newProperty = new WebInspector.CSSProperty(NaN, null, name);
+            newProperty.ownerStyle = this;
+
+            this._pendingProperties.push(newProperty);
+
+            return newProperty;
+        }
+    }, {
+        key: "id",
+
+        // Public
+
+        get: function () {
+            return this._id;
+        }
+    }, {
+        key: "ownerStyleSheet",
+        get: function () {
+            return this._ownerStyleSheet;
+        }
+    }, {
+        key: "type",
+        get: function () {
+            return this._type;
+        }
+    }, {
+        key: "inherited",
+        get: function () {
+            return this._inherited;
+        }
+    }, {
+        key: "node",
+        get: function () {
+            return this._node;
+        }
+    }, {
+        key: "editable",
+        get: function () {
+            if (!this._id) return false;
+
+            if (this._type === WebInspector.CSSStyleDeclaration.Type.Rule) return this._ownerRule && this._ownerRule.editable;
+
+            if (this._type === WebInspector.CSSStyleDeclaration.Type.Inline) return !this._node.isInShadowTree();
+
             return false;
-
-        if (this._type === WebInspector.CSSStyleDeclaration.Type.Rule)
-            return this._ownerRule && this._ownerRule.editable;
-
-        if (this._type === WebInspector.CSSStyleDeclaration.Type.Inline)
-            return !this._node.isInShadowTree();
-
-        return false;
-    }
-
-    update(text, properties, styleSheetTextRange, dontFireEvents)
-    {
-        text = text || "";
-        properties = properties || [];
-
-        var oldProperties = this._properties || [];
-        var oldText = this._text;
-
-        this._text = text;
-        this._properties = properties;
-        this._styleSheetTextRange = styleSheetTextRange;
-        this._propertyNameMap = {};
-
-        delete this._visibleProperties;
-
-        var editable = this.editable;
-
-        for (var i = 0; i < this._properties.length; ++i) {
-            var property = this._properties[i];
-            property.ownerStyle = this;
-
-            // Store the property in a map if we arn't editable. This
-            // allows for quick lookup for computed style. Editable
-            // styles don't use the map since they need to account for
-            // overridden properties.
-            if (!editable)
-                this._propertyNameMap[property.name] = property;
-            else {
-                // Remove from pendingProperties (if it was pending).
-                this._pendingProperties.remove(property);
-            }
         }
-
-        var removedProperties = [];
-        for (var i = 0; i < oldProperties.length; ++i) {
-            var oldProperty = oldProperties[i];
-
-            if (!this._properties.includes(oldProperty)) {
-                // Clear the index, since it is no longer valid.
-                oldProperty.index = NaN;
-
-                removedProperties.push(oldProperty);
-
-                // Keep around old properties in pending in case they
-                // are needed again during editing.
-                if (editable)
-                    this._pendingProperties.push(oldProperty);
-            }
+    }, {
+        key: "ownerRule",
+        get: function () {
+            return this._ownerRule;
+        },
+        set: function (rule) {
+            this._ownerRule = rule || null;
         }
+    }, {
+        key: "text",
+        get: function () {
+            return this._text;
+        },
+        set: function (text) {
+            if (this._text === text) return;
 
-        if (dontFireEvents)
-            return;
-
-        var addedProperties = [];
-        for (var i = 0; i < this._properties.length; ++i) {
-            if (!oldProperties.includes(this._properties[i]))
-                addedProperties.push(this._properties[i]);
+            this._nodeStyles.changeStyleText(this, text);
         }
-
-        // Don't fire the event if there is text and it hasn't changed.
-        if (oldText && this._text && oldText === this._text) {
-            // We shouldn't have any added or removed properties in this case.
-            console.assert(!addedProperties.length && !removedProperties.length);
-            if (!addedProperties.length && !removedProperties.length)
-                return;
+    }, {
+        key: "properties",
+        get: function () {
+            return this._properties;
         }
+    }, {
+        key: "visibleProperties",
+        get: function () {
+            if (this._visibleProperties) return this._visibleProperties;
 
-        function delayed()
-        {
-            this.dispatchEventToListeners(WebInspector.CSSStyleDeclaration.Event.PropertiesChanged, {addedProperties, removedProperties});
-        }
+            this._visibleProperties = this._properties.filter(function (property) {
+                return !!property.styleDeclarationTextRange;
+            });
 
-        // Delay firing the PropertiesChanged event so DOMNodeStyles has a chance to mark overridden and associated properties.
-        setTimeout(delayed.bind(this), 0);
-    }
-
-    get ownerRule()
-    {
-        return this._ownerRule;
-    }
-
-    set ownerRule(rule)
-    {
-        this._ownerRule = rule || null;
-    }
-
-    get text()
-    {
-        return this._text;
-    }
-
-    set text(text)
-    {
-        if (this._text === text)
-            return;
-
-        this._nodeStyles.changeStyleText(this, text);
-    }
-
-    get properties()
-    {
-        return this._properties;
-    }
-
-    get visibleProperties()
-    {
-        if (this._visibleProperties)
             return this._visibleProperties;
-
-        this._visibleProperties = this._properties.filter(function(property) {
-            return !!property.styleDeclarationTextRange;
-        });
-
-        return this._visibleProperties;
-    }
-
-    get pendingProperties()
-    {
-        return this._pendingProperties;
-    }
-
-    get styleSheetTextRange()
-    {
-        return this._styleSheetTextRange;
-    }
-
-    propertyForName(name, dontCreateIfMissing)
-    {
-        console.assert(name);
-        if (!name)
-            return null;
-
-        if (!this.editable)
-            return this._propertyNameMap[name] || null;
-
-        // Editable styles don't use the map since they need to
-        // account for overridden properties.
-
-        function findMatch(properties)
-        {
-            for (var i = 0; i < properties.length; ++i) {
-                var property = properties[i];
-                if (property.canonicalName !== name && property.name !== name)
-                    continue;
-                if (bestMatchProperty && !bestMatchProperty.overridden && property.overridden)
-                    continue;
-                bestMatchProperty = property;
-            }
         }
+    }, {
+        key: "pendingProperties",
+        get: function () {
+            return this._pendingProperties;
+        }
+    }, {
+        key: "styleSheetTextRange",
+        get: function () {
+            return this._styleSheetTextRange;
+        }
+    }, {
+        key: "nodeStyles",
 
-        var bestMatchProperty = null;
+        // Protected
 
-        findMatch(this._properties);
+        get: function () {
+            return this._nodeStyles;
+        }
+    }]);
 
-        if (bestMatchProperty)
-            return bestMatchProperty;
-
-        if (dontCreateIfMissing || !this.editable)
-            return null;
-
-        findMatch(this._pendingProperties, true);
-
-        if (bestMatchProperty)
-            return bestMatchProperty;
-
-        var newProperty = new WebInspector.CSSProperty(NaN, null, name);
-        newProperty.ownerStyle = this;
-
-        this._pendingProperties.push(newProperty);
-
-        return newProperty;
-    }
-
-    // Protected
-
-    get nodeStyles()
-    {
-        return this._nodeStyles;
-    }
-};
+    return CSSStyleDeclaration;
+})(WebInspector.Object);
 
 WebInspector.CSSStyleDeclaration.Event = {
     PropertiesChanged: "css-style-declaration-properties-changed"

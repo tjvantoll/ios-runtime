@@ -23,8 +23,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.LinearTimelineOverview = function(timelineRecording)
-{
+WebInspector.LinearTimelineOverview = function (timelineRecording) {
     // FIXME: Convert this to a WebInspector.TimelineOverview subclass, and call super().
 
     var defaultSettingsValues = {
@@ -42,8 +41,7 @@ WebInspector.LinearTimelineOverview.prototype = {
 
     // Protected
 
-    canShowTimeline: function(timeline)
-    {
+    canShowTimeline: function canShowTimeline(timeline) {
         return timeline.type !== WebInspector.TimelineRecord.Type.RenderingFrame;
     }
 };

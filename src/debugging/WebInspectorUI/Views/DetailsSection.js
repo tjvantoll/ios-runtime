@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.DetailsSection = class DetailsSection extends WebInspector.Object
-{
-    constructor(identifier, title, groups, optionsElement, defaultCollapsedSettingValue)
-    {
-        super();
+WebInspector.DetailsSection = (function (_WebInspector$Object) {
+    function DetailsSection(identifier, title, groups, optionsElement, defaultCollapsedSettingValue) {
+        _classCallCheck(this, DetailsSection);
+
+        _get(Object.getPrototypeOf(DetailsSection.prototype), "constructor", this).call(this);
 
         console.assert(identifier);
 
@@ -57,108 +65,104 @@ WebInspector.DetailsSection = class DetailsSection extends WebInspector.Object
 
         this._identifier = identifier;
         this.title = title;
-        this.groups = groups || [new WebInspector.DetailsSectionGroup];
+        this.groups = groups || [new WebInspector.DetailsSectionGroup()];
 
         this._collapsedSetting = new WebInspector.Setting(identifier + "-details-section-collapsed", !!defaultCollapsedSettingValue);
         this.collapsed = this._collapsedSetting.value;
     }
 
-    // Public
+    _inherits(DetailsSection, _WebInspector$Object);
 
-    get element()
-    {
-        return this._element;
-    }
+    _createClass(DetailsSection, [{
+        key: "_headerElementClicked",
 
-    get identifier()
-    {
-        return this._identifier;
-    }
+        // Private
 
-    get title()
-    {
-        return this._titleElement.textContent;
-    }
+        value: function _headerElementClicked(event) {
+            if (event.target.isSelfOrDescendant(this._optionsElement)) return;
 
-    set title(title)
-    {
-        this._titleElement.textContent = title;
-    }
+            this.collapsed = !this.collapsed;
 
-    get collapsed()
-    {
-        return this._element.classList.contains(WebInspector.DetailsSection.CollapsedStyleClassName);
-    }
+            this._element.scrollIntoViewIfNeeded(false);
+        }
+    }, {
+        key: "_optionsElementMouseDown",
+        value: function _optionsElementMouseDown(event) {
+            this._headerElement.classList.add(WebInspector.DetailsSection.MouseOverOptionsElementStyleClassName);
+        }
+    }, {
+        key: "_optionsElementMouseUp",
+        value: function _optionsElementMouseUp(event) {
+            this._headerElement.classList.remove(WebInspector.DetailsSection.MouseOverOptionsElementStyleClassName);
+        }
+    }, {
+        key: "_generateDisclosureTrianglesIfNeeded",
+        value: function _generateDisclosureTrianglesIfNeeded() {
+            if (WebInspector.DetailsSection._generatedDisclosureTriangles) return;
 
-    set collapsed(flag)
-    {
-        if (flag)
-            this._element.classList.add(WebInspector.DetailsSection.CollapsedStyleClassName);
-        else
-            this._element.classList.remove(WebInspector.DetailsSection.CollapsedStyleClassName);
+            // Set this early instead of in _generateDisclosureTriangle because we don't want multiple sections that are
+            // created at the same time to duplicate the work (even though it would be harmless.)
+            WebInspector.DetailsSection._generatedDisclosureTriangles = true;
 
-        this._collapsedSetting.value = flag || false;
-    }
+            var specifications = {};
+            specifications[WebInspector.DetailsSection.DisclosureTriangleNormalCanvasIdentifierSuffix] = {
+                fillColor: [134, 134, 134]
+            };
 
-    get groups()
-    {
-        return this._groups;
-    }
+            specifications[WebInspector.DetailsSection.DisclosureTriangleActiveCanvasIdentifierSuffix] = {
+                fillColor: [57, 57, 57]
+            };
 
-    set groups(groups)
-    {
-        this._contentElement.removeChildren();
+            generateColoredImagesForCSS("Images/DisclosureTriangleSmallOpen.svg", specifications, 13, 13, WebInspector.DetailsSection.DisclosureTriangleOpenCanvasIdentifier);
+            generateColoredImagesForCSS("Images/DisclosureTriangleSmallClosed.svg", specifications, 13, 13, WebInspector.DetailsSection.DisclosureTriangleClosedCanvasIdentifier);
+        }
+    }, {
+        key: "element",
 
-        this._groups = groups || [];
+        // Public
 
-        for (var i = 0; i < this._groups.length; ++i)
-            this._contentElement.appendChild(this._groups[i].element);
-    }
+        get: function () {
+            return this._element;
+        }
+    }, {
+        key: "identifier",
+        get: function () {
+            return this._identifier;
+        }
+    }, {
+        key: "title",
+        get: function () {
+            return this._titleElement.textContent;
+        },
+        set: function (title) {
+            this._titleElement.textContent = title;
+        }
+    }, {
+        key: "collapsed",
+        get: function () {
+            return this._element.classList.contains(WebInspector.DetailsSection.CollapsedStyleClassName);
+        },
+        set: function (flag) {
+            if (flag) this._element.classList.add(WebInspector.DetailsSection.CollapsedStyleClassName);else this._element.classList.remove(WebInspector.DetailsSection.CollapsedStyleClassName);
 
-    // Private
+            this._collapsedSetting.value = flag || false;
+        }
+    }, {
+        key: "groups",
+        get: function () {
+            return this._groups;
+        },
+        set: function (groups) {
+            this._contentElement.removeChildren();
 
-    _headerElementClicked(event)
-    {
-        if (event.target.isSelfOrDescendant(this._optionsElement))
-            return;
+            this._groups = groups || [];
 
-        this.collapsed = !this.collapsed;
+            for (var i = 0; i < this._groups.length; ++i) this._contentElement.appendChild(this._groups[i].element);
+        }
+    }]);
 
-        this._element.scrollIntoViewIfNeeded(false);
-    }
-
-    _optionsElementMouseDown(event)
-    {
-        this._headerElement.classList.add(WebInspector.DetailsSection.MouseOverOptionsElementStyleClassName);
-    }
-
-    _optionsElementMouseUp(event)
-    {
-        this._headerElement.classList.remove(WebInspector.DetailsSection.MouseOverOptionsElementStyleClassName);
-    }
-
-    _generateDisclosureTrianglesIfNeeded()
-    {
-        if (WebInspector.DetailsSection._generatedDisclosureTriangles)
-            return;
-
-        // Set this early instead of in _generateDisclosureTriangle because we don't want multiple sections that are
-        // created at the same time to duplicate the work (even though it would be harmless.)
-        WebInspector.DetailsSection._generatedDisclosureTriangles = true;
-
-        var specifications = {};
-        specifications[WebInspector.DetailsSection.DisclosureTriangleNormalCanvasIdentifierSuffix] = {
-            fillColor: [134, 134, 134]
-        };
-
-        specifications[WebInspector.DetailsSection.DisclosureTriangleActiveCanvasIdentifierSuffix] = {
-            fillColor: [57, 57, 57]
-        };
-
-        generateColoredImagesForCSS("Images/DisclosureTriangleSmallOpen.svg", specifications, 13, 13, WebInspector.DetailsSection.DisclosureTriangleOpenCanvasIdentifier);
-        generateColoredImagesForCSS("Images/DisclosureTriangleSmallClosed.svg", specifications, 13, 13, WebInspector.DetailsSection.DisclosureTriangleClosedCanvasIdentifier);
-    }
-};
+    return DetailsSection;
+})(WebInspector.Object);
 
 WebInspector.DetailsSection.HeaderElementStyleClassName = "header";
 WebInspector.DetailsSection.TitleElementStyleClassName = "title";

@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,11 +31,11 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.Slider = class Slider extends WebInspector.Object
-{
-    constructor()
-    {
-        super();
+WebInspector.Slider = (function (_WebInspector$Object) {
+    function Slider() {
+        _classCallCheck(this, Slider);
+
+        _get(Object.getPrototypeOf(Slider.prototype), "constructor", this).call(this);
 
         this._element = document.createElement("div");
         this._element.className = "slider";
@@ -41,97 +49,100 @@ WebInspector.Slider = class Slider extends WebInspector.Object
         this._element.addEventListener("mousedown", this);
     }
 
-    // Public
+    _inherits(Slider, _WebInspector$Object);
 
-    get element()
-    {
-        return this._element;
-    }
+    _createClass(Slider, [{
+        key: "handleEvent",
 
-    get value()
-    {
-        return this._value;
-    }
+        // Protected
 
-    set value(value)
-    {
-        value = Math.max(Math.min(value, 1), 0);
-
-        if (value === this._value)
-            return;
-
-        this._value = value;
-
-        this._knobX = Math.round(value * this._maxX);
-        this._knob.style.webkitTransform = "translate3d(" + this._knobX + "px, 0, 0)";
-
-        if (this.delegate && typeof this.delegate.sliderValueDidChange === "function")
-            this.delegate.sliderValueDidChange(this, value);
-    }
-
-    // Protected
-
-    handleEvent(event)
-    {
-        switch (event.type) {
-        case "mousedown":
-            this._handleMousedown(event);
-            break;
-        case "mousemove":
-            this._handleMousemove(event);
-            break;
-        case "mouseup":
-            this._handleMouseup(event);
-            break;
+        value: function handleEvent(event) {
+            switch (event.type) {
+                case "mousedown":
+                    this._handleMousedown(event);
+                    break;
+                case "mousemove":
+                    this._handleMousemove(event);
+                    break;
+                case "mouseup":
+                    this._handleMouseup(event);
+                    break;
+            }
         }
-    }
+    }, {
+        key: "_handleMousedown",
 
-    // Private
+        // Private
 
-    _handleMousedown(event)
-    {
-        if (event.target !== this._knob)
-            this.value = (this._localPointForEvent(event).x - 3) / this._maxX;
+        value: function _handleMousedown(event) {
+            if (event.target !== this._knob) this.value = (this._localPointForEvent(event).x - 3) / this._maxX;
 
-        this._startKnobX = this._knobX;
-        this._startMouseX = this._localPointForEvent(event).x;
+            this._startKnobX = this._knobX;
+            this._startMouseX = this._localPointForEvent(event).x;
 
-        this._element.classList.add("dragging");
+            this._element.classList.add("dragging");
 
-        window.addEventListener("mousemove", this, true);
-        window.addEventListener("mouseup", this, true);
-    }
+            window.addEventListener("mousemove", this, true);
+            window.addEventListener("mouseup", this, true);
+        }
+    }, {
+        key: "_handleMousemove",
+        value: function _handleMousemove(event) {
+            var dx = this._localPointForEvent(event).x - this._startMouseX;
+            var x = Math.max(Math.min(this._startKnobX + dx, this._maxX), 0);
 
-    _handleMousemove(event)
-    {
-        var dx = this._localPointForEvent(event).x - this._startMouseX;
-        var x = Math.max(Math.min(this._startKnobX + dx, this._maxX), 0);
+            this.value = x / this._maxX;
+        }
+    }, {
+        key: "_handleMouseup",
+        value: function _handleMouseup(event) {
+            this._element.classList.remove("dragging");
 
-        this.value = x / this._maxX;
-    }
+            window.removeEventListener("mousemove", this, true);
+            window.removeEventListener("mouseup", this, true);
+        }
+    }, {
+        key: "_localPointForEvent",
+        value: function _localPointForEvent(event) {
+            // We convert all event coordinates from page coordinates to local coordinates such that the slider
+            // may be transformed using CSS Transforms and interaction works as expected.
+            return window.webkitConvertPointFromPageToNode(this._element, new WebKitPoint(event.pageX, event.pageY));
+        }
+    }, {
+        key: "element",
 
-    _handleMouseup(event)
-    {
-        this._element.classList.remove("dragging");
+        // Public
 
-        window.removeEventListener("mousemove", this, true);
-        window.removeEventListener("mouseup", this, true);
-    }
+        get: function () {
+            return this._element;
+        }
+    }, {
+        key: "value",
+        get: function () {
+            return this._value;
+        },
+        set: function (value) {
+            value = Math.max(Math.min(value, 1), 0);
 
-    _localPointForEvent(event)
-    {
-        // We convert all event coordinates from page coordinates to local coordinates such that the slider
-        // may be transformed using CSS Transforms and interaction works as expected.
-        return window.webkitConvertPointFromPageToNode(this._element, new WebKitPoint(event.pageX, event.pageY));
-    }
+            if (value === this._value) return;
 
-    get _maxX()
-    {
-        if (this.__maxX === 0 && document.body.contains(this._element))
-            this.__maxX = this._element.offsetWidth - Math.ceil(WebInspector.Slider.KnobWidth / 2);
+            this._value = value;
 
-        return this.__maxX;
-    }
-};
+            this._knobX = Math.round(value * this._maxX);
+            this._knob.style.webkitTransform = "translate3d(" + this._knobX + "px, 0, 0)";
+
+            if (this.delegate && typeof this.delegate.sliderValueDidChange === "function") this.delegate.sliderValueDidChange(this, value);
+        }
+    }, {
+        key: "_maxX",
+        get: function () {
+            if (this.__maxX === 0 && document.body.contains(this._element)) this.__maxX = this._element.offsetWidth - Math.ceil(WebInspector.Slider.KnobWidth / 2);
+
+            return this.__maxX;
+        }
+    }]);
+
+    return Slider;
+})(WebInspector.Object);
 
 WebInspector.Slider.KnobWidth = 13;

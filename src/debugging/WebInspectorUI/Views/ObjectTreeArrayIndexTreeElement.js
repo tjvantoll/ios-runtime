@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2015 Apple Inc. All rights reserved.
  *
@@ -23,61 +31,63 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.ObjectTreeArrayIndexTreeElement = class ObjectTreeArrayIndexTreeElement extends WebInspector.ObjectTreeBaseTreeElement
-{
-    constructor(property, propertyPath)
-    {
+WebInspector.ObjectTreeArrayIndexTreeElement = (function (_WebInspector$ObjectTreeBaseTreeElement) {
+    function ObjectTreeArrayIndexTreeElement(property, propertyPath) {
+        _classCallCheck(this, ObjectTreeArrayIndexTreeElement);
+
         console.assert(property.isIndexProperty(), "ObjectTreeArrayIndexTreeElement expects numeric property names");
 
-        super(property, propertyPath, property);
+        _get(Object.getPrototypeOf(ObjectTreeArrayIndexTreeElement.prototype), "constructor", this).call(this, property, propertyPath, property);
 
         this.mainTitle = this._titleFragment();
         this.addClassName("object-tree-property");
         this.addClassName("object-tree-array-index");
 
-        if (!this.property.hasValue())
-            this.addClassName("accessor");
+        if (!this.property.hasValue()) this.addClassName("accessor");
     }
 
-    // Protected
+    _inherits(ObjectTreeArrayIndexTreeElement, _WebInspector$ObjectTreeBaseTreeElement);
 
-    invokedGetter()
-    {
-        this.mainTitle = this._titleFragment();
+    _createClass(ObjectTreeArrayIndexTreeElement, [{
+        key: "invokedGetter",
 
-        this.removeClassName("accessor");
-    }
+        // Protected
 
-    // Private
+        value: function invokedGetter() {
+            this.mainTitle = this._titleFragment();
 
-    _titleFragment()
-    {
-        var container = document.createDocumentFragment();
-
-        // Array index name.
-        var nameElement = container.appendChild(document.createElement("span"));
-        nameElement.className = "index-name";
-        nameElement.textContent = this.property.name;
-        nameElement.title = this.propertyPathString(this.thisPropertyPath());
-
-        // Value.
-        var valueElement = container.appendChild(document.createElement("span"));
-        valueElement.className = "index-value";
-
-        var resolvedValue = this.resolvedValue();
-        if (resolvedValue)
-            valueElement.appendChild(WebInspector.FormattedValue.createObjectTreeOrFormattedValueForRemoteObject(resolvedValue, this.resolvedValuePropertyPath()));
-        else {
-            if (this.property.hasGetter())
-                container.appendChild(this.createGetterElement(true));
-            if (this.property.hasSetter())
-                container.appendChild(this.createSetterElement());
+            this.removeClassName("accessor");
         }
+    }, {
+        key: "_titleFragment",
 
-        valueElement.classList.add("value");
-        if (this.hadError())
-            valueElement.classList.add("error");
+        // Private
 
-        return container;
-    }
-};
+        value: function _titleFragment() {
+            var container = document.createDocumentFragment();
+
+            // Array index name.
+            var nameElement = container.appendChild(document.createElement("span"));
+            nameElement.className = "index-name";
+            nameElement.textContent = this.property.name;
+            nameElement.title = this.propertyPathString(this.thisPropertyPath());
+
+            // Value.
+            var valueElement = container.appendChild(document.createElement("span"));
+            valueElement.className = "index-value";
+
+            var resolvedValue = this.resolvedValue();
+            if (resolvedValue) valueElement.appendChild(WebInspector.FormattedValue.createObjectTreeOrFormattedValueForRemoteObject(resolvedValue, this.resolvedValuePropertyPath()));else {
+                if (this.property.hasGetter()) container.appendChild(this.createGetterElement(true));
+                if (this.property.hasSetter()) container.appendChild(this.createSetterElement());
+            }
+
+            valueElement.classList.add("value");
+            if (this.hadError()) valueElement.classList.add("error");
+
+            return container;
+        }
+    }]);
+
+    return ObjectTreeArrayIndexTreeElement;
+})(WebInspector.ObjectTreeBaseTreeElement);

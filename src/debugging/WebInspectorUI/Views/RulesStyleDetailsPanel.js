@@ -1,3 +1,11 @@
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) subClass.__proto__ = superClass; }
+
 /*
  * Copyright (C) 2013, 2015 Apple Inc. All rights reserved.
  *
@@ -23,260 +31,309 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector.RulesStyleDetailsPanel = class RulesStyleDetailsPanel extends WebInspector.StyleDetailsPanel
-{
-    constructor()
-    {
-        super("rules", "rules", WebInspector.UIString("Rules"));
+WebInspector.RulesStyleDetailsPanel = (function (_WebInspector$StyleDetailsPanel) {
+    function RulesStyleDetailsPanel() {
+        _classCallCheck(this, RulesStyleDetailsPanel);
+
+        _get(Object.getPrototypeOf(RulesStyleDetailsPanel.prototype), "constructor", this).call(this, "rules", "rules", WebInspector.UIString("Rules"));
 
         this._sections = [];
     }
 
-    // Public
+    _inherits(RulesStyleDetailsPanel, _WebInspector$StyleDetailsPanel);
 
-    refresh(significantChange)
-    {
-        // We only need to do a rebuild on significant changes. Other changes are handled
-        // by the sections and text editors themselves.
-        if (!significantChange)
-            return;
+    _createClass(RulesStyleDetailsPanel, [{
+        key: "refresh",
 
-        var newSections = [];
-        var newDOMFragment = document.createDocumentFragment();
+        // Public
 
-        var previousMediaList = [];
-        var previousSection = null;
-        var previousFocusedSection = null;
+        value: function refresh(significantChange) {
+            // We only need to do a rebuild on significant changes. Other changes are handled
+            // by the sections and text editors themselves.
+            if (!significantChange) return;
 
-        function mediaListsEqual(a, b)
-        {
-            a = a || [];
-            b = b || [];
+            var newSections = [];
+            var newDOMFragment = document.createDocumentFragment();
 
-            if (a.length !== b.length)
-                return false;
+            var previousMediaList = [];
+            var previousSection = null;
+            var previousFocusedSection = null;
 
-            for (var i = 0; i < a.length; ++i) {
-                var aMedia = a[i];
-                var bMedia = b[i];
+            function mediaListsEqual(a, b) {
+                a = a || [];
+                b = b || [];
 
-                if (aMedia.type !== bMedia.type)
-                    return false;
+                if (a.length !== b.length) return false;
 
-                if (aMedia.text !== bMedia.text)
-                    return false;
+                for (var i = 0; i < a.length; ++i) {
+                    var aMedia = a[i];
+                    var bMedia = b[i];
 
-                if (!aMedia.sourceCodeLocation && bMedia.sourceCodeLocation)
-                    return false;
+                    if (aMedia.type !== bMedia.type) return false;
 
-                if (aMedia.sourceCodeLocation && !aMedia.sourceCodeLocation.isEqual(bMedia.sourceCodeLocation))
-                    return false;
-            }
+                    if (aMedia.text !== bMedia.text) return false;
 
-            return true;
-        }
+                    if (!aMedia.sourceCodeLocation && bMedia.sourceCodeLocation) return false;
 
-        function filteredMediaList(mediaList)
-        {
-            if (!mediaList)
-                return [];
-
-            // Exclude the basic "screen" query since it's very common and just clutters things.
-            return mediaList.filter(function(media) {
-                return media.text !== "screen";
-            });
-        }
-
-        function uniqueOrderedStyles(orderedStyles)
-        {
-            var uniqueStyles = [];
-
-            for (var style of orderedStyles) {
-                var rule = style.ownerRule;
-                if (!rule) {
-                    uniqueStyles.push(style);
-                    continue;
+                    if (aMedia.sourceCodeLocation && !aMedia.sourceCodeLocation.isEqual(bMedia.sourceCodeLocation)) return false;
                 }
 
-                var found = false;
-                for (var existingStyle of uniqueStyles) {
-                    if (rule.isEqualTo(existingStyle.ownerRule)) {
-                        found = true;
-                        break;
+                return true;
+            }
+
+            function filteredMediaList(mediaList) {
+                if (!mediaList) return [];
+
+                // Exclude the basic "screen" query since it's very common and just clutters things.
+                return mediaList.filter(function (media) {
+                    return media.text !== "screen";
+                });
+            }
+
+            function uniqueOrderedStyles(orderedStyles) {
+                var uniqueStyles = [];
+
+                var _iteratorNormalCompletion = true;
+                var _didIteratorError = false;
+                var _iteratorError = undefined;
+
+                try {
+                    for (var _iterator = orderedStyles[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+                        var style = _step.value;
+
+                        var rule = style.ownerRule;
+                        if (!rule) {
+                            uniqueStyles.push(style);
+                            continue;
+                        }
+
+                        var found = false;
+                        var _iteratorNormalCompletion2 = true;
+                        var _didIteratorError2 = false;
+                        var _iteratorError2 = undefined;
+
+                        try {
+                            for (var _iterator2 = uniqueStyles[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+                                var existingStyle = _step2.value;
+
+                                if (rule.isEqualTo(existingStyle.ownerRule)) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        } catch (err) {
+                            _didIteratorError2 = true;
+                            _iteratorError2 = err;
+                        } finally {
+                            try {
+                                if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+                                    _iterator2["return"]();
+                                }
+                            } finally {
+                                if (_didIteratorError2) {
+                                    throw _iteratorError2;
+                                }
+                            }
+                        }
+
+                        if (!found) uniqueStyles.push(style);
+                    }
+                } catch (err) {
+                    _didIteratorError = true;
+                    _iteratorError = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion && _iterator["return"]) {
+                            _iterator["return"]();
+                        }
+                    } finally {
+                        if (_didIteratorError) {
+                            throw _iteratorError;
+                        }
                     }
                 }
-                if (!found)
-                    uniqueStyles.push(style);
+
+                return uniqueStyles;
             }
 
-            return uniqueStyles;
-        }
+            function appendStyleSection(style) {
+                var section = style.__rulesSection;
+                if (section && section.focused && !previousFocusedSection) previousFocusedSection = section;
 
-        function appendStyleSection(style)
-        {
-            var section = style.__rulesSection;
-            if (section && section.focused && !previousFocusedSection)
-                previousFocusedSection = section;
+                if (!section) {
+                    section = new WebInspector.CSSStyleDeclarationSection(style);
+                    style.__rulesSection = section;
+                } else section.refresh();
 
-            if (!section) {
-                section = new WebInspector.CSSStyleDeclarationSection(style);
-                style.__rulesSection = section;
-            } else
-                section.refresh();
+                if (this._focusNextNewInspectorRule && style.ownerRule && style.ownerRule.type === WebInspector.CSSRule.Type.Inspector) {
+                    previousFocusedSection = section;
+                    delete this._focusNextNewInspectorRule;
+                }
 
-            if (this._focusNextNewInspectorRule && style.ownerRule && style.ownerRule.type === WebInspector.CSSRule.Type.Inspector) {
-                previousFocusedSection = section;
-                delete this._focusNextNewInspectorRule;
+                // Reset lastInGroup in case the order/grouping changed.
+                section.lastInGroup = false;
+
+                newDOMFragment.appendChild(section.element);
+                newSections.push(section);
+
+                previousSection = section;
             }
 
-            // Reset lastInGroup in case the order/grouping changed.
-            section.lastInGroup = false;
+            function addNewRuleButton() {
+                if (previousSection) previousSection.lastInGroup = true;
 
-            newDOMFragment.appendChild(section.element);
-            newSections.push(section);
+                if (!this.nodeStyles.node.isInShadowTree()) {
+                    var newRuleButton = document.createElement("div");
+                    newRuleButton.className = "new-rule";
+                    newRuleButton.addEventListener("click", this._newRuleClicked.bind(this));
 
-            previousSection = section;
-        }
+                    newRuleButton.appendChild(document.createElement("img"));
+                    newRuleButton.appendChild(document.createTextNode(WebInspector.UIString("New Rule")));
 
-        function addNewRuleButton()
-        {
-            if (previousSection)
-                previousSection.lastInGroup = true;
+                    newDOMFragment.appendChild(newRuleButton);
+                }
 
-            if (!this.nodeStyles.node.isInShadowTree()) {
-                var newRuleButton = document.createElement("div");
-                newRuleButton.className = "new-rule";
-                newRuleButton.addEventListener("click", this._newRuleClicked.bind(this));
-
-                newRuleButton.appendChild(document.createElement("img"));
-                newRuleButton.appendChild(document.createTextNode(WebInspector.UIString("New Rule")));
-
-                newDOMFragment.appendChild(newRuleButton);
+                addedNewRuleButton = true;
             }
 
-            addedNewRuleButton = true;
-        }
+            var pseudoElements = this.nodeStyles.pseudoElements;
+            for (var pseudoIdentifier in pseudoElements) {
+                var pseudoElement = pseudoElements[pseudoIdentifier];
+                var orderedStyles = uniqueOrderedStyles(pseudoElement.orderedStyles);
+                var _iteratorNormalCompletion3 = true;
+                var _didIteratorError3 = false;
+                var _iteratorError3 = undefined;
 
-        var pseudoElements = this.nodeStyles.pseudoElements;
-        for (var pseudoIdentifier in pseudoElements) {
-            var pseudoElement = pseudoElements[pseudoIdentifier];
-            var orderedStyles = uniqueOrderedStyles(pseudoElement.orderedStyles);
-            for (var style of orderedStyles)
-                appendStyleSection.call(this, style);
+                try {
+                    for (var _iterator3 = orderedStyles[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                        var style = _step3.value;
 
-            if (previousSection)
-                previousSection.lastInGroup = true;
-        }
+                        appendStyleSection.call(this, style);
+                    }
+                } catch (err) {
+                    _didIteratorError3 = true;
+                    _iteratorError3 = err;
+                } finally {
+                    try {
+                        if (!_iteratorNormalCompletion3 && _iterator3["return"]) {
+                            _iterator3["return"]();
+                        }
+                    } finally {
+                        if (_didIteratorError3) {
+                            throw _iteratorError3;
+                        }
+                    }
+                }
 
-        var addedNewRuleButton = false;
-
-        var orderedStyles = uniqueOrderedStyles(this.nodeStyles.orderedStyles);
-        for (var i = 0; i < orderedStyles.length; ++i) {
-            var style = orderedStyles[i];
-
-            if (style.type === WebInspector.CSSStyleDeclaration.Type.Rule && !addedNewRuleButton)
-                addNewRuleButton.call(this);
-
-            if (previousSection && previousSection.style.node !== style.node) {
-                previousSection.lastInGroup = true;
-
-                var prefixElement = document.createElement("strong");
-                prefixElement.textContent = WebInspector.UIString("Inherited From: ");
-
-                var inheritedLabel = document.createElement("div");
-                inheritedLabel.className = "label";
-                inheritedLabel.appendChild(prefixElement);
-                inheritedLabel.appendChild(WebInspector.linkifyNodeReference(style.node));
-                newDOMFragment.appendChild(inheritedLabel);
+                if (previousSection) previousSection.lastInGroup = true;
             }
 
-            // Only include the media list if it is different from the previous media list shown.
-            var currentMediaList = filteredMediaList(style.ownerRule && style.ownerRule.mediaList);
-            if (!mediaListsEqual(previousMediaList, currentMediaList)) {
-                previousMediaList = currentMediaList;
+            var addedNewRuleButton = false;
 
-                // Break the section group even if the media list is empty. That way the user knows
-                // the previous displayed media list does not apply to the next section.
-                if (previousSection)
+            var orderedStyles = uniqueOrderedStyles(this.nodeStyles.orderedStyles);
+            for (var i = 0; i < orderedStyles.length; ++i) {
+                var style = orderedStyles[i];
+
+                if (style.type === WebInspector.CSSStyleDeclaration.Type.Rule && !addedNewRuleButton) addNewRuleButton.call(this);
+
+                if (previousSection && previousSection.style.node !== style.node) {
                     previousSection.lastInGroup = true;
 
-                for (var j = 0; j < currentMediaList.length; ++j) {
-                    var media = currentMediaList[j];
-
                     var prefixElement = document.createElement("strong");
-                    prefixElement.textContent = WebInspector.UIString("Media: ");
+                    prefixElement.textContent = WebInspector.UIString("Inherited From: ");
 
-                    var mediaLabel = document.createElement("div");
-                    mediaLabel.className = "label";
-                    mediaLabel.appendChild(prefixElement);
-                    mediaLabel.appendChild(document.createTextNode(media.text));
-
-                    if (media.sourceCodeLocation) {
-                        mediaLabel.appendChild(document.createTextNode(" \u2014 "));
-                        mediaLabel.appendChild(WebInspector.createSourceCodeLocationLink(media.sourceCodeLocation, true));
-                    }
-
-                    newDOMFragment.appendChild(mediaLabel);
+                    var inheritedLabel = document.createElement("div");
+                    inheritedLabel.className = "label";
+                    inheritedLabel.appendChild(prefixElement);
+                    inheritedLabel.appendChild(WebInspector.linkifyNodeReference(style.node));
+                    newDOMFragment.appendChild(inheritedLabel);
                 }
+
+                // Only include the media list if it is different from the previous media list shown.
+                var currentMediaList = filteredMediaList(style.ownerRule && style.ownerRule.mediaList);
+                if (!mediaListsEqual(previousMediaList, currentMediaList)) {
+                    previousMediaList = currentMediaList;
+
+                    // Break the section group even if the media list is empty. That way the user knows
+                    // the previous displayed media list does not apply to the next section.
+                    if (previousSection) previousSection.lastInGroup = true;
+
+                    for (var j = 0; j < currentMediaList.length; ++j) {
+                        var media = currentMediaList[j];
+
+                        var prefixElement = document.createElement("strong");
+                        prefixElement.textContent = WebInspector.UIString("Media: ");
+
+                        var mediaLabel = document.createElement("div");
+                        mediaLabel.className = "label";
+                        mediaLabel.appendChild(prefixElement);
+                        mediaLabel.appendChild(document.createTextNode(media.text));
+
+                        if (media.sourceCodeLocation) {
+                            mediaLabel.appendChild(document.createTextNode(" — "));
+                            mediaLabel.appendChild(WebInspector.createSourceCodeLocationLink(media.sourceCodeLocation, true));
+                        }
+
+                        newDOMFragment.appendChild(mediaLabel);
+                    }
+                }
+
+                appendStyleSection.call(this, style);
             }
 
-            appendStyleSection.call(this, style);
+            if (!addedNewRuleButton) addNewRuleButton.call(this);
+
+            if (previousSection) previousSection.lastInGroup = true;
+
+            this.element.removeChildren();
+            this.element.appendChild(newDOMFragment);
+
+            this._sections = newSections;
+
+            for (var i = 0; i < this._sections.length; ++i) this._sections[i].updateLayout();
+
+            if (previousFocusedSection) previousFocusedSection.focus();
         }
+    }, {
+        key: "shown",
 
-        if (!addedNewRuleButton)
-            addNewRuleButton.call(this);
+        // Protected
 
-        if (previousSection)
-            previousSection.lastInGroup = true;
+        value: function shown() {
+            WebInspector.StyleDetailsPanel.prototype.shown.call(this);
 
-        this.element.removeChildren();
-        this.element.appendChild(newDOMFragment);
-
-        this._sections = newSections;
-
-        for (var i = 0; i < this._sections.length; ++i)
-            this._sections[i].updateLayout();
-
-        if (previousFocusedSection)
-            previousFocusedSection.focus();
-    }
-
-    // Protected
-
-    shown()
-    {
-        WebInspector.StyleDetailsPanel.prototype.shown.call(this);
-
-        // Associate the style and section objects so they can be reused.
-        // Also update the layout in case we changed widths while hidden.
-        for (var i = 0; i < this._sections.length; ++i) {
-            var section = this._sections[i];
-            section.style.__rulesSection = section;
-            section.updateLayout();
+            // Associate the style and section objects so they can be reused.
+            // Also update the layout in case we changed widths while hidden.
+            for (var i = 0; i < this._sections.length; ++i) {
+                var section = this._sections[i];
+                section.style.__rulesSection = section;
+                section.updateLayout();
+            }
         }
-    }
+    }, {
+        key: "hidden",
+        value: function hidden() {
+            WebInspector.StyleDetailsPanel.prototype.hidden.call(this);
 
-    hidden()
-    {
-        WebInspector.StyleDetailsPanel.prototype.hidden.call(this);
+            // Disconnect the style and section objects so they have a chance
+            // to release their objects when this panel is not visible.
+            for (var i = 0; i < this._sections.length; ++i) delete this._sections[i].style.__rulesSection;
+        }
+    }, {
+        key: "widthDidChange",
+        value: function widthDidChange() {
+            for (var i = 0; i < this._sections.length; ++i) this._sections[i].updateLayout();
+        }
+    }, {
+        key: "_newRuleClicked",
 
-        // Disconnect the style and section objects so they have a chance
-        // to release their objects when this panel is not visible.
-        for (var i = 0; i < this._sections.length; ++i)
-            delete this._sections[i].style.__rulesSection;
-    }
+        // Private
 
-    widthDidChange()
-    {
-        for (var i = 0; i < this._sections.length; ++i)
-            this._sections[i].updateLayout();
-    }
+        value: function _newRuleClicked(event) {
+            this._focusNextNewInspectorRule = true;
+            this.nodeStyles.addEmptyRule();
+        }
+    }]);
 
-    // Private
-
-    _newRuleClicked(event)
-    {
-        this._focusNextNewInspectorRule = true;
-        this.nodeStyles.addEmptyRule();
-    }
-};
+    return RulesStyleDetailsPanel;
+})(WebInspector.StyleDetailsPanel);
