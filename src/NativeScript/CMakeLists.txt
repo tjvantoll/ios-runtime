@@ -9,7 +9,9 @@ set(HEADER_FILES
     ConsoleMethodOverrides.h
     GlobalObject.h
     InspectorTimelineAgent.h
+    InspectorPageAgent.h
     InstrumentingAgents.h
+    MimeTypeHelper.h
     Interop.h
     JSErrors.h
     JSWarnings.h
@@ -79,6 +81,7 @@ set(SOURCE_FILES
     ConsoleMethodOverrides.cpp
     GlobalObject.mm
     InspectorTimelineAgent.cpp
+    InspectorPageAgent.mm
     Interop.mm
     JSErrors.mm
     JSWarnings.cpp
