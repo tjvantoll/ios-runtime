@@ -93,7 +93,7 @@
             return __loadModule(moduleIdentifier, modulePath).exports;
         };
         var moduleSource = NSString.stringWithContentsOfFileEncodingError(moduleMetadata.path, NSUTF8StringEncoding, null);
-        var moduleFunction = createModuleFunction(moduleSource, moduleMetadata.bundlePath);
+        var moduleFunction = createModuleFunction(moduleSource, "file://" + moduleMetadata.path);
         var fileName = moduleMetadata.path;
         var dirName = nsstr(moduleMetadata.path).stringByDeletingLastPathComponent.toString();
         module.filename = fileName;

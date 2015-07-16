@@ -14,8 +14,7 @@
 #include <map>
 
 namespace Inspector {
-class JSGlobalObjectInspectorController;
-class InstrumentingAgents;
+class GlobalObjectInspectorController;
 }
 
 namespace NativeScript {
@@ -112,12 +111,12 @@ public:
         return this->_typeScriptOriginalExtendsFunction.get();
     }
 
-    Inspector::JSGlobalObjectInspectorController& inspectorController() const {
+    Inspector::GlobalObjectInspectorController& inspectorController() const {
         return *this->_inspectorController.get();
     }
 
-    Inspector::InstrumentingAgents& instrumentingAgents() const {
-        return *this->_instrumentingAgents.get();
+    WTF::HashMap<WTF::String, JSC::SourceProvider*>* sourceProviders() {
+        return _sourceProvidersByUrl.get();
     }
 
     TypeFactory* typeFactory() const {
@@ -141,8 +140,7 @@ private:
 
     static void queueTaskToEventLoop(const JSC::JSGlobalObject* globalObject, WTF::PassRefPtr<JSC::Microtask> task);
 
-    std::unique_ptr<Inspector::JSGlobalObjectInspectorController> _inspectorController;
-    std::unique_ptr<Inspector::InstrumentingAgents> _instrumentingAgents;
+    std::unique_ptr<Inspector::GlobalObjectInspectorController> _inspectorController;
 
     JSC::WriteBarrier<JSC::Structure> _objCMethodCallStructure;
     JSC::WriteBarrier<JSC::Structure> _objCConstructorCallStructure;
@@ -170,6 +168,8 @@ private:
     std::map<Class, JSC::Strong<ObjCConstructorBase>> _objCConstructors;
 
     std::map<const Protocol*, JSC::Strong<ObjCProtocolWrapper>> _objCProtocolWrappers;
+    
+    std::unique_ptr<WTF::HashMap<WTF::String, JSC::SourceProvider*>> _sourceProvidersByUrl;
 
 #if defined(__LP64__) && __LP64__
     // See comment in toValue
