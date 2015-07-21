@@ -906,4 +906,15 @@ describe(module.id, function () {
 
         expect(stack).toBe(expectedStack);
     });
+    it('javascript functions round trip through the native as blocks preserving equality', function() {
+        var instance = TNSTestNativeCallbacks.alloc().init();
+        var callCount = 0;
+        var f = function() {
+            callCount = 1;
+        }
+        instance.block = f;
+        f();
+        expect(callCount).toBe(1);
+        expect(instance.block).toBe(f);
+    });
 });

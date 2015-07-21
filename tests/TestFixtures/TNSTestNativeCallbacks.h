@@ -12,6 +12,10 @@
 
 @interface TNSTestNativeCallbacks : NSObject
 
+typedef void (^TNSBlock)();
+
+@property(assign, nonatomic) TNSBlock block;
+
 + (void)inheritanceMethodCalls:(TNSDerivedInterface*)derivedInterface;
 
 + (void)inheritanceConstructorCalls:(Class)JSDerivedInterface;
@@ -60,7 +64,7 @@
 
 + (NSString*)callRecursively:(NSString* (^)())block;
 
-- (void (^)())getBlock;
-- (void (^)())getBlockFromNative;
+- (TNSBlock)getBlock;
+- (TNSBlock)getBlockFromNative;
 
 @end
